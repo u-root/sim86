@@ -134,36 +134,54 @@ default: panic("%s 0x%x\n", __func__, op);
 }
 
 /*used by opcodes 80, c0, d0, and d2. */
-static u8 opcD0_byte_operation(u8 op, u8 d)
+static u8 opcD0_byte_operation(u8 op, u8 d, u8 amt)
 {
 	u8 ret;
 switch(op) {
-case 1: ret =rol_word(op, d); break;
-case 2: ret =ror_word(op, d); break;
-case 3: ret =rcl_word(op, d); break;
-case 4: ret =rcr_word(op, d); break;
-case 5: ret =shl_word(op, d); break;
-case 6: ret =shr_word(op, d); break;
-case 7:	shl_long(op, d); break;
-case 8: ret =sar_word(op, d); break;
+case 1: ret =rol_byte(d, amt); break;
+case 2: ret =ror_byte(d, amt); break;
+case 3: ret =rcl_byte(d, amt); break;
+case 4: ret =rcr_byte(d, amt); break;
+case 5: ret =shl_byte(d, amt); break;
+case 6: ret =shr_byte(d, amt); break;
+case 7:	shl_byte(d, amt); break;
+case 8: ret =sar_byte(d, amt); break;
 default: panic("%s 0x%x\n", __func__, op);
 	}
 	return ret;
 }
 
 /*used by opcodes c1, d1, and d3. */
-static u32 opcD1_long_operation(u8 op, u8 d)
+static u16 opcD1_word_operation(u8 op, u16 d, u8 amt)
+{
+	u16 ret;
+switch(op) {
+case 1: ret =rol_word(d, amt); break;
+case 2: ret =ror_word(d, amt); break;
+case 3: ret =rcl_word(d, amt); break;
+case 4: ret =rcr_word(d, amt); break;
+case 5: ret =shl_word(d, amt); break;
+case 6: ret =shr_word(d, amt); break;
+case 7:	shl_word(d, amt); break;
+case 8: ret =sar_word(d, amt); break;
+default: panic("%s 0x%x\n", __func__, op);
+	}
+return ret;
+}
+
+/*used by opcodes c1, d1, and d3. */
+static u32 opcD1_long_operation(u8 op, u32 d, u8 amt)
 {
 	u32 ret;
 switch(op) {
-case 1: ret =rol_long(op, d); break;
-case 2: ret =ror_long(op, d); break;
-case 3: ret =rcl_long(op, d); break;
-case 4: ret =rcr_long(op, d); break;
-case 5: ret =shl_long(op, d); break;
-case 6: ret =shr_long(op, d); break;
-case 7:	shl_long(op, d); break;
-case 8: ret =sar_long(op, d); break;
+case 1: ret =rol_long(d, amt); break;
+case 2: ret =ror_long(d, amt); break;
+case 3: ret =rcl_long(d, amt); break;
+case 4: ret =rcr_long(d, amt); break;
+case 5: ret =shl_long(d, amt); break;
+case 6: ret =shr_long(d, amt); break;
+case 7:	shl_long(d, amt); break;
+case 8: ret =sar_long(d, amt); break;
 default: panic("%s 0x%x\n", __func__, op);
 	}
 return ret;
@@ -507,7 +525,7 @@ static void x86emuOp_two_byte(u8 X86EMU_UNUSED(op1))
 {
     u8 op2 = (*sys_rdb)(((u32)M.x86.R_CS << 4) + (M.x86.R_IP++));
     INC_DECODED_INST_LEN(1);
-    (*x86emu_optab2[op2])(op2);
+    x86_op2_dispatch(op2, op2);
 }
 
 /****************************************************************************
@@ -3825,7 +3843,7 @@ static void x86emuOp_opcD1_word_RM_1(u8 X86EMU_UNUSED(op1))
             DECODE_PRINTF(",1\n");
             destval = fetch_data_word(destoffset);
             TRACE_AND_STEP();
-            destval = (*opcD1_word_operation[rh]) (destval, 1);
+            destval = opcD1_word_operation(rh, destval, 1);
             store_data_word(destoffset, destval);
         }
     } else {                     /* register to register */
@@ -3836,7 +3854,7 @@ static void x86emuOp_opcD1_word_RM_1(u8 X86EMU_UNUSED(op1))
             destreg = DECODE_RM_LONG_REGISTER(rl);
             DECODE_PRINTF(",1\n");
             TRACE_AND_STEP();
-            destval = (*opcD1_long_operation[rh]) (*destreg, 1);
+            destval = opcD1_long_operation(rh, *destreg, 1);
             *destreg = destval;
         } else {
 			u16 destval;
@@ -3845,7 +3863,7 @@ static void x86emuOp_opcD1_word_RM_1(u8 X86EMU_UNUSED(op1))
             destreg = DECODE_RM_WORD_REGISTER(rl);
             DECODE_PRINTF(",1\n");
             TRACE_AND_STEP();
-            destval = (*opcD1_word_operation[rh]) (*destreg, 1);
+            destval = opcD1_word_operation(rh, *destreg, 1);
             *destreg = destval;
         }
     }
@@ -3915,13 +3933,13 @@ static void x86emuOp_opcD2_byte_RM_CL(u8 X86EMU_UNUSED(op1))
         DECODE_PRINTF(",CL\n");
         destval = fetch_data_byte(destoffset);
         TRACE_AND_STEP();
-        destval = (*opcD0_byte_operation[rh]) (destval, amt);
+        destval = opcD0_byte_operation(rh, destval, amt);
         store_data_byte(destoffset, destval);
     } else {                     /* register to register */
         destreg = DECODE_RM_BYTE_REGISTER(rl);
         DECODE_PRINTF(",CL\n");
         TRACE_AND_STEP();
-        destval = (*opcD0_byte_operation[rh]) (*destreg, amt);
+        destval = opcD0_byte_operation(rh, *destreg, amt);
         *destreg = destval;
     }
     DECODE_CLEAR_SEGOVR();
@@ -3991,7 +4009,7 @@ static void x86emuOp_opcD3_word_RM_CL(u8 X86EMU_UNUSED(op1))
             DECODE_PRINTF(",CL\n");
             destval = fetch_data_long(destoffset);
             TRACE_AND_STEP();
-            destval = (*opcD1_long_operation[rh]) (destval, amt);
+            destval = opcD1_long_operation(rh, destval, amt);
             store_data_long(destoffset, destval);
         } else {
             u16 destval;
@@ -4001,7 +4019,7 @@ static void x86emuOp_opcD3_word_RM_CL(u8 X86EMU_UNUSED(op1))
             DECODE_PRINTF(",CL\n");
             destval = fetch_data_word(destoffset);
             TRACE_AND_STEP();
-            destval = (*opcD1_word_operation[rh]) (destval, amt);
+            destval = opcD1_word_operation(rh, destval, amt);
             store_data_word(destoffset, destval);
         }
     } else {                     /* register to register */
@@ -4011,14 +4029,14 @@ static void x86emuOp_opcD3_word_RM_CL(u8 X86EMU_UNUSED(op1))
             destreg = DECODE_RM_LONG_REGISTER(rl);
             DECODE_PRINTF(",CL\n");
             TRACE_AND_STEP();
-            *destreg = (*opcD1_long_operation[rh]) (*destreg, amt);
+            *destreg = opcD1_long_operation(rh, *destreg, amt);
         } else {
             u16 *destreg;
 
             destreg = DECODE_RM_WORD_REGISTER(rl);
             DECODE_PRINTF(",CL\n");
             TRACE_AND_STEP();
-            *destreg = (*opcD1_word_operation[rh]) (*destreg, amt);
+            *destreg = opcD1_word_operation(rh, *destreg, amt);
         }
     }
     DECODE_CLEAR_SEGOVR();
