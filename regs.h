@@ -46,33 +46,8 @@
 /*
  * General EAX, EBX, ECX, EDX type registers.  Note that for
  * portability, and speed, the issue of byte swapping is not addressed
- * in the registers.  All registers are stored in the default format
- * available on the host machine.  The only critical issue is that the
- * registers should line up EXACTLY in the same manner as they do in
- * the 386.  That is:
- *
- * EAX & 0xff  === AL
- * EAX & 0xffff == AX
- *
- * etc.  The result is that alot of the calculations can then be
- * done using the native instruction set fully.
+ * in the registers.
  */
-
-#ifdef	__BIG_ENDIAN__
-
-typedef struct {
-	u32 e_reg;
-	} I32_reg_t;
-
-typedef struct {
-	u16 filler0, x_reg;
-	} I16_reg_t;
-
-typedef struct {
-	u8 filler0, filler1, h_reg, l_reg;
-	} I8_reg_t;
-
-#else /* !__BIG_ENDIAN__ */
 
 typedef struct {
 	u32 e_reg;
@@ -85,8 +60,6 @@ typedef struct {
 typedef struct {
 	u8 l_reg, h_reg;
 	} I8_reg_t;
-
-#endif /* BIG_ENDIAN */
 
 typedef union {
 	I32_reg_t   I32_reg;
@@ -278,7 +251,6 @@ typedef struct {
 	u32                         mode;
 	volatile int                intr;   /* mask of pending interrupts */
 	volatile int                         debug;
-#if IS_ENABLED(CONFIG_X86EMU_DEBUG)
 	int                         check;
 	u16                         saved_ip;
 	u16                         saved_cs;
@@ -286,7 +258,6 @@ typedef struct {
 	int                         enc_str_pos;
 	char                        decode_buf[32]; /* encoded byte stream  */
 	char                        decoded_buf[256]; /* disassembled strings */
-#endif
 	u8                          intno;
 	u8                          __pad[3];
 	} X86EMU_regs;
@@ -313,10 +284,6 @@ typedef struct {
 #pragma pack()
 
 /*----------------------------- Global Variables --------------------------*/
-
-#ifdef  __cplusplus
-extern "C" {            			/* Use "C" linkage when in C++ mode */
-#endif
 
 /* Global emulator machine state.
  *
@@ -363,9 +330,5 @@ extern    X86EMU_sysEnv	_X86EMU_env;
 #define X86_BH M.x86.R_BH
 #define X86_CH M.x86.R_CH
 #define X86_DH M.x86.R_DH
-
-#ifdef  __cplusplus
-}                       			/* End of "C" linkage for C++   	*/
-#endif
 
 #endif /* __X86EMU_REGS_H */

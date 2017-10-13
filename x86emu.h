@@ -43,9 +43,6 @@
 
 #include <stddef.h>
 #include <console/console.h>
-#if IS_ENABLED(CONFIG_X86EMU_DEBUG)
-#define DEBUG
-#endif
 
 #include "types.h"
 #define	X86API
@@ -137,10 +134,6 @@ extern X86EMU_intrFuncs _X86EMU_intrTab[256];
 
 /*-------------------------- Function Prototypes --------------------------*/
 
-#ifdef  __cplusplus
-extern "C" {            			/* Use "C" linkage when in C++ mode */
-#endif
-
 void 	X86EMU_setupMemFuncs(X86EMU_memFuncs *funcs);
 void 	X86EMU_setupPioFuncs(X86EMU_pioFuncs *funcs);
 void 	X86EMU_setupIntrFuncs(X86EMU_intrFuncs funcs[]);
@@ -153,14 +146,9 @@ void X86EMU_setMemBase(void *base, size_t size);
 void 	X86EMU_exec(void);
 void 	X86EMU_halt_sys(void);
 
-#if IS_ENABLED(CONFIG_X86EMU_DEBUG)
 #define	HALT_SYS()	\
 	printf("halt_sys: in %s\n", __func__);	\
 	X86EMU_halt_sys();
-#else
-#define	HALT_SYS()	X86EMU_halt_sys()
-#endif
-
 /* Debug options */
 
 #define DEBUG_DECODE_F          0x000001 /* print decoded instruction  */
@@ -189,8 +177,5 @@ void 	X86EMU_dump_memory(u16 seg, u16 off, u32 amt);
 int 	X86EMU_trace_on(void);
 int 	X86EMU_trace_off(void);
 
-#ifdef  __cplusplus
-}                       			/* End of "C" linkage for C++   	*/
-#endif
 
 #endif /* __X86EMU_X86EMU_H */

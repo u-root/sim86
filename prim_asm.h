@@ -43,12 +43,6 @@
 #ifndef	__X86EMU_PRIM_ASM_H
 #define	__X86EMU_PRIM_ASM_H
 
-#ifdef	__WATCOMC__
-
-#ifndef	VALIDATE
-#define	__HAVE_INLINE_ASSEMBLER__
-#endif
-
 u32		get_flags_asm(void);
 #pragma aux get_flags_asm =			\
 	"pushf"                         \

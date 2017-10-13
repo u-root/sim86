@@ -39,8 +39,6 @@
 #ifndef __X86EMU_FPU_REGS_H
 #define __X86EMU_FPU_REGS_H
 
-#ifdef X86_FPU_SUPPORT
-
 #pragma	pack(1)
 
 /* Basic 8087 register can hold any of the following values: */
@@ -100,16 +98,9 @@ struct x86_fpu_registers {
  * instructions.
  */
 
-#endif /* X86_FPU_SUPPORT */
-
-#if IS_ENABLED(CONFIG_X86EMU_DEBUG)
 # define DECODE_PRINTINSTR32(t,mod,rh,rl)     	\
 	DECODE_PRINTF(t[(mod<<3)+(rh)]);
 # define DECODE_PRINTINSTR256(t,mod,rh,rl)    	\
 	DECODE_PRINTF(t[(mod<<6)+(rh<<3)+(rl)]);
-#else
-# define DECODE_PRINTINSTR32(t,mod,rh,rl)
-# define DECODE_PRINTINSTR256(t,mod,rh,rl)
-#endif
 
 #endif /* __X86EMU_FPU_REGS_H */
