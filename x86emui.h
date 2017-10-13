@@ -78,5 +78,5 @@ extern u32 	(X86APIP sys_inl)(X86EMU_pioAddr addr);
 extern void (X86APIP sys_outb)(X86EMU_pioAddr addr,u8 val);
 extern void (X86APIP sys_outw)(X86EMU_pioAddr addr,u16 val);
 extern void	(X86APIP sys_outl)(X86EMU_pioAddr addr,u32 val);
-
+void panic(char *, ...);
 #endif /* __X86EMU_X86EMUI_H */
