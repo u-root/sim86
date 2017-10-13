@@ -2196,7 +2196,7 @@ static void x86emuOp_nop(u8 X86EMU_UNUSED(op1))
 REMARKS:
 Handles opcode 0x91-0x97
 ****************************************************************************/
-static void x86emuOp_xchg_word_AX_register(u8 X86EMU_UNUSED(op1))
+static void x86emuOp_xchg_word_AX_register(u8 op1)
 {
     u32 tmp;
 
@@ -3092,7 +3092,7 @@ static void x86emuOp_mov_byte_register_IMM(u8 op1)
 REMARKS:
 Handles opcode 0xb8 - 0xbf
 ****************************************************************************/
-static void x86emuOp_mov_word_register_IMM(u8 X86EMU_UNUSED(op1))
+static void x86emuOp_mov_word_register_IMM(u8 op1)
 {
     u32 srcval;
 
@@ -3571,9 +3571,9 @@ static void x86emuOp_ret_far(u8 X86EMU_UNUSED(op1))
 REMARKS:
 Handles opcode 0xcc
 ****************************************************************************/
-static void x86emuOp_int3(u8 X86EMU_UNUSED(op1))
+static void x86emuOp_int3(u8 op1)
 {
-    u16 X86EMU_UNUSED(tmp);
+	u16 tmp;
 
     START_OF_INSTR();
     DECODE_PRINTF("INT 3\n");
@@ -3599,9 +3599,9 @@ static void x86emuOp_int3(u8 X86EMU_UNUSED(op1))
 REMARKS:
 Handles opcode 0xcd
 ****************************************************************************/
-static void x86emuOp_int_IMM(u8 X86EMU_UNUSED(op1))
+static void x86emuOp_int_IMM(u8 op1)
 {
-    u16 X86EMU_UNUSED(tmp);
+	u16 tmp;
     u8 intnum;
 
     START_OF_INSTR();
@@ -3629,9 +3629,9 @@ static void x86emuOp_int_IMM(u8 X86EMU_UNUSED(op1))
 REMARKS:
 Handles opcode 0xce
 ****************************************************************************/
-static void x86emuOp_into(u8 X86EMU_UNUSED(op1))
+static void x86emuOp_into(u8 op1)
 {
-    u16 X86EMU_UNUSED(tmp);
+	u16 tmp;
 
     START_OF_INSTR();
     DECODE_PRINTF("INTO\n");
@@ -4045,7 +4045,7 @@ Handles opcode 0xd5
 ****************************************************************************/
 static void x86emuOp_aad(u8 X86EMU_UNUSED(op1))
 {
-    u8 X86EMU_UNUSED(a);
+	u8 a;
 
     START_OF_INSTR();
     DECODE_PRINTF("AAD\n");
@@ -5508,3 +5508,296 @@ void (*x86emu_optab[256])(u8) =
 /*  0xfe */ x86emuOp_opcFE_byte_RM,
 /*  0xff */ x86emuOp_opcFF_word_RM,
 };
+/***************************************************************************
+ * Single byte operation code table:
+ **************************************************************************/
+void x86_byte_dispatch(u8 op1)
+{
+	switch(op1){
+case 0x00: x86emuOp_genop_byte_RM_R(op1); break;
+case 0x01: x86emuOp_genop_word_RM_R(op1); break;
+case 0x02: x86emuOp_genop_byte_R_RM(op1); break;
+case 0x03: x86emuOp_genop_word_R_RM(op1); break;
+case 0x04: x86emuOp_genop_byte_AL_IMM(op1); break;
+case 0x05: x86emuOp_genop_word_AX_IMM(op1); break;
+case 0x06: x86emuOp_push_ES(op1); break;
+case 0x07: x86emuOp_pop_ES(op1); break;
+
+case 0x08: x86emuOp_genop_byte_RM_R(op1); break;
+case 0x09: x86emuOp_genop_word_RM_R(op1); break;
+case 0x0a: x86emuOp_genop_byte_R_RM(op1); break;
+case 0x0b: x86emuOp_genop_word_R_RM(op1); break;
+case 0x0c: x86emuOp_genop_byte_AL_IMM(op1); break;
+case 0x0d: x86emuOp_genop_word_AX_IMM(op1); break;
+case 0x0e: x86emuOp_push_CS(op1); break;
+case 0x0f: x86emuOp_two_byte(op1); break;
+
+case 0x10: x86emuOp_genop_byte_RM_R(op1); break;
+case 0x11: x86emuOp_genop_word_RM_R(op1); break;
+case 0x12: x86emuOp_genop_byte_R_RM(op1); break;
+case 0x13: x86emuOp_genop_word_R_RM(op1); break;
+case 0x14: x86emuOp_genop_byte_AL_IMM(op1); break;
+case 0x15: x86emuOp_genop_word_AX_IMM(op1); break;
+case 0x16: x86emuOp_push_SS(op1); break;
+case 0x17: x86emuOp_pop_SS(op1); break;
+
+case 0x18: x86emuOp_genop_byte_RM_R(op1); break;
+case 0x19: x86emuOp_genop_word_RM_R(op1); break;
+case 0x1a: x86emuOp_genop_byte_R_RM(op1); break;
+case 0x1b: x86emuOp_genop_word_R_RM(op1); break;
+case 0x1c: x86emuOp_genop_byte_AL_IMM(op1); break;
+case 0x1d: x86emuOp_genop_word_AX_IMM(op1); break;
+case 0x1e: x86emuOp_push_DS(op1); break;
+case 0x1f: x86emuOp_pop_DS(op1); break;
+
+case 0x20: x86emuOp_genop_byte_RM_R(op1); break;
+case 0x21: x86emuOp_genop_word_RM_R(op1); break;
+case 0x22: x86emuOp_genop_byte_R_RM(op1); break;
+case 0x23: x86emuOp_genop_word_R_RM(op1); break;
+case 0x24: x86emuOp_genop_byte_AL_IMM(op1); break;
+case 0x25: x86emuOp_genop_word_AX_IMM(op1); break;
+case 0x26: x86emuOp_segovr_ES(op1); break;
+case 0x27: x86emuOp_daa(op1); break;
+
+case 0x28: x86emuOp_genop_byte_RM_R(op1); break;
+case 0x29: x86emuOp_genop_word_RM_R(op1); break;
+case 0x2a: x86emuOp_genop_byte_R_RM(op1); break;
+case 0x2b: x86emuOp_genop_word_R_RM(op1); break;
+case 0x2c: x86emuOp_genop_byte_AL_IMM(op1); break;
+case 0x2d: x86emuOp_genop_word_AX_IMM(op1); break;
+case 0x2e: x86emuOp_segovr_CS(op1); break;
+case 0x2f: x86emuOp_das(op1); break;
+
+case 0x30: x86emuOp_genop_byte_RM_R(op1); break;
+case 0x31: x86emuOp_genop_word_RM_R(op1); break;
+case 0x32: x86emuOp_genop_byte_R_RM(op1); break;
+case 0x33: x86emuOp_genop_word_R_RM(op1); break;
+case 0x34: x86emuOp_genop_byte_AL_IMM(op1); break;
+case 0x35: x86emuOp_genop_word_AX_IMM(op1); break;
+case 0x36: x86emuOp_segovr_SS(op1); break;
+case 0x37: x86emuOp_aaa(op1); break;
+
+case 0x38: x86emuOp_genop_byte_RM_R(op1); break;
+case 0x39: x86emuOp_genop_word_RM_R(op1); break;
+case 0x3a: x86emuOp_genop_byte_R_RM(op1); break;
+case 0x3b: x86emuOp_genop_word_R_RM(op1); break;
+case 0x3c: x86emuOp_genop_byte_AL_IMM(op1); break;
+case 0x3d: x86emuOp_genop_word_AX_IMM(op1); break;
+case 0x3e: x86emuOp_segovr_DS(op1); break;
+case 0x3f: x86emuOp_aas(op1); break;
+
+case 0x40: x86emuOp_inc_register(op1); break;
+case 0x41: x86emuOp_inc_register(op1); break;
+case 0x42: x86emuOp_inc_register(op1); break;
+case 0x43: x86emuOp_inc_register(op1); break;
+case 0x44: x86emuOp_inc_register(op1); break;
+case 0x45: x86emuOp_inc_register(op1); break;
+case 0x46: x86emuOp_inc_register(op1); break;
+case 0x47: x86emuOp_inc_register(op1); break;
+
+case 0x48: x86emuOp_dec_register(op1); break;
+case 0x49: x86emuOp_dec_register(op1); break;
+case 0x4a: x86emuOp_dec_register(op1); break;
+case 0x4b: x86emuOp_dec_register(op1); break;
+case 0x4c: x86emuOp_dec_register(op1); break;
+case 0x4d: x86emuOp_dec_register(op1); break;
+case 0x4e: x86emuOp_dec_register(op1); break;
+case 0x4f: x86emuOp_dec_register(op1); break;
+
+case 0x50: x86emuOp_push_register(op1); break;
+case 0x51: x86emuOp_push_register(op1); break;
+case 0x52: x86emuOp_push_register(op1); break;
+case 0x53: x86emuOp_push_register(op1); break;
+case 0x54: x86emuOp_push_register(op1); break;
+case 0x55: x86emuOp_push_register(op1); break;
+case 0x56: x86emuOp_push_register(op1); break;
+case 0x57: x86emuOp_push_register(op1); break;
+
+case 0x58: x86emuOp_pop_register(op1); break;
+case 0x59: x86emuOp_pop_register(op1); break;
+case 0x5a: x86emuOp_pop_register(op1); break;
+case 0x5b: x86emuOp_pop_register(op1); break;
+case 0x5c: x86emuOp_pop_register(op1); break;
+case 0x5d: x86emuOp_pop_register(op1); break;
+case 0x5e: x86emuOp_pop_register(op1); break;
+case 0x5f: x86emuOp_pop_register(op1); break;
+
+case 0x60: x86emuOp_push_all(op1); break;
+case 0x61: x86emuOp_pop_all(op1); break;
+case 0x62: x86emuOp_illegal_op   /* bound */(op1); break;
+case 0x63: x86emuOp_illegal_op   /* arpl */(op1); break;
+case 0x64: x86emuOp_segovr_FS(op1); break;
+case 0x65: x86emuOp_segovr_GS(op1); break;
+case 0x66: x86emuOp_prefix_data(op1); break;
+case 0x67: x86emuOp_prefix_addr(op1); break;
+
+case 0x68: x86emuOp_push_word_IMM(op1); break;
+case 0x69: x86emuOp_imul_word_IMM(op1); break;
+case 0x6a: x86emuOp_push_byte_IMM(op1); break;
+case 0x6b: x86emuOp_imul_byte_IMM(op1); break;
+case 0x6c: x86emuOp_ins_byte(op1); break;
+case 0x6d: x86emuOp_ins_word(op1); break;
+case 0x6e: x86emuOp_outs_byte(op1); break;
+case 0x6f: x86emuOp_outs_word(op1); break;
+
+case 0x70: x86emuOp_jump_near_cond(op1); break;
+case 0x71: x86emuOp_jump_near_cond(op1); break;
+case 0x72: x86emuOp_jump_near_cond(op1); break;
+case 0x73: x86emuOp_jump_near_cond(op1); break;
+case 0x74: x86emuOp_jump_near_cond(op1); break;
+case 0x75: x86emuOp_jump_near_cond(op1); break;
+case 0x76: x86emuOp_jump_near_cond(op1); break;
+case 0x77: x86emuOp_jump_near_cond(op1); break;
+
+case 0x78: x86emuOp_jump_near_cond(op1); break;
+case 0x79: x86emuOp_jump_near_cond(op1); break;
+case 0x7a: x86emuOp_jump_near_cond(op1); break;
+case 0x7b: x86emuOp_jump_near_cond(op1); break;
+case 0x7c: x86emuOp_jump_near_cond(op1); break;
+case 0x7d: x86emuOp_jump_near_cond(op1); break;
+case 0x7e: x86emuOp_jump_near_cond(op1); break;
+case 0x7f: x86emuOp_jump_near_cond(op1); break;
+
+case 0x80: x86emuOp_opc80_byte_RM_IMM(op1); break;
+case 0x81: x86emuOp_opc81_word_RM_IMM(op1); break;
+case 0x82: x86emuOp_opc82_byte_RM_IMM(op1); break;
+case 0x83: x86emuOp_opc83_word_RM_IMM(op1); break;
+case 0x84: x86emuOp_test_byte_RM_R(op1); break;
+case 0x85: x86emuOp_test_word_RM_R(op1); break;
+case 0x86: x86emuOp_xchg_byte_RM_R(op1); break;
+case 0x87: x86emuOp_xchg_word_RM_R(op1); break;
+
+case 0x88: x86emuOp_mov_byte_RM_R(op1); break;
+case 0x89: x86emuOp_mov_word_RM_R(op1); break;
+case 0x8a: x86emuOp_mov_byte_R_RM(op1); break;
+case 0x8b: x86emuOp_mov_word_R_RM(op1); break;
+case 0x8c: x86emuOp_mov_word_RM_SR(op1); break;
+case 0x8d: x86emuOp_lea_word_R_M(op1); break;
+case 0x8e: x86emuOp_mov_word_SR_RM(op1); break;
+case 0x8f: x86emuOp_pop_RM(op1); break;
+
+case 0x90: x86emuOp_nop(op1); break;
+case 0x91: x86emuOp_xchg_word_AX_register(op1); break;
+case 0x92: x86emuOp_xchg_word_AX_register(op1); break;
+case 0x93: x86emuOp_xchg_word_AX_register(op1); break;
+case 0x94: x86emuOp_xchg_word_AX_register(op1); break;
+case 0x95: x86emuOp_xchg_word_AX_register(op1); break;
+case 0x96: x86emuOp_xchg_word_AX_register(op1); break;
+case 0x97: x86emuOp_xchg_word_AX_register(op1); break;
+
+case 0x98: x86emuOp_cbw(op1); break;
+case 0x99: x86emuOp_cwd(op1); break;
+case 0x9a: x86emuOp_call_far_IMM(op1); break;
+case 0x9b: x86emuOp_wait(op1); break;
+case 0x9c: x86emuOp_pushf_word(op1); break;
+case 0x9d: x86emuOp_popf_word(op1); break;
+case 0x9e: x86emuOp_sahf(op1); break;
+case 0x9f: x86emuOp_lahf(op1); break;
+
+case 0xa0: x86emuOp_mov_AL_M_IMM(op1); break;
+case 0xa1: x86emuOp_mov_AX_M_IMM(op1); break;
+case 0xa2: x86emuOp_mov_M_AL_IMM(op1); break;
+case 0xa3: x86emuOp_mov_M_AX_IMM(op1); break;
+case 0xa4: x86emuOp_movs_byte(op1); break;
+case 0xa5: x86emuOp_movs_word(op1); break;
+case 0xa6: x86emuOp_cmps_byte(op1); break;
+case 0xa7: x86emuOp_cmps_word(op1); break;
+case 0xa8: x86emuOp_test_AL_IMM(op1); break;
+case 0xa9: x86emuOp_test_AX_IMM(op1); break;
+case 0xaa: x86emuOp_stos_byte(op1); break;
+case 0xab: x86emuOp_stos_word(op1); break;
+case 0xac: x86emuOp_lods_byte(op1); break;
+case 0xad: x86emuOp_lods_word(op1); break;
+case 0xae: x86emuOp_scas_byte(op1); break;
+case 0xaf: x86emuOp_scas_word(op1); break;
+
+case 0xb0: x86emuOp_mov_byte_register_IMM(op1); break;
+case 0xb1: x86emuOp_mov_byte_register_IMM(op1); break;
+case 0xb2: x86emuOp_mov_byte_register_IMM(op1); break;
+case 0xb3: x86emuOp_mov_byte_register_IMM(op1); break;
+case 0xb4: x86emuOp_mov_byte_register_IMM(op1); break;
+case 0xb5: x86emuOp_mov_byte_register_IMM(op1); break;
+case 0xb6: x86emuOp_mov_byte_register_IMM(op1); break;
+case 0xb7: x86emuOp_mov_byte_register_IMM(op1); break;
+
+case 0xb8: x86emuOp_mov_word_register_IMM(op1); break;
+case 0xb9: x86emuOp_mov_word_register_IMM(op1); break;
+case 0xba: x86emuOp_mov_word_register_IMM(op1); break;
+case 0xbb: x86emuOp_mov_word_register_IMM(op1); break;
+case 0xbc: x86emuOp_mov_word_register_IMM(op1); break;
+case 0xbd: x86emuOp_mov_word_register_IMM(op1); break;
+case 0xbe: x86emuOp_mov_word_register_IMM(op1); break;
+case 0xbf: x86emuOp_mov_word_register_IMM(op1); break;
+
+case 0xc0: x86emuOp_opcC0_byte_RM_MEM(op1); break;
+case 0xc1: x86emuOp_opcC1_word_RM_MEM(op1); break;
+case 0xc2: x86emuOp_ret_near_IMM(op1); break;
+case 0xc3: x86emuOp_ret_near(op1); break;
+case 0xc4: x86emuOp_les_R_IMM(op1); break;
+case 0xc5: x86emuOp_lds_R_IMM(op1); break;
+case 0xc6: x86emuOp_mov_byte_RM_IMM(op1); break;
+case 0xc7: x86emuOp_mov_word_RM_IMM(op1); break;
+case 0xc8: x86emuOp_enter(op1); break;
+case 0xc9: x86emuOp_leave(op1); break;
+case 0xca: x86emuOp_ret_far_IMM(op1); break;
+case 0xcb: x86emuOp_ret_far(op1); break;
+case 0xcc: x86emuOp_int3(op1); break;
+case 0xcd: x86emuOp_int_IMM(op1); break;
+case 0xce: x86emuOp_into(op1); break;
+case 0xcf: x86emuOp_iret(op1); break;
+
+case 0xd0: x86emuOp_opcD0_byte_RM_1(op1); break;
+case 0xd1: x86emuOp_opcD1_word_RM_1(op1); break;
+case 0xd2: x86emuOp_opcD2_byte_RM_CL(op1); break;
+case 0xd3: x86emuOp_opcD3_word_RM_CL(op1); break;
+case 0xd4: x86emuOp_aam(op1); break;
+case 0xd5: x86emuOp_aad(op1); break;
+case 0xd6: x86emuOp_illegal_op   /* Undocumented SETALC instruction */(op1); break;
+case 0xd7: x86emuOp_xlat(op1); break;
+case 0xd8: x86emuOp_esc_coprocess_d8(op1); break;
+case 0xd9: x86emuOp_esc_coprocess_d9(op1); break;
+case 0xda: x86emuOp_esc_coprocess_da(op1); break;
+case 0xdb: x86emuOp_esc_coprocess_db(op1); break;
+case 0xdc: x86emuOp_esc_coprocess_dc(op1); break;
+case 0xdd: x86emuOp_esc_coprocess_dd(op1); break;
+case 0xde: x86emuOp_esc_coprocess_de(op1); break;
+case 0xdf: x86emuOp_esc_coprocess_df(op1); break;
+
+case 0xe0: x86emuOp_loopne(op1); break;
+case 0xe1: x86emuOp_loope(op1); break;
+case 0xe2: x86emuOp_loop(op1); break;
+case 0xe3: x86emuOp_jcxz(op1); break;
+case 0xe4: x86emuOp_in_byte_AL_IMM(op1); break;
+case 0xe5: x86emuOp_in_word_AX_IMM(op1); break;
+case 0xe6: x86emuOp_out_byte_IMM_AL(op1); break;
+case 0xe7: x86emuOp_out_word_IMM_AX(op1); break;
+
+case 0xe8: x86emuOp_call_near_IMM(op1); break;
+case 0xe9: x86emuOp_jump_near_IMM(op1); break;
+case 0xea: x86emuOp_jump_far_IMM(op1); break;
+case 0xeb: x86emuOp_jump_byte_IMM(op1); break;
+case 0xec: x86emuOp_in_byte_AL_DX(op1); break;
+case 0xed: x86emuOp_in_word_AX_DX(op1); break;
+case 0xee: x86emuOp_out_byte_DX_AL(op1); break;
+case 0xef: x86emuOp_out_word_DX_AX(op1); break;
+
+case 0xf0: x86emuOp_lock(op1); break;
+case 0xf1: x86emuOp_illegal_op(op1); break;
+case 0xf2: x86emuOp_repne(op1); break;
+case 0xf3: x86emuOp_repe(op1); break;
+case 0xf4: x86emuOp_halt(op1); break;
+case 0xf5: x86emuOp_cmc(op1); break;
+case 0xf6: x86emuOp_opcF6_byte_RM(op1); break;
+case 0xf7: x86emuOp_opcF7_word_RM(op1); break;
+
+case 0xf8: x86emuOp_clc(op1); break;
+case 0xf9: x86emuOp_stc(op1); break;
+case 0xfa: x86emuOp_cli(op1); break;
+case 0xfb: x86emuOp_sti(op1); break;
+case 0xfc: x86emuOp_cld(op1); break;
+case 0xfd: x86emuOp_std(op1); break;
+case 0xfe: x86emuOp_opcFE_byte_RM(op1); break;
+case 0xff: x86emuOp_opcFF_word_RM(op1); break;
+	}
+}
+

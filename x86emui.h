@@ -50,8 +50,9 @@
 
 /* Get rid of unused parameters in C++ compilation mode */
 
-#define	X86EMU_UNUSED(v)
+#define	X86EMU_UNUSED(v) _
 
+#include <stdio.h>
 #include "x86emu.h"
 #include "regs.h"
 #include "debug.h"

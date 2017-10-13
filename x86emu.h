@@ -42,7 +42,6 @@
 #define __X86EMU_X86EMU_H
 
 #include <stddef.h>
-#include <console/console.h>
 
 #include "types.h"
 #define	X86API

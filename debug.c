@@ -41,8 +41,6 @@
 
 /*----------------------------- Implementation ----------------------------*/
 
-#ifdef DEBUG
-
 static void     print_encoded_bytes (u16 s, u16 o);
 static void     print_decoded_instruction (void);
 int      parse_line (char *s, int *ps, int *n);
@@ -358,8 +356,6 @@ int parse_line (char *s, int *ps, int *n)
     return 0;
 #endif
 }
-
-#endif /* DEBUG */
 
 void x86emu_dump_regs (void)
 {

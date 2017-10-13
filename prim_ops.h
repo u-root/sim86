@@ -39,7 +39,7 @@
 #ifndef __X86EMU_PRIM_OPS_H
 #define __X86EMU_PRIM_OPS_H
 
-#include "prim_asm.h"
+//#include "prim_asm.h"
 
 
 u16     aaa_word (u16 d);

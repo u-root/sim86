@@ -41,9 +41,6 @@
 
 /*---------------------- Macros and type definitions ----------------------*/
 
-/* printf is not available in coreboot... use printk */
-#define printf(x...) printk(BIOS_DEBUG, x)
-
 /* checks to be enabled for "runtime" */
 
 #define CHECK_IP_FETCH_F                0x1
@@ -77,10 +74,9 @@
 # define DEBUG_IO_TRACE()      	(M.x86.debug & DEBUG_IO_TRACE_F)
 # define DEBUG_DECODE_NOPRINT() (M.x86.debug & DEBUG_DECODE_NOPRINT_F)
 
-# define DECODE_PRINTF(x)     	if (DEBUG_DECODE()) \
-									x86emu_decode_printf(x)
-# define DECODE_PRINTF2(x,y)  	if (DEBUG_DECODE()) \
-									x86emu_decode_printf2(x,y)
+// were these removed at some point? I thought they used to be there. Damn.
+# define DECODE_PRINTF(x)     	if (DEBUG_DECODE()) 
+# define DECODE_PRINTF2(x,y)  	if (DEBUG_DECODE()) 
 
 /*
  * The following allow us to look at the bytes of an instruction.  The
