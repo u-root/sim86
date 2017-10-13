@@ -3608,7 +3608,7 @@ static void x86emuOp_int3(u8 op1)
     /* access the segment register */
     TRACE_AND_STEP();
 	if (_X86EMU_intrTab[3]) {
-		(*_X86EMU_intrTab[3])(3);
+		panic("Can't handle interrupt %p\n", _X86EMU_intrTab[3]); // (3));
     } else {
         push_word((u16)M.x86.R_FLG);
         CLEAR_FLAG(F_IF);
@@ -3638,7 +3638,7 @@ static void x86emuOp_int_IMM(u8 op1)
     tmp = mem_access_word(intnum * 4 + 2);
     TRACE_AND_STEP();
 	if (_X86EMU_intrTab[intnum]) {
-		(*_X86EMU_intrTab[intnum])(intnum);
+		printf("Can't handle %p intnum %d arg %d\n", &_X86EMU_intrTab[intnum], intnum, intnum);
     } else {
         push_word((u16)M.x86.R_FLG);
         CLEAR_FLAG(F_IF);
@@ -3666,7 +3666,7 @@ static void x86emuOp_into(u8 op1)
     if (ACCESS_FLAG(F_OF)) {
         tmp = mem_access_word(4 * 4 + 2);
 		if (_X86EMU_intrTab[4]) {
-			(*_X86EMU_intrTab[4])(4);
+			printf("INTR %d \n", 4); //(*_X86EMU_intrTab[4])(4);
         } else {
             push_word((u16)M.x86.R_FLG);
             CLEAR_FLAG(F_IF);

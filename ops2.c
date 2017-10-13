@@ -1281,7 +1281,7 @@ static void x86emuOp2_movzx_word_R_RM(u8 X86EMU_UNUSED(op2))
 REMARKS:
 Handles opcode 0x0f,0xba
 ****************************************************************************/
-static void x86emuOp2_btX_I(u8 X86EMU_UNUSED(op2))
+static void x86emuOp2_btX_I(u8 op2)
 {
     int mod, rl, rh;
     uint srcoffset;

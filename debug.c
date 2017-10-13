@@ -130,7 +130,7 @@ void disassemble_forward (u16 seg, u16 off, int n)
      */
     for (i=0; i<n; i++) {
         op1 = (*sys_rdb)(((u32)M.x86.R_CS<<4) + (M.x86.R_IP++));
-        (x86emu_optab[op1])(op1);
+        x86_byte_dispatch(op1);
     }
     /* end major hack mode. */
 }

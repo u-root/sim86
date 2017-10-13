@@ -52,7 +52,7 @@ static void x86emu_intr_handle(void)
     if (M.x86.intr & INTR_SYNCH) {
         intno = M.x86.intno;
         if (_X86EMU_intrTab[intno]) {
-            (*_X86EMU_intrTab[intno])(intno);
+		printf("intr %d\n", intno);
         } else {
             push_word((u16)M.x86.R_FLG);
             CLEAR_FLAG(F_IF);
@@ -120,7 +120,7 @@ DB(             if (M.x86.R_SP != 0) {
             }
         }
         op1 = (*sys_rdb)(((u32)M.x86.R_CS << 4) + (M.x86.R_IP++));
-        (*x86emu_optab[op1])(op1);
+	x86_byte_dispatch(op1);
         //if (M.x86.debug & DEBUG_EXIT) {
         //    M.x86.debug &= ~DEBUG_EXIT;
         //    return;
