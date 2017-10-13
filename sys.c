@@ -40,18 +40,12 @@
 *
 ****************************************************************************/
 
-#include <arch/io.h>
-#include <x86emu/x86emu.h>
-#include <x86emu/regs.h>
-#include <device/oprom/include/io.h>
+#include "x86emu.h"
+#include "regs.h"
 #include "debug.h"
 #include "prim_ops.h"
 
-#ifdef IN_MODULE
-#include "xf86_ansic.h"
-#else
-#include <string.h>
-#endif
+#include "string.h"
 /*------------------------- Global Variables ------------------------------*/
 
 X86EMU_sysEnv _X86EMU_env;	/* Global emulator machine state */

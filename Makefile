@@ -1,0 +1,7 @@
+all:
+	c2go transpile sys.c
+	c2go transpile ops.c
+	c2go transpile ops2.c
+	c2go transpile debug.c
+	c2go transpile decode.c
+	c2go transpile prim_ops.c
