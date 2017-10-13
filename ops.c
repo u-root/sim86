@@ -82,87 +82,101 @@ static const char *x86emu_GenOpName[8] = {
 #endif
 
 /* used by several opcodes  */
-static u8 (*genop_byte_operation[])(u8 d, u8 s) =
+static u8 genop_byte_operation(u8 op, u8 d, u8 s) =
 {
-    add_byte,           /* 00 */
-    or_byte,            /* 01 */
-    adc_byte,           /* 02 */
-    sbb_byte,           /* 03 */
-    and_byte,           /* 04 */
-    sub_byte,           /* 05 */
-    xor_byte,           /* 06 */
-    cmp_byte,           /* 07 */
+	switch(op) {
+case 0x00: add_byte(d, s); break;
+case 0x01: or_byte(d, s); break;
+case 0x02: adc_byte(d, s); break;
+case 0x03: sbb_byte(d, s); break;
+case 0x04: and_byte(d, s); break;
+case 0x05: sub_byte(d, s); break;
+case 0x06: xor_byte(d, s); break;
+case 0x07: cmp_byte(d, s); break;
+default: panic("%s 0x%x\n", __func__, op);
+	}
 };
 
-static u16 (*genop_word_operation[])(u16 d, u16 s) =
+static u16 genop_word_operation(u8 op, u16 d, u16 s) =
 {
-    add_word,           /*00 */
-    or_word,            /*01 */
-    adc_word,           /*02 */
-    sbb_word,           /*03 */
-    and_word,           /*04 */
-    sub_word,           /*05 */
-    xor_word,           /*06 */
-    cmp_word,           /*07 */
+case 0x00: add_word(d, s); break;
+case 0x01: or_word(d, s); break;
+case 0x02: adc_word(d, s); break;
+case 0x03: sbb_word(d, s); break;
+case 0x04: and_word(d, s); break;
+case 0x05: sub_word(d, s); break;
+case 0x06: xor_word(d, s); break;
+case 0x07: cmp_word(d, s); break;
+default: panic("%s 0x%x\n", __func__, op);
+	}
 };
 
-static u32 (*genop_long_operation[])(u32 d, u32 s) =
+static u32 genop_long_operation(u8 op, u32 d, u32 s) =
 {
-    add_long,           /*00 */
-    or_long,            /*01 */
-    adc_long,           /*02 */
-    sbb_long,           /*03 */
-    and_long,           /*04 */
-    sub_long,           /*05 */
-    xor_long,           /*06 */
-    cmp_long,           /*07 */
+	switch(op) {
+case 0x00: add_long(d, s); break;
+case 0x01: or_long(d, s); break;
+case 0x02: adc_long(d, s); break;
+case 0x03: sbb_long(d, s); break;
+case 0x04: and_long(d, s); break;
+case 0x05: sub_long(d, s); break;
+case 0x06: xor_long(d, s); break;
+case 0x07: cmp_long(d, s); break;
+default: panic("%s 0x%x\n", __func__, op);
+	}
 };
 
-/* used by opcodes 80, c0, d0, and d2. */
-static u8(*opcD0_byte_operation[])(u8 d, u8 s) =
+/*used by opcodes 80, c0, d0, and d2.
+static u8opcD0_byte_operation(u8 op, u8 d, u8 s) =
 {
-    rol_byte,
-    ror_byte,
-    rcl_byte,
-    rcr_byte,
-    shl_byte,
-    shr_byte,
-    shl_byte,           /* sal_byte === shl_byte  by definition */
-    sar_byte,
+switch(op) {
+case 1: rol_byte(op, s, d); break;
+case 2: ror_byte(op, s, d); break;
+case 3: rcl_byte(op, s, d); break;
+case 4: rcr_byte(op, s, d); break;
+case 5: shl_byte(op, s, d); break;
+case 6: shr_byte(op, s, d); break;
+case 7: shl_byte(op, s, d); break;
+case 8: sar_byte(op, s, d); break;
+default: panic("%s 0x%x\n", __func__, op);
+	}
 };
 
-/* used by opcodes c1, d1, and d3. */
-static u16(*opcD1_word_operation[])(u16 s, u8 d) =
+/*used by opcodes c1, d1, and d3.
+static u16opcD1_word_operation(u8 op, u16 s, u8 d) =
 {
-    rol_word,
-    ror_word,
-    rcl_word,
-    rcr_word,
-    shl_word,
-    shr_word,
-    shl_word,           /* sal_byte === shl_byte  by definition */
-    sar_word,
+switch(op) {
+case 1: rol_word(op, s, d); break;
+case 2: ror_word(op, s, d); break;
+case 3: rcl_word(op, s, d); break;
+case 4: rcr_word(op, s, d); break;
+case 5: shl_word(op, s, d); break;
+case 6: shr_word(op, s, d); break;
+case 7:	shl_long(op, s, d); break;
+case 8: sar_word(op, s, d); break;
+default: panic("%s 0x%x\n", __func__, op);
+	}
 };
 
-/* used by opcodes c1, d1, and d3. */
-static u32 (*opcD1_long_operation[])(u32 s, u8 d) =
+/*used by opcodes c1, d1, and d3.
+static u32 opcD1_long_operation(u8 op, u32 s, u8 d) =
 {
-    rol_long,
-    ror_long,
-    rcl_long,
-    rcr_long,
-    shl_long,
-    shr_long,
-    shl_long,           /* sal_byte === shl_byte  by definition */
-    sar_long,
+switch(op) {
+case 1: rol_long(op, s, d); break;
+case 2: ror_long(op, s, d); break;
+case 3: rcl_long(op, s, d); break;
+case 4: rcr_long(op, s, d); break;
+case 5: shl_long(op, s, d); break;
+case 6: shr_long(op, s, d); break;
+case 7:	shl_long(op, s, d); break;
+case 8: sar_long(op, s, d); break;
+default: panic("%s 0x%x\n", __func__, op);
+	}
 };
-
-#ifdef DEBUG
 
 static const char *opF6_names[8] =
   { "TEST\t", "", "NOT\t", "NEG\t", "MUL\t", "IMUL\t", "DIV\t", "IDIV\t" };
 
-#endif
 
 /****************************************************************************
 PARAMETERS:
