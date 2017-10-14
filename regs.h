@@ -49,80 +49,6 @@
  * in the registers.
  */
 
-struct i386_general_regs {
-	u32 A, B, C, D;
-	};
-
-typedef struct i386_general_regs Gen_reg_t;
-
-struct i386_special_regs {
-	u32 SP, BP, SI, DI, IP;
-	u32 FLAGS;
-	};
-
-/*
- * Segment registers here represent the 16 bit quantities
- * CS, DS, ES, SS.
- */
-
-struct i386_segment_regs {
-	u16 CS, DS, SS, ES, FS, GS;
-	};
-
-/* 8 bit registers */
-#define R_AH  (u8)(gen.A>>8)
-#define R_AL  (u8)gen.A
-#define R_BH  (u8)(gen.B>>8)
-#define R_BL  (u8)gen.B
-#define R_CH  (u8)(gen.C>>8)
-#define R_CL  (u8)gen.C
-#define R_DH  (u8)(gen.D>>8)
-#define R_DL  (u8)gen.D
-
-/* 16 bit registers */
-#define R_AX (u16) gen.A
-#define R_BX (u16) gen.B
-#define R_CX (u16) gen.C
-#define R_DX (u16) gen.D
-
-/* 32 bit extended registers */
-#define R_EAX  (u32)gen.A
-#define R_EBX  (u32)gen.B
-#define R_ECX  (u32)gen.C
-#define R_EDX  (u32)gen.D
-
-/* special registers */
-#define R_SP  (u16)spc.SP
-#define R_BP  (u16)spc.BP
-#define R_SI  (u16)spc.SI
-#define R_DI  (u16)spc.DI
-#define R_IP  (u16)spc.IP
-#define R_FLG spc.FLAGS
-
-/* special registers */
-#define R_SP  (u16)spc.SP
-#define R_BP  (u16)spc.BP
-#define R_SI  (u16)spc.SI
-#define R_DI  (u16)spc.DI
-#define R_IP  (u16)spc.IP
-#define R_FLG spc.FLAGS
-
-/* special registers */
-#define R_ESP  (u32)spc.SP
-#define R_EBP  (u32)spc.BP
-#define R_ESI  (u32)spc.SI
-#define R_EDI  (u32)spc.DI
-#define R_EIP  (u32)spc.IP
-#define R_EFLG spc.FLAGS
-
-/* segment registers */
-#define R_CS  seg.CS
-#define R_DS  seg.DS
-#define R_SS  seg.SS
-#define R_ES  seg.ES
-#define R_FS  seg.FS
-#define R_GS  seg.GS
-
 /* flag conditions   */
 #define FB_CF 0x0001            /* CARRY flag  */
 #define FB_PF 0x0004            /* PARITY flag */
@@ -214,36 +140,6 @@ struct i386_segment_regs {
 #define  INTR_ASYNCH          0x2
 #define  INTR_HALTED          0x4
 
-typedef struct {
-	struct i386_general_regs    gen;
-	struct i386_special_regs    spc;
-	struct i386_segment_regs    seg;
-	/*
-	 * MODE contains information on:
-	 *  REPE prefix             2 bits  repe,repne
-	 *  SEGMENT overrides       5 bits  normal,DS,SS,CS,ES
-	 *  Delayed flag set        3 bits  (zero, signed, parity)
-	 *  reserved                6 bits
-	 *  interrupt #             8 bits  instruction raised interrupt
-	 *  BIOS video segregs      4 bits
-	 *  Interrupt Pending       1 bits
-	 *  Extern interrupt        1 bits
-	 *  Halted                  1 bits
-	 */
-	u32                         mode;
-	volatile int                intr;   /* mask of pending interrupts */
-	volatile int                         debug;
-	int                         check;
-	u16                         saved_ip;
-	u16                         saved_cs;
-	int                         enc_pos;
-	int                         enc_str_pos;
-	char                        decode_buf[32]; /* encoded byte stream  */
-	char                        decoded_buf[256]; /* disassembled strings */
-	u8                          intno;
-	u8                          __pad[3];
-	} X86EMU_regs;
-
 /****************************************************************************
 REMARKS:
 Structure maintaining the emulator machine state.
@@ -260,7 +156,34 @@ typedef struct {
 	unsigned long	mem_size;
 	unsigned long	abseg;
 	void*        	private;
-	X86EMU_regs		x86;
+	/*
+	 * MODE contains information on:
+	 *  REPE prefix             2 bits  repe,repne
+	 *  SEGMENT overrides       5 bits  normal,DS,SS,CS,ES
+	 *  Delayed flag set        3 bits  (zero, signed, parity)
+	 *  reserved                6 bits
+	 *  interrupt #             8 bits  instruction raised interrupt
+	 *  BIOS video segregs      4 bits
+	 *  Interrupt Pending       1 bits
+	 *  Extern interrupt        1 bits
+	 *  Halted                  1 bits
+	 */
+	u32                         mode;
+	volatile int                intr;   /* mask of pending interrupts */
+	volatile int                         debug;
+	u32 A, B, C, D;
+		u32 SP, BP, SI, DI, IP;
+	u32 FLAGS;
+	u16 CS, DS, SS, ES, FS, GS;
+	int                         check;
+	u16                         saved_ip;
+	u16                         saved_cs;
+	int                         enc_pos;
+	int                         enc_str_pos;
+	char                        decode_buf[32]; /* encoded byte stream  */
+	char                        decoded_buf[256]; /* disassembled strings */
+	u8                          intno;
+	u8                          __pad[3];
 	} X86EMU_sysEnv;
 
 #pragma pack()

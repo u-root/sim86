@@ -52,7 +52,6 @@
 
 #define	X86EMU_UNUSED(v) _
 
-#include <stdio.h>
 #include "x86emu.h"
 #include "regs.h"
 #include "debug.h"
@@ -60,7 +59,6 @@
 #include "ops.h"
 #include "prim_ops.h"
 
-#include <string.h>
 /*--------------------------- Inline Functions ----------------------------*/
 
 extern u8  	(X86APIP sys_rdb)(u32 addr);
@@ -106,4 +104,5 @@ void panic(char *, ...);
        void outsl(unsigned short int port, const void *addr,
                   unsigned long int count);
 
+void ClearFlag(int);
 #endif

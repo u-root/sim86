@@ -40,12 +40,11 @@
 *
 ****************************************************************************/
 
-#include <stdio.h>
 #include "x86emui.h"
 /*------------------------- Global Variables ------------------------------*/
 
 X86EMU_sysEnv _X86EMU_env;	/* Global emulator machine state */
-X86EMU_intrFuncs _X86EMU_intrTab[256];
+//X86EMU_intrFuncs _X86EMU_intrTab[256];
 
 /*----------------------------- Implementation ----------------------------*/
 
@@ -298,7 +297,6 @@ are not hooked by the user application, and reflected and handled internally
 in the emulator via the interrupt vector table. This allows the application
 to get control when the code being emulated executes specific software
 interrupts.
-****************************************************************************/
 void X86EMU_setupIntrFuncs(X86EMU_intrFuncs funcs[])
 {
 	int i;
@@ -310,6 +308,7 @@ void X86EMU_setupIntrFuncs(X86EMU_intrFuncs funcs[])
 			_X86EMU_intrTab[i] = funcs[i];
 	}
 }
+****************************************************************************/
 
 /****************************************************************************
 PARAMETERS:
@@ -325,14 +324,14 @@ hook and handle certain software interrupts as necessary.
 ****************************************************************************/
 void X86EMU_prepareForInt(int num)
 {
-	push_word((u16) M.x86.R_FLG);
-	CLEAR_FLAG(F_IF);
-	CLEAR_FLAG(F_TF);
-	push_word(M.x86.R_CS);
-	M.x86.R_CS = mem_access_word(num * 4 + 2);
-	push_word((u16)M.x86.spc.IP);
-	M.x86.spc.IP = mem_access_word(num * 4);
-	M.x86.intr = 0;
+	push_word((u16) M.FLAGS);
+	ClearFlag(F_IF);
+	ClearFlag(F_TF);
+	push_word(M.CS);
+	M.CS = mem_access_word(num * 4 + 2);
+	push_word((u16)M.IP);
+	M.IP = mem_access_word(num * 4);
+	M.intr = 0;
 }
 
 void X86EMU_setMemBase(void *base, size_t size)
