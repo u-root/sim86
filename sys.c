@@ -40,12 +40,8 @@
 *
 ****************************************************************************/
 
-#include "x86emu.h"
-#include "regs.h"
-#include "debug.h"
-#include "prim_ops.h"
-
-#include "string.h"
+#include <stdio.h>
+#include "x86emui.h"
 /*------------------------- Global Variables ------------------------------*/
 
 X86EMU_sysEnv _X86EMU_env;	/* Global emulator machine state */
@@ -289,60 +285,6 @@ static void X86API p_outl(X86EMU_pioAddr addr, u32 val)
 	return;
 }
 
-/*------------------------- Global Variables ------------------------------*/
-
-u8(X86APIP sys_rdb) (u32 addr) = rdb;
-u16(X86APIP sys_rdw) (u32 addr) = rdw;
-u32(X86APIP sys_rdl) (u32 addr) = rdl;
-void (X86APIP sys_wrb) (u32 addr, u8 val) = wrb;
-void (X86APIP sys_wrw) (u32 addr, u16 val) = wrw;
-void (X86APIP sys_wrl) (u32 addr, u32 val) = wrl;
-u8(X86APIP sys_inb) (X86EMU_pioAddr addr) = p_inb;
-u16(X86APIP sys_inw) (X86EMU_pioAddr addr) = p_inw;
-u32(X86APIP sys_inl) (X86EMU_pioAddr addr) = p_inl;
-void (X86APIP sys_outb) (X86EMU_pioAddr addr, u8 val) = p_outb;
-void (X86APIP sys_outw) (X86EMU_pioAddr addr, u16 val) = p_outw;
-void (X86APIP sys_outl) (X86EMU_pioAddr addr, u32 val) = p_outl;
-
-/*----------------------------- Setup -------------------------------------*/
-
-/****************************************************************************
-PARAMETERS:
-funcs	- New memory function pointers to make active
-
-REMARKS:
-This function is used to set the pointers to functions which access
-memory space, allowing the user application to override these functions
-and hook them out as necessary for their application.
-****************************************************************************/
-void X86EMU_setupMemFuncs(X86EMU_memFuncs * funcs)
-{
-	sys_rdb = funcs->rdb;
-	sys_rdw = funcs->rdw;
-	sys_rdl = funcs->rdl;
-	sys_wrb = funcs->wrb;
-	sys_wrw = funcs->wrw;
-	sys_wrl = funcs->wrl;
-}
-
-/****************************************************************************
-PARAMETERS:
-funcs	- New programmed I/O function pointers to make active
-
-REMARKS:
-This function is used to set the pointers to functions which access
-I/O space, allowing the user application to override these functions
-and hook them out as necessary for their application.
-****************************************************************************/
-void X86EMU_setupPioFuncs(X86EMU_pioFuncs * funcs)
-{
-	sys_inb = funcs->inb;
-	sys_inw = funcs->inw;
-	sys_inl = funcs->inl;
-	sys_outb = funcs->outb;
-	sys_outw = funcs->outw;
-	sys_outl = funcs->outl;
-}
 
 /****************************************************************************
 PARAMETERS:
@@ -388,8 +330,8 @@ void X86EMU_prepareForInt(int num)
 	CLEAR_FLAG(F_TF);
 	push_word(M.x86.R_CS);
 	M.x86.R_CS = mem_access_word(num * 4 + 2);
-	push_word(M.x86.R_IP);
-	M.x86.R_IP = mem_access_word(num * 4);
+	push_word((u16)M.x86.spc.IP);
+	M.x86.spc.IP = mem_access_word(num * 4);
 	M.x86.intr = 0;
 }
 

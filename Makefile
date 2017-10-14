@@ -1,5 +1,6 @@
 all:
 	c2go transpile sys.c
+	go build sys.go
 	c2go transpile ops.c
 	c2go transpile ops2.c
 	c2go transpile debug.c

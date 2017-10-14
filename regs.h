@@ -49,32 +49,14 @@
  * in the registers.
  */
 
-typedef struct {
-	u32 e_reg;
-	} I32_reg_t;
-
-typedef struct {
-	u16 x_reg;
-	} I16_reg_t;
-
-typedef struct {
-	u8 l_reg, h_reg;
-	} I8_reg_t;
-
-typedef union {
-	I32_reg_t   I32_reg;
-	I16_reg_t   I16_reg;
-	I8_reg_t    I8_reg;
-	} i386_general_register;
-
 struct i386_general_regs {
-	i386_general_register A, B, C, D;
+	u32 A, B, C, D;
 	};
 
 typedef struct i386_general_regs Gen_reg_t;
 
 struct i386_special_regs {
-	i386_general_register SP, BP, SI, DI, IP;
+	u32 SP, BP, SI, DI, IP;
 	u32 FLAGS;
 	};
 
@@ -88,49 +70,49 @@ struct i386_segment_regs {
 	};
 
 /* 8 bit registers */
-#define R_AH  gen.A.I8_reg.h_reg
-#define R_AL  gen.A.I8_reg.l_reg
-#define R_BH  gen.B.I8_reg.h_reg
-#define R_BL  gen.B.I8_reg.l_reg
-#define R_CH  gen.C.I8_reg.h_reg
-#define R_CL  gen.C.I8_reg.l_reg
-#define R_DH  gen.D.I8_reg.h_reg
-#define R_DL  gen.D.I8_reg.l_reg
+#define R_AH  (u8)(gen.A>>8)
+#define R_AL  (u8)gen.A
+#define R_BH  (u8)(gen.B>>8)
+#define R_BL  (u8)gen.B
+#define R_CH  (u8)(gen.C>>8)
+#define R_CL  (u8)gen.C
+#define R_DH  (u8)(gen.D>>8)
+#define R_DL  (u8)gen.D
 
 /* 16 bit registers */
-#define R_AX  gen.A.I16_reg.x_reg
-#define R_BX  gen.B.I16_reg.x_reg
-#define R_CX  gen.C.I16_reg.x_reg
-#define R_DX  gen.D.I16_reg.x_reg
+#define R_AX (u16) gen.A
+#define R_BX (u16) gen.B
+#define R_CX (u16) gen.C
+#define R_DX (u16) gen.D
 
 /* 32 bit extended registers */
-#define R_EAX  gen.A.I32_reg.e_reg
-#define R_EBX  gen.B.I32_reg.e_reg
-#define R_ECX  gen.C.I32_reg.e_reg
-#define R_EDX  gen.D.I32_reg.e_reg
+#define R_EAX  (u32)gen.A
+#define R_EBX  (u32)gen.B
+#define R_ECX  (u32)gen.C
+#define R_EDX  (u32)gen.D
 
 /* special registers */
-#define R_SP  spc.SP.I16_reg.x_reg
-#define R_BP  spc.BP.I16_reg.x_reg
-#define R_SI  spc.SI.I16_reg.x_reg
-#define R_DI  spc.DI.I16_reg.x_reg
-#define R_IP  spc.IP.I16_reg.x_reg
+#define R_SP  (u16)spc.SP
+#define R_BP  (u16)spc.BP
+#define R_SI  (u16)spc.SI
+#define R_DI  (u16)spc.DI
+#define R_IP  (u16)spc.IP
 #define R_FLG spc.FLAGS
 
 /* special registers */
-#define R_SP  spc.SP.I16_reg.x_reg
-#define R_BP  spc.BP.I16_reg.x_reg
-#define R_SI  spc.SI.I16_reg.x_reg
-#define R_DI  spc.DI.I16_reg.x_reg
-#define R_IP  spc.IP.I16_reg.x_reg
+#define R_SP  (u16)spc.SP
+#define R_BP  (u16)spc.BP
+#define R_SI  (u16)spc.SI
+#define R_DI  (u16)spc.DI
+#define R_IP  (u16)spc.IP
 #define R_FLG spc.FLAGS
 
 /* special registers */
-#define R_ESP  spc.SP.I32_reg.e_reg
-#define R_EBP  spc.BP.I32_reg.e_reg
-#define R_ESI  spc.SI.I32_reg.e_reg
-#define R_EDI  spc.DI.I32_reg.e_reg
-#define R_EIP  spc.IP.I32_reg.e_reg
+#define R_ESP  (u32)spc.SP
+#define R_EBP  (u32)spc.BP
+#define R_ESI  (u32)spc.SI
+#define R_EDI  (u32)spc.DI
+#define R_EIP  (u32)spc.IP
 #define R_EFLG spc.FLAGS
 
 /* segment registers */
