@@ -54,7 +54,7 @@ static void x86emuOp2_illegal_op(u8 op2)
     START_OF_INSTR();
     DECODE_PRINTF("ILLEGAL EXTENDED X86 OPCODE\n");
     TRACE_REGS();
-    printf("%04x:%04x: %02X ILLEGAL EXTENDED X86 OPCODE!\n",
+    loggy("%04x:%04x: %02X ILLEGAL EXTENDED X86 OPCODE!\n",
         M.x86.R_CS, M.x86.R_IP-2, op2);
     HALT_SYS();
     END_OF_INSTR();
@@ -105,7 +105,7 @@ static void x86emuOp2_opc_01(u8 op2)
   default:
     DECODE_PRINTF("ILLEGAL EXTENDED X86 OPCODE IN 0F 01\n");
     TRACE_REGS();
-    printf("%04x:%04x: %02X ILLEGAL EXTENDED X86 OPCODE!\n",
+    loggy("%04x:%04x: %02X ILLEGAL EXTENDED X86 OPCODE!\n",
         M.x86.R_CS, M.x86.R_IP-2, op2);
     HALT_SYS();
     break;
@@ -1306,7 +1306,7 @@ static void x86emuOp2_btX_I(u8 op2)
     default:
         DECODE_PRINTF("ILLEGAL EXTENDED X86 OPCODE\n");
         TRACE_REGS();
-        printf("%04x:%04x: %02X%02X ILLEGAL EXTENDED X86 OPCODE EXTENSION!\n",
+        loggy("%04x:%04x: %02X%02X ILLEGAL EXTENDED X86 OPCODE EXTENSION!\n",
                 M.x86.R_CS, M.x86.R_IP-3,op2, (mod<<6)|(rh<<3)|rl);
         HALT_SYS();
     }

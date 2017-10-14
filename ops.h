@@ -39,9 +39,6 @@
 #ifndef __X86EMU_OPS_H
 #define __X86EMU_OPS_H
 
-extern void (*x86emu_optab[0x100])(u8 op1);
-extern void (*x86emu_optab2[0x100])(u8 op2);
-
 void x86_byte_dispatch(u8 op1);
 void x86_op2_dispatch(u8 op, u8 op1);
 

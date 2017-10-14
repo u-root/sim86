@@ -54,11 +54,11 @@ static u8 *mem_ptr(u32 addr, int size)
 	u8 *retaddr = 0;
 
 	if (addr > M.mem_size - size) {
-		DB(printf("mem_ptr: address %#x out of range!\n", addr);)
+		DB(loggy("mem_ptr: address %#x out of range!\n", addr);)
 		    HALT_SYS();
 	}
 	if (addr < 0x200) {
-		//printf("%x:%x updating int vector 0x%x\n",
+		//loggy("%x:%x updating int vector 0x%x\n",
 		//       M.x86.R_CS, M.x86.R_IP, addr >> 2);
 	}
 	retaddr = (u8 *) (M.mem_base + addr);
@@ -66,6 +66,7 @@ static u8 *mem_ptr(u32 addr, int size)
 	return retaddr;
 }
 
+#if 0
 /****************************************************************************
 PARAMETERS:
 addr	- Emulator memory address to read
@@ -85,7 +86,7 @@ u8 X86API rdb(u32 addr)
 
 	val = *ptr;
 	DB(if (DEBUG_MEM_TRACE())
-	   printf("%#08x 1 -> %#x\n", addr, val);)
+	   loggy("%#08x 1 -> %#x\n", addr, val);)
 		return val;
 }
 
@@ -108,7 +109,7 @@ u16 X86API rdw(u32 addr)
 	val = *(u16 *) (ptr);
 
 	DB(if (DEBUG_MEM_TRACE())
-	   printf("%#08x 2 -> %#x\n", addr, val);)
+	   loggy("%#08x 2 -> %#x\n", addr, val);)
 	return val;
 }
 
@@ -130,7 +131,7 @@ u32 X86API rdl(u32 addr)
 	val = *(u32 *) (ptr);
 
 	DB(if (DEBUG_MEM_TRACE())
-	   printf("%#08x 4 -> %#x\n", addr, val);)
+	   loggy("%#08x 4 -> %#x\n", addr, val);)
 	return val;
 }
 
@@ -150,7 +151,7 @@ void X86API wrb(u32 addr, u8 val)
 	*(u8 *) (ptr) = val;
 
 	DB(if (DEBUG_MEM_TRACE())
-	   printf("%#08x 1 <- %#x\n", addr, val);)
+	   loggy("%#08x 1 <- %#x\n", addr, val);)
 }
 
 /****************************************************************************
@@ -169,7 +170,7 @@ void X86API wrw(u32 addr, u16 val)
 	*(u16 *) (ptr) = val;
 
 	DB(if (DEBUG_MEM_TRACE())
-	   printf("%#08x 2 <- %#x\n", addr, val);)
+	   loggy("%#08x 2 <- %#x\n", addr, val);)
 }
 
 /****************************************************************************
@@ -188,7 +189,7 @@ void X86API wrl(u32 addr, u32 val)
 	*(u32 *) (ptr) = val;
 
 	DB(if (DEBUG_MEM_TRACE())
-	   printf("%#08x 4 <- %#x\n", addr, val);)
+	   loggy("%#08x 4 <- %#x\n", addr, val);)
 
 
 }
@@ -204,7 +205,7 @@ Default PIO byte read function. Doesn't perform real inb.
 static u8 X86API p_inb(X86EMU_pioAddr addr)
 {
 	DB(if (DEBUG_IO_TRACE())
-		printf("inb %#04x\n", addr);)
+		loggy("inb %#04x\n", addr);)
 	return inb(addr);
 }
 
@@ -219,7 +220,7 @@ Default PIO word read function. Doesn't perform real inw.
 static u16 X86API p_inw(X86EMU_pioAddr addr)
 {
 	DB(if (DEBUG_IO_TRACE())
-		printf("inw %#04x\n", addr);)
+		loggy("inw %#04x\n", addr);)
 	return inw(addr);
 }
 
@@ -234,7 +235,7 @@ Default PIO long read function. Doesn't perform real inl.
 static u32 X86API p_inl(X86EMU_pioAddr addr)
 {
 	DB(if (DEBUG_IO_TRACE())
-		printf("inl %#04x\n", addr);)
+		loggy("inl %#04x\n", addr);)
 	return inl(addr);
 }
 
@@ -248,7 +249,7 @@ Default PIO byte write function. Doesn't perform real outb.
 static void X86API p_outb(X86EMU_pioAddr addr, u8 val)
 {
 	DB(if (DEBUG_IO_TRACE())
-		printf("outb %#02x -> %#04x\n", val, addr);)
+		loggy("outb %#02x -> %#04x\n", val, addr);)
 	outb(val, addr);
 	return;
 }
@@ -263,7 +264,7 @@ Default PIO word write function. Doesn't perform real outw.
 static void X86API p_outw(X86EMU_pioAddr addr, u16 val)
 {
 	DB(if (DEBUG_IO_TRACE())
-		printf("outw %#04x -> %#04x\n", val, addr);)
+		loggy("outw %#04x -> %#04x\n", val, addr);)
 	outw(val, addr);
 	return;
 }
@@ -278,7 +279,7 @@ Default PIO ;ong write function. Doesn't perform real outl.
 static void X86API p_outl(X86EMU_pioAddr addr, u32 val)
 {
 	DB(if (DEBUG_IO_TRACE())
-	       printf("outl %#08x -> %#04x\n", val, addr);)
+	       loggy("outl %#08x -> %#04x\n", val, addr);)
 
 	outl(val, addr);
 	return;
@@ -334,8 +335,9 @@ void X86EMU_prepareForInt(int num)
 	M.intr = 0;
 }
 
-void X86EMU_setMemBase(void *base, size_t size)
+void X86EMU_setMemBase(void *base, int size)
 {
 	M.mem_base = (unsigned long) base;
 	M.mem_size = size;
 }
+#endif

@@ -52,7 +52,7 @@ static void x86emu_intr_handle(void)
     if (M.x86.intr & INTR_SYNCH) {
         intno = M.x86.intno;
         if (_X86EMU_intrTab[intno]) {
-		printf("intr %d\n", intno);
+		loggy("intr %d\n", intno);
         } else {
             push_word((u16)M.x86.R_FLG);
             CLEAR_FLAG(F_IF);
@@ -77,7 +77,7 @@ next instruction.
 void x86emu_intr_raise(
     u8 intrnum)
 {
-    printf("%s, raising exception %x\n", __func__, intrnum);
+    loggy("%s, raising exception %x\n", __func__, intrnum);
     x86emu_dump_regs();
     M.x86.intno = intrnum;
     M.x86.intr |= INTR_SYNCH;
@@ -105,12 +105,12 @@ DB(     if (CHECK_IP_FETCH())
         if (M.x86.intr) {
             if (M.x86.intr & INTR_HALTED) {
 DB(             if (M.x86.R_SP != 0) {
-                    printf("halted\n");
+                    loggy("halted\n");
                     X86EMU_trace_regs();
                     }
                 else {
                     if (M.x86.debug)
-                        printf("Service completed successfully\n");
+                        loggy("Service completed successfully\n");
                     })
                 return;
             }
@@ -286,7 +286,7 @@ _INLINE u32 get_data_segment(void)
         return  M.x86.R_SS;
       default:
 #ifdef  DEBUG
-        printf("error: should not happen:  multiple overrides.\n");
+        loggy("error: should not happen:  multiple overrides.\n");
 #endif
         HALT_SYS();
         return 0;
