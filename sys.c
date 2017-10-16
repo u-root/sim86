@@ -43,25 +43,24 @@
 #include "x86emui.h"
 /*------------------------- Global Variables ------------------------------*/
 
-X86EMU_sysEnv _X86EMU_env;	/* Global emulator machine state */
 //X86EMU_intrFuncs _X86EMU_intrTab[256];
 
 /*----------------------------- Implementation ----------------------------*/
 
 /* compute a pointer. This replaces code scattered all over the place! */
-static u8 *mem_ptr(u32 addr, int size)
+u8 *mem_ptr(u32 addr, int size)
 {
-	u8 *retaddr = 0;
+	u8 *retaddr;
 
-	if (addr > M.mem_size - size) {
+	if (addr > mem_size - size) {
 		DB(loggy("mem_ptr: address %#x out of range!\n", addr);)
 		    HALT_SYS();
 	}
 	if (addr < 0x200) {
 		//loggy("%x:%x updating int vector 0x%x\n",
-		//       M.x86.R_CS, M.x86.R_IP, addr >> 2);
+		//       x86.R_CS, x86.R_IP, addr >> 2);
 	}
-	retaddr = (u8 *) (M.mem_base + addr);
+	retaddr = (u8 *) &((u8 *)mem_base)[addr];
 
 	return retaddr;
 }
@@ -325,19 +324,19 @@ hook and handle certain software interrupts as necessary.
 ****************************************************************************/
 void X86EMU_prepareForInt(int num)
 {
-	push_word((u16) M.FLAGS);
+	push_word((u16) FLAGS);
 	ClearFlag(F_IF);
 	ClearFlag(F_TF);
-	push_word(M.CS);
-	M.CS = mem_access_word(num * 4 + 2);
-	push_word((u16)M.IP);
-	M.IP = mem_access_word(num * 4);
-	M.intr = 0;
+	push_word(CS);
+	CS = mem_access_word(num * 4 + 2);
+	push_word((u16)IP);
+	IP = mem_access_word(num * 4);
+	intr = 0;
 }
 
 void X86EMU_setMemBase(void *base, int size)
 {
-	M.mem_base = (unsigned long) base;
-	M.mem_size = size;
+	mem_base = (unsigned long) base;
+	mem_size = size;
 }
 #endif

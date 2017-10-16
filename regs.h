@@ -151,7 +151,6 @@ mem_size		- Size of the real mode memory block for the emulator
 private			- private data pointer
 x86			- X86 registers
 ****************************************************************************/
-typedef struct {
 	unsigned long	mem_base;
 	unsigned long	mem_size;
 	unsigned long	abseg;
@@ -184,7 +183,6 @@ typedef struct {
 	char                        decoded_buf[256]; /* disassembled strings */
 	u8                          intno;
 	u8                          __pad[3];
-	} X86EMU_sysEnv;
 
 #pragma pack()
 
@@ -194,9 +192,6 @@ typedef struct {
  *
  * We keep it global to avoid pointer dereferences in the code for speed.
  */
-
-extern    X86EMU_sysEnv	_X86EMU_env;
-#define   M             _X86EMU_env
 
 #define X86_EAX M.x86.R_EAX
 #define X86_EBX M.x86.R_EBX
