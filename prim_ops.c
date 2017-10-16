@@ -1212,7 +1212,7 @@ u8 shl_byte(u8 d, u8 s)
             CONDITIONAL_SET_FLAG(
                                     (((res & 0x80) == 0x80) ^
                                      (ACCESS_FLAG(F_CF) != 0)),
-            /* was (M.x86.R_FLG&F_CF)==F_CF)), */
+            /* was (FLG&F_CF)==F_CF)), */
                                     F_OF);
         } else {
             CLEAR_FLAG(F_OF);
@@ -1881,11 +1881,11 @@ Implements the IMUL instruction and side effects.
 ****************************************************************************/
 void imul_byte(u8 s)
 {
-    s16 res = (s16)((s8)M.x86.R_AL * (s8)s);
+    s16 res = (s16)((s8)AL * (s8)s);
 
-    M.x86.R_AX = res;
-    if (((M.x86.R_AL & 0x80) == 0 && M.x86.R_AH == 0x00) ||
-        ((M.x86.R_AL & 0x80) != 0 && M.x86.R_AH == 0xFF)) {
+    AX = res;
+    if (((AL & 0x80) == 0 && AH == 0x00) ||
+        ((AL & 0x80) != 0 && AH == 0xFF)) {
         CLEAR_FLAG(F_CF);
         CLEAR_FLAG(F_OF);
     } else {
@@ -1900,12 +1900,12 @@ Implements the IMUL instruction and side effects.
 ****************************************************************************/
 void imul_word(u16 s)
 {
-    s32 res = (s16)M.x86.R_AX * (s16)s;
+    s32 res = (s16)AX * (s16)s;
 
-    M.x86.R_AX = (u16)res;
-    M.x86.R_DX = (u16)(res >> 16);
-    if (((M.x86.R_AX & 0x8000) == 0 && M.x86.R_DX == 0x0000) ||
-        ((M.x86.R_AX & 0x8000) != 0 && M.x86.R_DX == 0xFFFF)) {
+    AX = (u16)res;
+    DX = (u16)(res >> 16);
+    if (((AX & 0x8000) == 0 && DX == 0x0000) ||
+        ((AX & 0x8000) != 0 && DX == 0xFFFF)) {
         CLEAR_FLAG(F_CF);
         CLEAR_FLAG(F_OF);
     } else {
@@ -1958,9 +1958,9 @@ Implements the IMUL instruction and side effects.
 ****************************************************************************/
 void imul_long(u32 s)
 {
-    imul_long_direct(&M.x86.R_EAX,&M.x86.R_EDX,M.x86.R_EAX,s);
-    if (((M.x86.R_EAX & 0x80000000) == 0 && M.x86.R_EDX == 0x00000000) ||
-        ((M.x86.R_EAX & 0x80000000) != 0 && M.x86.R_EDX == 0xFFFFFFFF)) {
+    imul_long_direct(&EAX,&EDX,EAX,s);
+    if (((EAX & 0x80000000) == 0 && EDX == 0x00000000) ||
+        ((EAX & 0x80000000) != 0 && EDX == 0xFFFFFFFF)) {
         CLEAR_FLAG(F_CF);
         CLEAR_FLAG(F_OF);
     } else {
@@ -1975,10 +1975,10 @@ Implements the MUL instruction and side effects.
 ****************************************************************************/
 void mul_byte(u8 s)
 {
-    u16 res = (u16)(M.x86.R_AL * s);
+    u16 res = (u16)(AL * s);
 
-    M.x86.R_AX = res;
-    if (M.x86.R_AH == 0) {
+    AX = res;
+    if (AH == 0) {
         CLEAR_FLAG(F_CF);
         CLEAR_FLAG(F_OF);
     } else {
@@ -1993,11 +1993,11 @@ Implements the MUL instruction and side effects.
 ****************************************************************************/
 void mul_word(u16 s)
 {
-    u32 res = M.x86.R_AX * s;
+    u32 res = AX * s;
 
-    M.x86.R_AX = (u16)res;
-    M.x86.R_DX = (u16)(res >> 16);
-    if (M.x86.R_DX == 0) {
+    AX = (u16)res;
+    DX = (u16)(res >> 16);
+    if (DX == 0) {
         CLEAR_FLAG(F_CF);
         CLEAR_FLAG(F_OF);
     } else {
@@ -2013,16 +2013,16 @@ Implements the MUL instruction and side effects.
 void mul_long(u32 s)
 {
 #ifdef  __HAS_LONG_LONG__
-    u64 res = (u64)M.x86.R_EAX * s;
+    u64 res = (u64)EAX * s;
 
-    M.x86.R_EAX = (u32)res;
-    M.x86.R_EDX = (u32)(res >> 32);
+    EAX = (u32)res;
+    EDX = (u32)(res >> 32);
 #else
     u32 a,a_lo,a_hi;
     u32 s_lo,s_hi;
     u32 rlo_lo,rlo_hi,rhi_lo;
 
-    a = M.x86.R_EAX;
+    a = EAX;
     a_lo = a & 0xFFFF;
     a_hi = a >> 16;
     s_lo = s & 0xFFFF;
@@ -2030,10 +2030,10 @@ void mul_long(u32 s)
     rlo_lo = a_lo * s_lo;
     rlo_hi = (a_hi * s_lo + a_lo * s_hi) + (rlo_lo >> 16);
     rhi_lo = a_hi * s_hi + (rlo_hi >> 16);
-    M.x86.R_EAX = (rlo_hi << 16) | (rlo_lo & 0xFFFF);
-    M.x86.R_EDX = rhi_lo;
+    EAX = (rlo_hi << 16) | (rlo_lo & 0xFFFF);
+    EDX = rhi_lo;
 #endif
-    if (M.x86.R_EDX == 0) {
+    if (EDX == 0) {
         CLEAR_FLAG(F_CF);
         CLEAR_FLAG(F_OF);
     } else {
@@ -2050,7 +2050,7 @@ void idiv_byte(u8 s)
 {
     s32 dvd, div, mod;
 
-    dvd = (s16)M.x86.R_AX;
+    dvd = (s16)AX;
     if (s == 0) {
         x86emu_intr_raise(0);
         return;
@@ -2061,8 +2061,8 @@ void idiv_byte(u8 s)
         x86emu_intr_raise(0);
         return;
     }
-    M.x86.R_AL = (s8) div;
-    M.x86.R_AH = (s8) mod;
+    AL = (s8) div;
+    AH = (s8) mod;
 }
 
 /****************************************************************************
@@ -2073,7 +2073,7 @@ void idiv_word(u16 s)
 {
     s32 dvd, div, mod;
 
-    dvd = (((s32)M.x86.R_DX) << 16) | M.x86.R_AX;
+    dvd = (((s32)DX) << 16) | AX;
     if (s == 0) {
         x86emu_intr_raise(0);
         return;
@@ -2089,8 +2089,8 @@ void idiv_word(u16 s)
     CONDITIONAL_SET_FLAG(div == 0, F_ZF);
     set_parity_flag(mod);
 
-    M.x86.R_AX = (u16)div;
-    M.x86.R_DX = (u16)mod;
+    AX = (u16)div;
+    DX = (u16)mod;
 }
 
 /****************************************************************************
@@ -2102,7 +2102,7 @@ void idiv_long(u32 s)
 #ifdef  __HAS_LONG_LONG__
     s64 dvd, div, mod;
 
-    dvd = (((s64)M.x86.R_EDX) << 32) | M.x86.R_EAX;
+    dvd = (((s64)EDX) << 32) | EAX;
     if (s == 0) {
         x86emu_intr_raise(0);
         return;
@@ -2115,8 +2115,8 @@ void idiv_long(u32 s)
     }
 #else
     s32 div = 0, mod;
-    s32 h_dvd = M.x86.R_EDX;
-    u32 l_dvd = M.x86.R_EAX;
+    s32 h_dvd = EDX;
+    u32 l_dvd = EAX;
     u32 abs_s = s & 0x7FFFFFFF;
     u32 abs_h_dvd = h_dvd & 0x7FFFFFFF;
     u32 h_s = abs_s >> 1;
@@ -2163,8 +2163,8 @@ void idiv_long(u32 s)
     SET_FLAG(F_ZF);
     set_parity_flag(mod);
 
-    M.x86.R_EAX = (u32)div;
-    M.x86.R_EDX = (u32)mod;
+    EAX = (u32)div;
+    EDX = (u32)mod;
 }
 
 /****************************************************************************
@@ -2175,7 +2175,7 @@ void div_byte(u8 s)
 {
     u32 dvd, div, mod;
 
-    dvd = M.x86.R_AX;
+    dvd = AX;
     if (s == 0) {
         x86emu_intr_raise(0);
         return;
@@ -2186,8 +2186,8 @@ void div_byte(u8 s)
         x86emu_intr_raise(0);
         return;
     }
-    M.x86.R_AL = (u8)div;
-    M.x86.R_AH = (u8)mod;
+    AL = (u8)div;
+    AH = (u8)mod;
 }
 
 /****************************************************************************
@@ -2198,7 +2198,7 @@ void div_word(u16 s)
 {
     u32 dvd, div, mod;
 
-    dvd = (((u32)M.x86.R_DX) << 16) | M.x86.R_AX;
+    dvd = (((u32)DX) << 16) | AX;
     if (s == 0) {
         x86emu_intr_raise(0);
         return;
@@ -2214,8 +2214,8 @@ void div_word(u16 s)
     CONDITIONAL_SET_FLAG(div == 0, F_ZF);
     set_parity_flag(mod);
 
-    M.x86.R_AX = (u16)div;
-    M.x86.R_DX = (u16)mod;
+    AX = (u16)div;
+    DX = (u16)mod;
 }
 
 /****************************************************************************
@@ -2227,7 +2227,7 @@ void div_long(u32 s)
 #ifdef  __HAS_LONG_LONG__
     u64 dvd, div, mod;
 
-    dvd = (((u64)M.x86.R_EDX) << 32) | M.x86.R_EAX;
+    dvd = (((u64)EDX) << 32) | EAX;
     if (s == 0) {
         x86emu_intr_raise(0);
         return;
@@ -2240,8 +2240,8 @@ void div_long(u32 s)
     }
 #else
     s32 div = 0, mod;
-    s32 h_dvd = M.x86.R_EDX;
-    u32 l_dvd = M.x86.R_EAX;
+    s32 h_dvd = EDX;
+    u32 l_dvd = EAX;
 
     u32 h_s = s;
     u32 l_s = 0;
@@ -2284,8 +2284,8 @@ void div_long(u32 s)
     SET_FLAG(F_ZF);
     set_parity_flag(mod);
 
-    M.x86.R_EAX = (u32)div;
-    M.x86.R_EDX = (u32)mod;
+    EAX = (u32)div;
+    EDX = (u32)mod;
 }
 
 /****************************************************************************
@@ -2296,11 +2296,11 @@ Implements the IN string instruction and side effects.
 static void single_in(int size)
 {
     if (size == 1)
-        store_data_byte_abs(M.x86.R_ES, M.x86.R_DI,(*sys_inb)(M.x86.R_DX));
+        store_data_byte_abs(ES, DI,(*sys_inb)(DX));
     else if (size == 2)
-        store_data_word_abs(M.x86.R_ES, M.x86.R_DI,(*sys_inw)(M.x86.R_DX));
+        store_data_word_abs(ES, DI,(*sys_inw)(DX));
     else
-        store_data_long_abs(M.x86.R_ES, M.x86.R_DI,(*sys_inl)(M.x86.R_DX));
+        store_data_long_abs(ES, DI,(*sys_inl)(DX));
 }
 
 void ins(int size)
@@ -2310,23 +2310,23 @@ void ins(int size)
     if (ACCESS_FLAG(F_DF)) {
         inc = -size;
     }
-    if (M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)) {
+    if (mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)) {
         /* don't care whether REPE or REPNE */
         /* in until (E)CX is ZERO. */
-        u32 count = ((M.x86.mode & SYSMODE_32BIT_REP) ?
-                     M.x86.R_ECX : M.x86.R_CX);
+        u32 count = ((mode & SYSMODE_32BIT_REP) ?
+                     ECX : CX);
         while (count--) {
           single_in(size);
-          M.x86.R_DI += inc;
+          DI += inc;
           }
-        M.x86.R_CX = 0;
-        if (M.x86.mode & SYSMODE_32BIT_REP) {
-            M.x86.R_ECX = 0;
+        CX = 0;
+        if (mode & SYSMODE_32BIT_REP) {
+            ECX = 0;
         }
-        M.x86.mode &= ~(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
+        mode &= ~(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
     } else {
         single_in(size);
-        M.x86.R_DI += inc;
+        DI += inc;
     }
 }
 
@@ -2338,11 +2338,11 @@ Implements the OUT string instruction and side effects.
 static void single_out(int size)
 {
      if (size == 1)
-       (*sys_outb)(M.x86.R_DX,fetch_data_byte_abs(M.x86.R_ES, M.x86.R_SI));
+       (*sys_outb)(DX,fetch_data_byte_abs(ES, SI));
      else if (size == 2)
-       (*sys_outw)(M.x86.R_DX,fetch_data_word_abs(M.x86.R_ES, M.x86.R_SI));
+       (*sys_outw)(DX,fetch_data_word_abs(ES, SI));
      else
-       (*sys_outl)(M.x86.R_DX,fetch_data_long_abs(M.x86.R_ES, M.x86.R_SI));
+       (*sys_outl)(DX,fetch_data_long_abs(ES, SI));
 }
 
 void outs(int size)
@@ -2352,23 +2352,23 @@ void outs(int size)
     if (ACCESS_FLAG(F_DF)) {
         inc = -size;
     }
-    if (M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)) {
+    if (mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)) {
         /* don't care whether REPE or REPNE */
         /* out until (E)CX is ZERO. */
-        u32 count = ((M.x86.mode & SYSMODE_32BIT_REP) ?
-                     M.x86.R_ECX : M.x86.R_CX);
+        u32 count = ((mode & SYSMODE_32BIT_REP) ?
+                     ECX : CX);
         while (count--) {
           single_out(size);
-          M.x86.R_SI += inc;
+          SI += inc;
           }
-        M.x86.R_CX = 0;
-        if (M.x86.mode & SYSMODE_32BIT_REP) {
-            M.x86.R_ECX = 0;
+        CX = 0;
+        if (mode & SYSMODE_32BIT_REP) {
+            ECX = 0;
         }
-        M.x86.mode &= ~(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
+        mode &= ~(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
     } else {
         single_out(size);
-        M.x86.R_SI += inc;
+        SI += inc;
     }
 }
 
@@ -2396,8 +2396,8 @@ void push_word(u16 w)
 {
 DB( if (CHECK_SP_ACCESS())
       x86emu_check_sp_access();)
-    M.x86.R_SP -= 2;
-    (*sys_wrw)(((u32)M.x86.R_SS << 4)  + M.x86.R_SP, w);
+    SP -= 2;
+    (*sys_wrw)(((u32)SS << 4)  + SP, w);
 }
 
 /****************************************************************************
@@ -2410,8 +2410,8 @@ void push_long(u32 w)
 {
 DB( if (CHECK_SP_ACCESS())
       x86emu_check_sp_access();)
-    M.x86.R_SP -= 4;
-    (*sys_wrl)(((u32)M.x86.R_SS << 4)  + M.x86.R_SP, w);
+    SP -= 4;
+    (*sys_wrl)(((u32)SS << 4)  + SP, w);
 }
 
 /****************************************************************************
@@ -2426,8 +2426,8 @@ u16 pop_word(void)
 
 DB( if (CHECK_SP_ACCESS())
       x86emu_check_sp_access();)
-    res = (*sys_rdw)(((u32)M.x86.R_SS << 4)  + M.x86.R_SP);
-    M.x86.R_SP += 2;
+    res = (*sys_rdw)(((u32)SS << 4)  + SP);
+    SP += 2;
     return res;
 }
 
@@ -2443,8 +2443,8 @@ u32 pop_long(void)
 
 DB( if (CHECK_SP_ACCESS())
       x86emu_check_sp_access();)
-    res = (*sys_rdl)(((u32)M.x86.R_SS << 4)  + M.x86.R_SP);
-    M.x86.R_SP += 4;
+    res = (*sys_rdl)(((u32)SS << 4)  + SP);
+    SP += 4;
     return res;
 }
 
@@ -2454,7 +2454,7 @@ CPUID takes EAX/ECX as inputs, writes EAX/EBX/ECX/EDX as output
 ****************************************************************************/
 void x86emu_cpuid(void)
 {
-    u32 feature = M.x86.R_EAX;
+    u32 feature = EAX;
 
     switch (feature) {
     case 0:
@@ -2462,34 +2462,34 @@ void x86emu_cpuid(void)
          * will only support upto feature 1, which we set in register EAX.
          * Registers EBX:EDX:ECX contain a string identifying the CPU.
          */
-        M.x86.R_EAX = 1;
+        EAX = 1;
         /* EBX:EDX:ECX = "GenuineIntel" */
-        M.x86.R_EBX = 0x756e6547;
-        M.x86.R_EDX = 0x49656e69;
-        M.x86.R_ECX = 0x6c65746e;
+        EBX = 0x756e6547;
+        EDX = 0x49656e69;
+        ECX = 0x6c65746e;
         break;
     case 1:
         /* If we don't have x86 compatible hardware, we return values from an
          * Intel 486dx4; which was one of the first processors to have CPUID.
          */
-        M.x86.R_EAX = 0x00000480;
-        M.x86.R_EBX = 0x00000000;
-        M.x86.R_ECX = 0x00000000;
-        M.x86.R_EDX = 0x00000002;       /* VME */
+        EAX = 0x00000480;
+        EBX = 0x00000000;
+        ECX = 0x00000000;
+        EDX = 0x00000002;       /* VME */
         /* In the case that we have hardware CPUID instruction, we make sure
          * that the features reported are limited to TSC and VME.
          */
-        M.x86.R_EDX &= 0x00000012;
+        EDX &= 0x00000012;
         break;
     default:
         /* Finally, we don't support any additional features.  Most CPUs
          * return all zeros when queried for invalid or unsupported feature
          * numbers.
          */
-        M.x86.R_EAX = 0;
-        M.x86.R_EBX = 0;
-        M.x86.R_ECX = 0;
-        M.x86.R_EDX = 0;
+        EAX = 0;
+        EBX = 0;
+        ECX = 0;
+        EDX = 0;
         break;
     }
 }

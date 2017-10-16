@@ -48,31 +48,31 @@
 #define CHECK_MEM_ACCESS_F              0x4 /*using regular linear pointer */
 #define CHECK_DATA_ACCESS_F             0x8 /*using segment:offset*/
 
-# define CHECK_IP_FETCH()              	(M.x86.check & CHECK_IP_FETCH_F)
-# define CHECK_SP_ACCESS()             	(M.x86.check & CHECK_SP_ACCESS_F)
-# define CHECK_MEM_ACCESS()            	(M.x86.check & CHECK_MEM_ACCESS_F)
-# define CHECK_DATA_ACCESS()           	(M.x86.check & CHECK_DATA_ACCESS_F)
+# define CHECK_IP_FETCH()              	(check & CHECK_IP_FETCH_F)
+# define CHECK_SP_ACCESS()             	(check & CHECK_SP_ACCESS_F)
+# define CHECK_MEM_ACCESS()            	(check & CHECK_MEM_ACCESS_F)
+# define CHECK_DATA_ACCESS()           	(check & CHECK_DATA_ACCESS_F)
 
-# define DEBUG_INSTRUMENT()    	(M.x86.debug & DEBUG_INSTRUMENT_F)
-# define DEBUG_DECODE()        	(M.x86.debug & DEBUG_DECODE_F)
-# define DEBUG_TRACE()         	(M.x86.debug & DEBUG_TRACE_F)
-# define DEBUG_STEP()          	(M.x86.debug & DEBUG_STEP_F)
-# define DEBUG_DISASSEMBLE()   	(M.x86.debug & DEBUG_DISASSEMBLE_F)
-# define DEBUG_BREAK()         	(M.x86.debug & DEBUG_BREAK_F)
-# define DEBUG_SVC()           	(M.x86.debug & DEBUG_SVC_F)
-# define DEBUG_SAVE_IP_CS()     (M.x86.debug & DEBUG_SAVE_IP_CS_F)
+# define DEBUG_INSTRUMENT()    	(debug & DEBUG_INSTRUMENT_F)
+# define DEBUG_DECODE()        	(debug & DEBUG_DECODE_F)
+# define DEBUG_TRACE()         	(debug & DEBUG_TRACE_F)
+# define DEBUG_STEP()          	(debug & DEBUG_STEP_F)
+# define DEBUG_DISASSEMBLE()   	(debug & DEBUG_DISASSEMBLE_F)
+# define DEBUG_BREAK()         	(debug & DEBUG_BREAK_F)
+# define DEBUG_SVC()           	(debug & DEBUG_SVC_F)
+# define DEBUG_SAVE_IP_CS()     (debug & DEBUG_SAVE_IP_CS_F)
 
-# define DEBUG_FS()            	(M.debug & DEBUG_FS_F)
-# define DEBUG_PROC()          	(M.debug & DEBUG_PROC_F)
-# define DEBUG_SYSINT()        	(M.debug & DEBUG_SYSINT_F)
-# define DEBUG_TRACECALL()     	(M.debug & DEBUG_TRACECALL_F)
-# define DEBUG_TRACECALLREGS() 	(M.debug & DEBUG_TRACECALL_REGS_F)
-# define DEBUG_TRACEJMP()       (M.debug & DEBUG_TRACEJMP_F)
-# define DEBUG_TRACEJMPREGS()   (M.debug & DEBUG_TRACEJMP_REGS_F)
-# define DEBUG_SYS()           	(M.debug & DEBUG_SYS_F)
-# define DEBUG_MEM_TRACE()     	(M.debug & DEBUG_MEM_TRACE_F)
-# define DEBUG_IO_TRACE()      	(M.debug & DEBUG_IO_TRACE_F)
-# define DEBUG_DECODE_NOPRINT() (M.debug & DEBUG_DECODE_NOPRINT_F)
+# define DEBUG_FS()            	(debug & DEBUG_FS_F)
+# define DEBUG_PROC()          	(debug & DEBUG_PROC_F)
+# define DEBUG_SYSINT()        	(debug & DEBUG_SYSINT_F)
+# define DEBUG_TRACECALL()     	(debug & DEBUG_TRACECALL_F)
+# define DEBUG_TRACECALLREGS() 	(debug & DEBUG_TRACECALL_REGS_F)
+# define DEBUG_TRACEJMP()       (debug & DEBUG_TRACEJMP_F)
+# define DEBUG_TRACEJMPREGS()   (debug & DEBUG_TRACEJMP_REGS_F)
+# define DEBUG_SYS()           	(debug & DEBUG_SYS_F)
+# define DEBUG_MEM_TRACE()     	(debug & DEBUG_MEM_TRACE_F)
+# define DEBUG_IO_TRACE()      	(debug & DEBUG_IO_TRACE_F)
+# define DEBUG_DECODE_NOPRINT() (debug & DEBUG_DECODE_NOPRINT_F)
 
 // were these removed at some point? I thought they used to be there. Damn.
 # define DECODE_PRINTF(x)     	if (DEBUG_DECODE()) 
@@ -91,8 +91,8 @@
 #define SAVE_IP_CS(x,y)                               			\
 	if (DEBUG_DECODE() | DEBUG_TRACECALL() | DEBUG_BREAK() \
               | DEBUG_IO_TRACE() | DEBUG_SAVE_IP_CS()) { \
-		M.x86.saved_cs = x;                          			\
-		M.x86.saved_ip = y;                          			\
+		saved_cs = x;                          			\
+		saved_ip = y;                          			\
 	}
 
 #define TRACE_REGS()                                   		\

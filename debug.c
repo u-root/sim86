@@ -49,15 +49,15 @@ int      parse_line (char *s, int *ps, int *n);
 void X86EMU_trace_regs (void)
 {
     if (DEBUG_TRACE()) {
-	if (M.x86.mode & (SYSMODE_PREFIX_DATA | SYSMODE_PREFIX_ADDR)) {
+	if (mode & (SYSMODE_PREFIX_DATA | SYSMODE_PREFIX_ADDR)) {
 	        x86emu_dump_xregs();
 	} else {
 	        x86emu_dump_regs();
 	}
     }
     if (DEBUG_DECODE() && ! DEBUG_DECODE_NOPRINT()) {
-        loggy("%04x:%04x ",M.x86.saved_cs, M.x86.saved_ip);
-        print_encoded_bytes( M.x86.saved_cs, M.x86.saved_ip);
+        loggy("%04x:%04x ",saved_cs, saved_ip);
+        print_encoded_bytes( saved_cs, saved_ip);
         print_decoded_instruction();
     }
 }
@@ -75,8 +75,8 @@ void x86emu_just_disassemble (void)
      * This routine called if the flag DEBUG_DISASSEMBLE is set kind
      * of a hack!
      */
-    loggy("%04x:%04x ",M.x86.saved_cs, M.x86.saved_ip);
-    print_encoded_bytes( M.x86.saved_cs, M.x86.saved_ip);
+    loggy("%04x:%04x ",saved_cs, saved_ip);
+    print_encoded_bytes( saved_cs, saved_ip);
     print_decoded_instruction();
 }
 
@@ -129,7 +129,7 @@ void disassemble_forward (u16 seg, u16 off, int n)
      * Note the use of a copy of the register structure...
      */
     for (i=0; i<n; i++) {
-        op1 = (*sys_rdb)(((u32)M.x86.R_CS<<4) + (M.x86.R_IP++));
+        op1 = (*sys_rdb)(((u32)CS<<4) + (IP++));
         x86_byte_dispatch(op1);
     }
     /* end major hack mode. */
@@ -156,34 +156,34 @@ void x86emu_check_data_access (uint dummy1, uint dummy2)
 
 void x86emu_inc_decoded_inst_len (int x)
 {
-    M.x86.enc_pos += x;
+    enc_pos += x;
 }
 
 void x86emu_decode_log (const char *x)
 {
-    strcpy(M.x86.decoded_buf+M.x86.enc_str_pos,x);
-    M.x86.enc_str_pos += strlen(x);
+    strcpy(decoded_buf+enc_str_pos,x);
+    enc_str_pos += strlen(x);
 }
 
 void x86emu_decode_log2 (const char *x, int y)
 {
     char temp[100];
     snloggy(temp, sizeof (temp), x,y);
-    strcpy(M.x86.decoded_buf+M.x86.enc_str_pos,temp);
-    M.x86.enc_str_pos += strlen(temp);
+    strcpy(decoded_buf+enc_str_pos,temp);
+    enc_str_pos += strlen(temp);
 }
 
 void x86emu_end_instr (void)
 {
-    M.x86.enc_str_pos = 0;
-    M.x86.enc_pos = 0;
+    enc_str_pos = 0;
+    enc_pos = 0;
 }
 
 static void print_encoded_bytes (u16 s, u16 o)
 {
     int i;
     char buf1[64];
-    for (i=0; i< M.x86.enc_pos; i++) {
+    for (i=0; i< enc_pos; i++) {
 	    snloggy(buf1+2*i, 64 - 2 * i, "%02x", fetch_data_byte_abs(s,o+i));
     }
     loggy("%-20s ",buf1);
@@ -191,7 +191,7 @@ static void print_encoded_bytes (u16 s, u16 o)
 
 static void print_decoded_instruction (void)
 {
-    loggy("%s", M.x86.decoded_buf);
+    loggy("%s", decoded_buf);
 }
 
 void x86emu_print_int_vect (u16 iv)
@@ -236,29 +236,29 @@ void x86emu_single_step (void)
     static int noDecode = 1;
 
         if (DEBUG_BREAK()) {
-                if (M.x86.saved_ip != breakpoint) {
+                if (saved_ip != breakpoint) {
                         return;
                 } else {
-              M.x86.debug &= ~DEBUG_DECODE_NOPRINT_F;
-                        M.x86.debug |= DEBUG_TRACE_F;
-                        M.x86.debug &= ~DEBUG_BREAK_F;
+              debug &= ~DEBUG_DECODE_NOPRINT_F;
+                        debug |= DEBUG_TRACE_F;
+                        debug &= ~DEBUG_BREAK_F;
                         print_decoded_instruction ();
                         X86EMU_trace_regs();
                 }
         }
     done=0;
-    offset = M.x86.saved_ip;
+    offset = saved_ip;
     while (!done) {
         loggy("-");
         (void)fgets(s, 1023, stdin);
         cmd = parse_line(s, ps, &ntok);
         switch(cmd) {
           case 'u':
-            disassemble_forward(M.x86.saved_cs,(u16)offset,10);
+            disassemble_forward(saved_cs,(u16)offset,10);
             break;
           case 'd':
                             if (ntok == 2) {
-                                    segment = M.x86.saved_cs;
+                                    segment = saved_cs;
                                     offset = ps[1];
                                     X86EMU_dump_memory(segment,(u16)offset,16);
                                     offset += 16;
@@ -268,16 +268,16 @@ void x86emu_single_step (void)
                                     X86EMU_dump_memory(segment,(u16)offset,16);
                                     offset += 16;
                             } else {
-                                    segment = M.x86.saved_cs;
+                                    segment = saved_cs;
                                     X86EMU_dump_memory(segment,(u16)offset,16);
                                     offset += 16;
                             }
             break;
           case 'c':
-            M.x86.debug ^= DEBUG_TRACECALL_F;
+            debug ^= DEBUG_TRACECALL_F;
             break;
           case 's':
-            M.x86.debug ^= DEBUG_SVC_F | DEBUG_SYS_F | DEBUG_SYSINT_F;
+            debug ^= DEBUG_SVC_F | DEBUG_SYS_F | DEBUG_SYSINT_F;
             break;
           case 'r':
             X86EMU_trace_regs();
@@ -289,17 +289,17 @@ void x86emu_single_step (void)
             if (ntok == 2) {
                 breakpoint = ps[1];
         if (noDecode) {
-                        M.x86.debug |= DEBUG_DECODE_NOPRINT_F;
+                        debug |= DEBUG_DECODE_NOPRINT_F;
         } else {
-                        M.x86.debug &= ~DEBUG_DECODE_NOPRINT_F;
+                        debug &= ~DEBUG_DECODE_NOPRINT_F;
         }
-        M.x86.debug &= ~DEBUG_TRACE_F;
-        M.x86.debug |= DEBUG_BREAK_F;
+        debug &= ~DEBUG_TRACE_F;
+        debug |= DEBUG_BREAK_F;
         done = 1;
             }
             break;
           case 'q':
-          M.x86.debug |= DEBUG_EXIT;
+          debug |= DEBUG_EXIT;
           return;
       case 'P':
           noDecode = (noDecode)?0:1;
@@ -316,12 +316,12 @@ void x86emu_single_step (void)
 
 int X86EMU_trace_on(void)
 {
-    return M.x86.debug |= DEBUG_STEP_F | DEBUG_DECODE_F | DEBUG_TRACE_F;
+    return debug |= DEBUG_STEP_F | DEBUG_DECODE_F | DEBUG_TRACE_F;
 }
 
 int X86EMU_trace_off(void)
 {
-    return M.x86.debug &= ~(DEBUG_STEP_F | DEBUG_DECODE_F | DEBUG_TRACE_F);
+    return debug &= ~(DEBUG_STEP_F | DEBUG_DECODE_F | DEBUG_TRACE_F);
 }
 
 int parse_line (char *s, int *ps, int *n)
@@ -359,19 +359,19 @@ int parse_line (char *s, int *ps, int *n)
 
 void x86emu_dump_regs (void)
 {
-    loggy("\tAX=%04x  ", M.x86.R_AX );
-    loggy("BX=%04x  ", M.x86.R_BX );
-    loggy("CX=%04x  ", M.x86.R_CX );
-    loggy("DX=%04x  ", M.x86.R_DX );
-    loggy("SP=%04x  ", M.x86.R_SP );
-    loggy("BP=%04x  ", M.x86.R_BP );
-    loggy("SI=%04x  ", M.x86.R_SI );
-    loggy("DI=%04x\n", M.x86.R_DI );
-    loggy("\tDS=%04x  ", M.x86.R_DS );
-    loggy("ES=%04x  ", M.x86.R_ES );
-    loggy("SS=%04x  ", M.x86.R_SS );
-    loggy("CS=%04x  ", M.x86.R_CS );
-    loggy("IP=%04x   ", M.x86.R_IP );
+    loggy("\tAX=%04x  ", AX );
+    loggy("BX=%04x  ", BX );
+    loggy("CX=%04x  ", CX );
+    loggy("DX=%04x  ", DX );
+    loggy("SP=%04x  ", SP );
+    loggy("BP=%04x  ", BP );
+    loggy("SI=%04x  ", SI );
+    loggy("DI=%04x\n", DI );
+    loggy("\tDS=%04x  ", DS );
+    loggy("ES=%04x  ", ES );
+    loggy("SS=%04x  ", SS );
+    loggy("CS=%04x  ", CS );
+    loggy("IP=%04x   ", IP );
     if (ACCESS_FLAG(F_OF))    loggy("OV ");     /* CHECKED... */
     else                        loggy("NV ");
     if (ACCESS_FLAG(F_DF))    loggy("DN ");
@@ -393,19 +393,19 @@ void x86emu_dump_regs (void)
 
 void x86emu_dump_xregs (void)
 {
-    loggy("\tEAX=%08x  ", M.x86.R_EAX );
-    loggy("EBX=%08x  ", M.x86.R_EBX );
-    loggy("ECX=%08x  ", M.x86.R_ECX );
-    loggy("EDX=%08x\n", M.x86.R_EDX );
-    loggy("\tESP=%08x  ", M.x86.R_ESP );
-    loggy("EBP=%08x  ", M.x86.R_EBP );
-    loggy("ESI=%08x  ", M.x86.R_ESI );
-    loggy("EDI=%08x\n", M.x86.R_EDI );
-    loggy("\tDS=%04x  ", M.x86.R_DS );
-    loggy("ES=%04x  ", M.x86.R_ES );
-    loggy("SS=%04x  ", M.x86.R_SS );
-    loggy("CS=%04x  ", M.x86.R_CS );
-    loggy("EIP=%08x\n\t", M.x86.R_EIP );
+    loggy("\tEAX=%08x  ", EAX );
+    loggy("EBX=%08x  ", EBX );
+    loggy("ECX=%08x  ", ECX );
+    loggy("EDX=%08x\n", EDX );
+    loggy("\tESP=%08x  ", ESP );
+    loggy("EBP=%08x  ", EBP );
+    loggy("ESI=%08x  ", ESI );
+    loggy("EDI=%08x\n", EDI );
+    loggy("\tDS=%04x  ", DS );
+    loggy("ES=%04x  ", ES );
+    loggy("SS=%04x  ", SS );
+    loggy("CS=%04x  ", CS );
+    loggy("EIP=%08x\n\t", EIP );
     if (ACCESS_FLAG(F_OF))    loggy("OV ");     /* CHECKED... */
     else                        loggy("NV ");
     if (ACCESS_FLAG(F_DF))    loggy("DN ");

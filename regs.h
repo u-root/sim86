@@ -81,11 +81,11 @@
 #define F_DF 0x0400             /* DIR flag    */
 #define F_OF 0x0800             /* OVERFLOW flag */
 
-#define TOGGLE_FLAG(flag)     	(M.x86.R_FLG ^= (flag))
-#define SET_FLAG(flag)        	(M.x86.R_FLG |= (flag))
-#define CLEAR_FLAG(flag)      	(M.x86.R_FLG &= ~(flag))
-#define ACCESS_FLAG(flag)     	(M.x86.R_FLG & (flag))
-#define CLEARALL_FLAG(m)    	(M.x86.R_FLG = 0)
+#define TOGGLE_FLAG(flag)     	(FLG ^= (flag))
+#define SET_FLAG(flag)        	(FLG |= (flag))
+#define CLEAR_FLAG(flag)      	(FLG &= ~(flag))
+#define ACCESS_FLAG(flag)     	(FLG & (flag))
+#define CLEARALL_FLAG(m)    	(FLG = 0)
 
 #define CONDITIONAL_SET_FLAG(COND,FLAG) \
   if (COND) SET_FLAG(FLAG); else CLEAR_FLAG(FLAG)
@@ -193,42 +193,42 @@ x86			- X86 registers
  * We keep it global to avoid pointer dereferences in the code for speed.
  */
 
-#define X86_EAX M.x86.R_EAX
-#define X86_EBX M.x86.R_EBX
-#define X86_ECX M.x86.R_ECX
-#define X86_EDX M.x86.R_EDX
-#define X86_ESI M.x86.R_ESI
-#define X86_EDI M.x86.R_EDI
-#define X86_EBP M.x86.R_EBP
-#define X86_EIP M.x86.R_EIP
-#define X86_ESP M.x86.R_ESP
-#define X86_EFLAGS M.x86.R_EFLG
+#define X86_EAX EAX
+#define X86_EBX EBX
+#define X86_ECX ECX
+#define X86_EDX EDX
+#define X86_ESI ESI
+#define X86_EDI EDI
+#define X86_EBP EBP
+#define X86_EIP EIP
+#define X86_ESP ESP
+#define X86_EFLAGS EFLG
 
-#define X86_FLAGS M.x86.R_FLG
-#define X86_AX M.x86.R_AX
-#define X86_BX M.x86.R_BX
-#define X86_CX M.x86.R_CX
-#define X86_DX M.x86.R_DX
-#define X86_SI M.x86.R_SI
-#define X86_DI M.x86.R_DI
-#define X86_BP M.x86.R_BP
-#define X86_IP M.x86.R_IP
-#define X86_SP M.x86.R_SP
-#define X86_CS M.x86.R_CS
-#define X86_DS M.x86.R_DS
-#define X86_ES M.x86.R_ES
-#define X86_SS M.x86.R_SS
-#define X86_FS M.x86.R_FS
-#define X86_GS M.x86.R_GS
+#define X86_FLAGS FLG
+#define X86_AX AX
+#define X86_BX BX
+#define X86_CX CX
+#define X86_DX DX
+#define X86_SI SI
+#define X86_DI DI
+#define X86_BP BP
+#define X86_IP IP
+#define X86_SP SP
+#define X86_CS CS
+#define X86_DS DS
+#define X86_ES ES
+#define X86_SS SS
+#define X86_FS FS
+#define X86_GS GS
 
-#define X86_AL M.x86.R_AL
-#define X86_BL M.x86.R_BL
-#define X86_CL M.x86.R_CL
-#define X86_DL M.x86.R_DL
+#define X86_AL AL
+#define X86_BL BL
+#define X86_CL CL
+#define X86_DL DL
 
-#define X86_AH M.x86.R_AH
-#define X86_BH M.x86.R_BH
-#define X86_CH M.x86.R_CH
-#define X86_DH M.x86.R_DH
+#define X86_AH AH
+#define X86_BH BH
+#define X86_CH CH
+#define X86_DH DH
 
 #endif /* __X86EMU_REGS_H */
