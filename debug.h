@@ -86,3 +86,5 @@
 #define	DB(x)	x
 
 #define X86EMU_DEBUG_ONLY(x) x
+#define X86EMU_UNUSED(x) x
+#define u8 uint8_t

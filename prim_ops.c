@@ -98,7 +98,6 @@
 ****************************************************************************/
 
 #define PRIM_OPS_NO_REDEFINE_ASM
-#include "x86emui.h"
 
 #define abs(x) ({                               \
                 int __x = (x);                  \
