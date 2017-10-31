@@ -1,8 +1,14 @@
 typedef unsigned char u8;
 typedef unsigned short u16;
 typedef unsigned int u32;
+typedef int s32;
 typedef unsigned long u64;
+typedef int size_t;
+typedef unsigned int uint;
+typedef signed int sint;
+typedef u16 X86EMU_pioAddr;
 int printf(const char *format, ...);
+#define DEBUG
 
 #define CHECK_IP_FETCH_F                0x1
 #define CHECK_SP_ACCESS_F               0x2
@@ -307,43 +313,7 @@ void	x86emu_cpuid (void);
 *
 ****************************************************************************/
 
-#ifndef __X86EMU_REGS_H
-#define __X86EMU_REGS_H
-
 /*---------------------- Macros and type definitions ----------------------*/
-
-#pragma pack(1)
-
-/*
- * General EAX, EBX, ECX, EDX type registers.  Note that for
- * portability, and speed, the issue of byte swapping is not addressed
- * in the registers.  All registers are stored in the default format
- * available on the host machine.  The only critical issue is that the
- * registers should line up EXACTLY in the same manner as they do in
- * the 386.  That is:
- *
- * EAX & 0xff  === AL
- * EAX & 0xffff == AX
- *
- * etc.  The result is that alot of the calculations can then be
- * done using the native instruction set fully.
- */
-
-#ifdef	__BIG_ENDIAN__
-
-typedef struct {
-	u32 e_reg;
-	} I32_reg_t;
-
-typedef struct {
-	u16 filler0, x_reg;
-	} I16_reg_t;
-
-typedef struct {
-	u8 filler0, filler1, h_reg, l_reg;
-	} I8_reg_t;
-
-#else /* !__BIG_ENDIAN__ */
 
 typedef struct {
 	u32 e_reg;
@@ -356,8 +326,6 @@ typedef struct {
 typedef struct {
 	u8 l_reg, h_reg;
 	} I8_reg_t;
-
-#endif /* BIG_ENDIAN */
 
 typedef union {
 	I32_reg_t   I32_reg;
@@ -635,8 +603,146 @@ extern    X86EMU_sysEnv	_X86EMU_env;
 #define X86_CH M.x86.R_CH
 #define X86_DH M.x86.R_DH
 
-#ifdef  __cplusplus
-}                       			/* End of "C" linkage for C++   	*/
-#endif
 
-#endif /* __X86EMU_REGS_H */
+/****************************************************************************
+REMARKS:
+Data structure containing pointers to programmed I/O functions used by the
+emulator. This is used so that the user program can hook all programmed
+I/O for the emulator to handled as necessary by the user program. By
+default the emulator contains simple functions that do not do access the
+hardware in any way. To allow the emulator access the hardware, you will
+need to override the programmed I/O functions using the X86EMU_setupPioFuncs
+function.
+
+HEADER:
+x86emu.h
+
+MEMBERS:
+inb		- Function to read a byte from an I/O port
+inw		- Function to read a word from an I/O port
+inl     - Function to read a dword from an I/O port
+outb	- Function to write a byte to an I/O port
+outw    - Function to write a word to an I/O port
+outl    - Function to write a dword to an I/O port
+****************************************************************************/
+typedef struct {
+	u8  	(* inb)(X86EMU_pioAddr addr);
+	u16 	(* inw)(X86EMU_pioAddr addr);
+	u32 	(* inl)(X86EMU_pioAddr addr);
+	void 	(* outb)(X86EMU_pioAddr addr, u8 val);
+	void 	(* outw)(X86EMU_pioAddr addr, u16 val);
+	void 	(* outl)(X86EMU_pioAddr addr, u32 val);
+	} X86EMU_pioFuncs;
+
+/****************************************************************************
+REMARKS:
+Data structure containing pointers to memory access functions used by the
+emulator. This is used so that the user program can hook all memory
+access functions as necessary for the emulator. By default the emulator
+contains simple functions that only access the internal memory of the
+emulator. If you need specialized functions to handle access to different
+types of memory (ie: hardware framebuffer accesses and BIOS memory access
+etc), you will need to override this using the X86EMU_setupMemFuncs
+function.
+
+HEADER:
+x86emu.h
+
+MEMBERS:
+rdb		- Function to read a byte from an address
+rdw		- Function to read a word from an address
+rdl     - Function to read a dword from an address
+wrb		- Function to write a byte to an address
+wrw    	- Function to write a word to an address
+wrl    	- Function to write a dword to an address
+****************************************************************************/
+typedef struct {
+	u8  	(* rdb)(u32 addr);
+	u16 	(* rdw)(u32 addr);
+	u32 	(* rdl)(u32 addr);
+	void 	(* wrb)(u32 addr, u8 val);
+	void 	(* wrw)(u32 addr, u16 val);
+	void	(* wrl)(u32 addr, u32 val);
+	} X86EMU_memFuncs;
+
+/****************************************************************************
+  Here are the default memory read and write
+  function in case they are needed as fallbacks.
+***************************************************************************/
+extern u8  rdb(u32 addr);
+extern u16  rdw(u32 addr);
+extern u32  rdl(u32 addr);
+extern void  wrb(u32 addr, u8 val);
+extern void  wrw(u32 addr, u16 val);
+extern void  wrl(u32 addr, u32 val);
+
+
+
+/*--------------------- type definitions -----------------------------------*/
+
+typedef void (* X86EMU_intrFuncs)(int num);
+extern X86EMU_intrFuncs _X86EMU_intrTab[256];
+
+/*-------------------------- Function Prototypes --------------------------*/
+
+
+void 	X86EMU_setupMemFuncs(X86EMU_memFuncs *funcs);
+void 	X86EMU_setupPioFuncs(X86EMU_pioFuncs *funcs);
+void 	X86EMU_setupIntrFuncs(X86EMU_intrFuncs funcs[]);
+void 	X86EMU_prepareForInt(int num);
+
+void X86EMU_setMemBase(void *base, size_t size);
+
+/* decode.c */
+
+void 	X86EMU_exec(void);
+void 	X86EMU_halt_sys(void);
+
+#define	HALT_SYS()	\
+	printf("halt_sys: in %s\n", __func__);	\
+	X86EMU_halt_sys();
+
+/* Debug options */
+
+#define DEBUG_DECODE_F          0x000001 /* print decoded instruction  */
+#define DEBUG_TRACE_F           0x000002 /* dump regs before/after execution */
+#define DEBUG_STEP_F            0x000004
+#define DEBUG_DISASSEMBLE_F     0x000008
+#define DEBUG_BREAK_F           0x000010
+#define DEBUG_SVC_F             0x000020
+#define DEBUG_FS_F              0x000080
+#define DEBUG_PROC_F            0x000100
+#define DEBUG_SYSINT_F          0x000200 /* bios system interrupts. */
+#define DEBUG_TRACECALL_F       0x000400
+#define DEBUG_INSTRUMENT_F      0x000800
+#define DEBUG_MEM_TRACE_F       0x001000
+#define DEBUG_IO_TRACE_F        0x002000
+#define DEBUG_TRACECALL_REGS_F  0x004000
+#define DEBUG_DECODE_NOPRINT_F  0x008000
+#define DEBUG_SAVE_IP_CS_F      0x010000
+#define DEBUG_TRACEJMP_F        0x020000
+#define DEBUG_TRACEJMP_REGS_F   0x040000
+#define DEBUG_SYS_F             (DEBUG_SVC_F|DEBUG_FS_F|DEBUG_PROC_F)
+
+void 	X86EMU_trace_regs(void);
+void 	X86EMU_trace_xregs(void);
+void 	X86EMU_dump_memory(u16 seg, u16 off, u32 amt);
+int 	X86EMU_trace_on(void);
+int 	X86EMU_trace_off(void);
+
+void x86emu_inc_decoded_inst_len (int x);
+void x86emu_decode_printf (const char *x);
+void x86emu_decode_printf2 (const char *x, int y);
+void x86emu_just_disassemble (void);
+void x86emu_single_step (void);
+void x86emu_end_instr (void);
+void x86emu_dump_regs (void);
+void x86emu_dump_xregs (void);
+void x86emu_print_int_vect (u16 iv);
+void x86emu_instrument_instruction (void);
+void x86emu_check_ip_access (void);
+void x86emu_check_sp_access (void);
+void x86emu_check_mem_access (u32 p);
+void x86emu_check_data_access (uint s, uint o);
+
+void disassemble_forward (u16 seg, u16 off, int n);
