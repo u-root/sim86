@@ -1,4 +1,6 @@
+typedef char s8;
 typedef unsigned char u8;
+typedef short s16;
 typedef unsigned short u16;
 typedef unsigned int u32;
 typedef int s32;
@@ -315,15 +317,15 @@ void	x86emu_cpuid (void);
 
 /*---------------------- Macros and type definitions ----------------------*/
 
-typedef struct {
+/*typedef*/ struct {
 	u32 e_reg;
 	} I32_reg_t;
 
-typedef struct {
+/*typedef*/ struct {
 	u16 x_reg;
 	} I16_reg_t;
 
-typedef struct {
+/*typedef*/ struct {
 	u8 l_reg, h_reg;
 	} I8_reg_t;
 
@@ -337,7 +339,7 @@ struct i386_general_regs {
 	i386_general_register A, B, C, D;
 	};
 
-typedef struct i386_general_regs Gen_reg_t;
+/*typedef*/ struct i386_general_regs Gen_reg_t;
 
 struct i386_special_regs {
 	i386_general_register SP, BP, SI, DI, IP;
@@ -498,7 +500,7 @@ struct i386_segment_regs {
 #define  INTR_ASYNCH          0x2
 #define  INTR_HALTED          0x4
 
-typedef struct {
+/*typedef*/ struct {
 	struct i386_general_regs    gen;
 	struct i386_special_regs    spc;
 	struct i386_segment_regs    seg;
@@ -517,7 +519,7 @@ typedef struct {
 	u32                         mode;
 	volatile int                intr;   /* mask of pending interrupts */
 	volatile int                         debug;
-#if 1
+
 	int                         check;
 	u16                         saved_ip;
 	u16                         saved_cs;
@@ -525,7 +527,7 @@ typedef struct {
 	int                         enc_str_pos;
 	char                        decode_buf[32]; /* encoded byte stream  */
 	char                        decoded_buf[256]; /* disassembled strings */
-#endif
+
 	u8                          intno;
 	u8                          __pad[3];
 	} X86EMU_regs;
@@ -541,7 +543,7 @@ mem_size		- Size of the real mode memory block for the emulator
 private			- private data pointer
 x86			- X86 registers
 ****************************************************************************/
-typedef struct {
+/*typedef*/ struct {
 	unsigned long	mem_base;
 	unsigned long	mem_size;
 	unsigned long	abseg;
@@ -549,20 +551,16 @@ typedef struct {
 	X86EMU_regs		x86;
 	} X86EMU_sysEnv;
 
-#pragma pack()
 
 /*----------------------------- Global Variables --------------------------*/
 
-#ifdef  __cplusplus
-extern "C" {            			/* Use "C" linkage when in C++ mode */
-#endif
 
 /* Global emulator machine state.
  *
  * We keep it global to avoid pointer dereferences in the code for speed.
  */
 
-extern    X86EMU_sysEnv	_X86EMU_env;
+extern    struct X86EMU_sysEnv	_X86EMU_env;
 #define   M             _X86EMU_env
 
 #define X86_EAX M.x86.R_EAX
@@ -625,7 +623,7 @@ outb	- Function to write a byte to an I/O port
 outw    - Function to write a word to an I/O port
 outl    - Function to write a dword to an I/O port
 ****************************************************************************/
-typedef struct {
+/*typedef*/ struct {
 	u8  	(* inb)(X86EMU_pioAddr addr);
 	u16 	(* inw)(X86EMU_pioAddr addr);
 	u32 	(* inl)(X86EMU_pioAddr addr);
@@ -656,7 +654,7 @@ wrb		- Function to write a byte to an address
 wrw    	- Function to write a word to an address
 wrl    	- Function to write a dword to an address
 ****************************************************************************/
-typedef struct {
+/*typedef*/ struct {
 	u8  	(* rdb)(u32 addr);
 	u16 	(* rdw)(u32 addr);
 	u32 	(* rdl)(u32 addr);
@@ -746,3 +744,113 @@ void x86emu_check_mem_access (u32 p);
 void x86emu_check_data_access (uint s, uint o);
 
 void disassemble_forward (u16 seg, u16 off, int n);
+// decode.h
+/****************************************************************************
+*
+*						Realmode X86 Emulator Library
+*
+*            	Copyright (C) 1996-1999 SciTech Software, Inc.
+* 				     Copyright (C) David Mosberger-Tang
+* 					   Copyright (C) 1999 Egbert Eich
+*
+*  ========================================================================
+*
+*  Permission to use, copy, modify, distribute, and sell this software and
+*  its documentation for any purpose is hereby granted without fee,
+*  provided that the above copyright notice appear in all copies and that
+*  both that copyright notice and this permission notice appear in
+*  supporting documentation, and that the name of the authors not be used
+*  in advertising or publicity pertaining to distribution of the software
+*  without specific, written prior permission.  The authors makes no
+*  representations about the suitability of this software for any purpose.
+*  It is provided "as is" without express or implied warranty.
+*
+*  THE AUTHORS DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+*  INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
+*  EVENT SHALL THE AUTHORS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
+*  CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF
+*  USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+*  OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+*  PERFORMANCE OF THIS SOFTWARE.
+*
+*  ========================================================================
+*
+* Language:		ANSI C
+* Environment:	Any
+* Developer:    Kendall Bennett
+*
+* Description:  Header file for instruction decoding logic.
+*
+****************************************************************************/
+
+
+/*---------------------- Macros and type definitions ----------------------*/
+
+/* Instruction Decoding Stuff */
+
+#define FETCH_DECODE_MODRM(mod,rh,rl) 	fetch_decode_modrm(&mod,&rh,&rl)
+#define DECODE_RM_BYTE_REGISTER(r)    	decode_rm_byte_register(r)
+#define DECODE_RM_WORD_REGISTER(r)    	decode_rm_word_register(r)
+#define DECODE_RM_LONG_REGISTER(r)    	decode_rm_long_register(r)
+#define DECODE_CLEAR_SEGOVR()         	M.x86.mode &= ~SYSMODE_CLRMASK
+
+/*-------------------------- Function Prototypes --------------------------*/
+
+
+void 	x86emu_intr_raise (u8 type);
+void    fetch_decode_modrm (int *mod,int *regh,int *regl);
+u8      fetch_byte_imm (void);
+u16     fetch_word_imm (void);
+u32     fetch_long_imm (void);
+u8      fetch_data_byte (uint offset);
+u8      fetch_data_byte_abs (uint segment, uint offset);
+u16     fetch_data_word (uint offset);
+u16     fetch_data_word_abs (uint segment, uint offset);
+u32     fetch_data_long (uint offset);
+u32     fetch_data_long_abs (uint segment, uint offset);
+void    store_data_byte (uint offset, u8 val);
+void    store_data_byte_abs (uint segment, uint offset, u8 val);
+void    store_data_word (uint offset, u16 val);
+void    store_data_word_abs (uint segment, uint offset, u16 val);
+void    store_data_long (uint offset, u32 val);
+void    store_data_long_abs (uint segment, uint offset, u32 val);
+u8* 	decode_rm_byte_register(int reg);
+u16* 	decode_rm_word_register(int reg);
+u32* 	decode_rm_long_register(int reg);
+u16* 	decode_rm_seg_register(int reg);
+unsigned decode_rm00_address(int rm);
+unsigned decode_rm01_address(int rm);
+unsigned decode_rm10_address(int rm);
+unsigned decode_rmXX_address(int mod, int rm);
+
+
+extern u8  	(* sys_rdb)(u32 addr);
+extern u16 	(* sys_rdw)(u32 addr);
+extern u32 	(* sys_rdl)(u32 addr);
+extern void (* sys_wrb)(u32 addr,u8 val);
+extern void (* sys_wrw)(u32 addr,u16 val);
+extern void (* sys_wrl)(u32 addr,u32 val);
+
+extern u8  	(* sys_inb)(X86EMU_pioAddr addr);
+extern u16 	(* sys_inw)(X86EMU_pioAddr addr);
+extern u32 	(* sys_inl)(X86EMU_pioAddr addr);
+extern void (* sys_outb)(X86EMU_pioAddr addr,u8 val);
+extern void (* sys_outw)(X86EMU_pioAddr addr,u16 val);
+extern void	(* sys_outl)(X86EMU_pioAddr addr,u32 val);
+
+       
+// ops.h
+extern void (*x86emu_optab[0x100])(u8 op1);
+extern void (*x86emu_optab2[0x100])(u8 op2);
+int x86emu_check_jump_condition(u8 op);
+
+// fpu.h
+
+extern void x86emuOp_esc_coprocess_d8 (u8 op1);
+extern void x86emuOp_esc_coprocess_d9 (u8 op1);
+extern void x86emuOp_esc_coprocess_da (u8 op1);
+extern void x86emuOp_esc_coprocess_db (u8 op1);
+extern void x86emuOp_esc_coprocess_dc (u8 op1);
+extern void x86emuOp_esc_coprocess_dd (u8 op1);
+extern void x86emuOp_esc_coprocess_de (u8 op1);
+extern void x86emuOp_esc_coprocess_df (u8 op1);
