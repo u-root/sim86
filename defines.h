@@ -317,32 +317,32 @@ void	x86emu_cpuid (void);
 
 /*---------------------- Macros and type definitions ----------------------*/
 
-/*typedef*/ struct {
+/*typedef*/ struct I32_reg_t{
 	u32 e_reg;
-	} I32_reg_t;
+	} ;
 
-/*typedef*/ struct {
+/*typedef*/ struct I16_reg_t{
 	u16 x_reg;
-	} I16_reg_t;
+	} ;
 
-/*typedef*/ struct {
+/*typedef*/ struct I8_reg_t{
 	u8 l_reg, h_reg;
-	} I8_reg_t;
+	} ;
 
-typedef union {
-	I32_reg_t   I32_reg;
-	I16_reg_t   I16_reg;
-	I8_reg_t    I8_reg;
-	} i386_general_register;
+union i386_general_register{
+	struct I32_reg_t   I32_reg;
+	struct I16_reg_t   I16_reg;
+	struct I8_reg_t    I8_reg;
+	} ;
 
 struct i386_general_regs {
-	i386_general_register A, B, C, D;
+	union i386_general_register A, B, C, D;
 	};
 
 /*typedef*/ struct i386_general_regs Gen_reg_t;
 
 struct i386_special_regs {
-	i386_general_register SP, BP, SI, DI, IP;
+	union i386_general_register SP, BP, SI, DI, IP;
 	u32 FLAGS;
 	};
 
@@ -500,7 +500,7 @@ struct i386_segment_regs {
 #define  INTR_ASYNCH          0x2
 #define  INTR_HALTED          0x4
 
-/*typedef*/ struct {
+/*typedef*/ struct X86EMU_regs{
 	struct i386_general_regs    gen;
 	struct i386_special_regs    spc;
 	struct i386_segment_regs    seg;
@@ -530,7 +530,7 @@ struct i386_segment_regs {
 
 	u8                          intno;
 	u8                          __pad[3];
-	} X86EMU_regs;
+	} ;
 
 /****************************************************************************
 REMARKS:
@@ -548,7 +548,7 @@ x86			- X86 registers
 	unsigned long	mem_size;
 	unsigned long	abseg;
 	void*        	private;
-	X86EMU_regs		x86;
+	struct X86EMU_regs		x86;
 	} X86EMU_sysEnv;
 
 
