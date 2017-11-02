@@ -329,20 +329,20 @@ void	x86emu_cpuid (void);
 	u8 l_reg, h_reg;
 	} ;
 
-union i386_general_register{
+struct i386_general_register{
 	struct I32_reg_t   I32_reg;
 	struct I16_reg_t   I16_reg;
 	struct I8_reg_t    I8_reg;
 	} ;
 
 struct i386_general_regs {
-	union i386_general_register A, B, C, D;
+	struct i386_general_register A, B, C, D;
 	};
 
 /*typedef*/ struct i386_general_regs Gen_reg_t;
 
 struct i386_special_regs {
-	union i386_general_register SP, BP, SI, DI, IP;
+	struct i386_general_register SP, BP, SI, DI, IP;
 	u32 FLAGS;
 	};
 
