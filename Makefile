@@ -1,4 +1,7 @@
-all:
+all: cppops.c
+	c2go transpile cppops.c
+
+cppops.c: ops.c
 	cpp --include defines.h ops.c cppops.c
 	sed -i 's/= \(genop.*\)\[\(.*\)\](\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' cppops.c
 	sed -i 's/= (\*\(genop.*\)\[\(.*\)\]) *(\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' cppops.c
@@ -7,4 +10,3 @@ all:
 	sed -i 's/= (\*\(opcD.*\)\[\(.*\)\]) *(\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' cppops.c
 	sed -i 's/= (\*\(opcD.*\)\[\(.*\)\]) *(\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' cppops.c
 	sed -i '/^#/d' cppops.c
-	c2go transpile cppops.c
