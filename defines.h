@@ -543,13 +543,13 @@ mem_size		- Size of the real mode memory block for the emulator
 private			- private data pointer
 x86			- X86 registers
 ****************************************************************************/
-/*typedef*/ struct {
+/*typedef*/ struct X86EMU_sysEnv{
 	unsigned long	mem_base;
 	unsigned long	mem_size;
 	unsigned long	abseg;
 	void*        	private;
 	struct X86EMU_regs		x86;
-	} X86EMU_sysEnv;
+	} ;
 
 
 /*----------------------------- Global Variables --------------------------*/
@@ -623,14 +623,14 @@ outb	- Function to write a byte to an I/O port
 outw    - Function to write a word to an I/O port
 outl    - Function to write a dword to an I/O port
 ****************************************************************************/
-/*typedef*/ struct {
+/*typedef*/ struct X86EMU_pioFuncs{
 	u8  	(* inb)(X86EMU_pioAddr addr);
 	u16 	(* inw)(X86EMU_pioAddr addr);
 	u32 	(* inl)(X86EMU_pioAddr addr);
 	void 	(* outb)(X86EMU_pioAddr addr, u8 val);
 	void 	(* outw)(X86EMU_pioAddr addr, u16 val);
 	void 	(* outl)(X86EMU_pioAddr addr, u32 val);
-	} X86EMU_pioFuncs;
+	} ;
 
 /****************************************************************************
 REMARKS:
@@ -654,14 +654,14 @@ wrb		- Function to write a byte to an address
 wrw    	- Function to write a word to an address
 wrl    	- Function to write a dword to an address
 ****************************************************************************/
-/*typedef*/ struct {
+/*typedef*/ struct X86EMU_memFuncs{
 	u8  	(* rdb)(u32 addr);
 	u16 	(* rdw)(u32 addr);
 	u32 	(* rdl)(u32 addr);
 	void 	(* wrb)(u32 addr, u8 val);
 	void 	(* wrw)(u32 addr, u16 val);
 	void	(* wrl)(u32 addr, u32 val);
-	} X86EMU_memFuncs;
+	} ;
 
 /****************************************************************************
   Here are the default memory read and write
@@ -679,14 +679,17 @@ extern void  wrl(u32 addr, u32 val);
 /*--------------------- type definitions -----------------------------------*/
 
 typedef void (* X86EMU_intrFuncs)(int num);
-extern X86EMU_intrFuncs _X86EMU_intrTab[256];
+struct X86EMU_intrFuncs {
+       void *f;
+};
+extern struct X86EMU_intrFuncs * _X86EMU_intrTab[256];
 
 /*-------------------------- Function Prototypes --------------------------*/
 
 
-void 	X86EMU_setupMemFuncs(X86EMU_memFuncs *funcs);
-void 	X86EMU_setupPioFuncs(X86EMU_pioFuncs *funcs);
-void 	X86EMU_setupIntrFuncs(X86EMU_intrFuncs funcs[]);
+void 	X86EMU_setupMemFuncs(struct X86EMU_memFuncs *funcs);
+void 	X86EMU_setupPioFuncs(struct X86EMU_pioFuncs *funcs);
+void 	X86EMU_setupIntrFuncs(struct X86EMU_intrFuncs funcs[]);
 void 	X86EMU_prepareForInt(int num);
 
 void X86EMU_setMemBase(void *base, size_t size);
