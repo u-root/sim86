@@ -1,21 +1,21 @@
-typedef char s8;
-typedef unsigned char u8;
-typedef short s16;
-typedef unsigned short u16;
-typedef unsigned int u32;
-typedef int s32;
-typedef unsigned long u64;
-typedef int size_t;
-typedef unsigned int uint;
-typedef signed int sint;
-typedef u16 X86EMU_pioAddr;
+#define s8 char
+#define u8 unsigned char
+#define u16 unsigned short
+#define s16 short
+#define u32 unsigned int
+#define s32 int
+#define u64 unsigned long
+#define size_t int
+#define uint unsigned int
+#define sint int;
+#define X86EMU_pioAddr unsigned short
 int printf(const char *format, ...);
 #define DEBUG
 
-#define CHECK_IP_FETCH_F                0x1
-#define CHECK_SP_ACCESS_F               0x2
-#define CHECK_MEM_ACCESS_F              0x4 /*using regular linear pointer */
-#define CHECK_DATA_ACCESS_F             0x8 /*using segment:offset*/
+static int CHECK_IP_FETCH_F = 0x1;
+static int CHECK_SP_ACCESS_F = 0x2;
+static int CHECK_MEM_ACCESS_F = 0x4; /*using regular linear pointer */
+static int CHECK_DATA_ACCESS_F = 0x8; /*using segment:offset*/
 
 # define CHECK_IP_FETCH()              	(M.x86.check & CHECK_IP_FETCH_F)
 # define CHECK_SP_ACCESS()             	(M.x86.check & CHECK_SP_ACCESS_F)
@@ -410,18 +410,18 @@ struct i386_segment_regs {
 #define R_GS  seg.GS
 
 /* flag conditions   */
-#define FB_CF 0x0001            /* CARRY flag  */
-#define FB_PF 0x0004            /* PARITY flag */
-#define FB_AF 0x0010            /* AUX  flag   */
-#define FB_ZF 0x0040            /* ZERO flag   */
-#define FB_SF 0x0080            /* SIGN flag   */
-#define FB_TF 0x0100            /* TRAP flag   */
-#define FB_IF 0x0200            /* INTERRUPT ENABLE flag */
-#define FB_DF 0x0400            /* DIR flag    */
-#define FB_OF 0x0800            /* OVERFLOW flag */
+static int FB_CF = 0x0001; /* CARRY flag */
+static int FB_PF = 0x0004; /* PARITY flag */
+static int FB_AF = 0x0010; /* AUX flag */
+static int FB_ZF = 0x0040; /* ZERO flag */
+static int FB_SF = 0x0080; /* SIGN flag */
+static int FB_TF = 0x0100; /* TRAP flag */
+static int FB_IF = 0x0200; /* INTERRUPT ENABLE flag */
+static int FB_DF = 0x0400; /* DIR flag */
+static int FB_OF = 0x0800; /* OVERFLOW flag */
 
 /* 80286 and above always have bit#1 set */
-#define F_ALWAYS_ON  (0x0002)   /* flag bits always on */
+#define F_ALWAYS_ON (0x0002) /* flag bits always on */
 
 /*
  * Define a mask for only those flag bits we will ever pass back
@@ -431,15 +431,15 @@ struct i386_segment_regs {
 
 /* following bits masked in to a 16bit quantity */
 
-#define F_CF 0x0001             /* CARRY flag  */
-#define F_PF 0x0004             /* PARITY flag */
-#define F_AF 0x0010             /* AUX  flag   */
-#define F_ZF 0x0040             /* ZERO flag   */
-#define F_SF 0x0080             /* SIGN flag   */
-#define F_TF 0x0100             /* TRAP flag   */
-#define F_IF 0x0200             /* INTERRUPT ENABLE flag */
-#define F_DF 0x0400             /* DIR flag    */
-#define F_OF 0x0800             /* OVERFLOW flag */
+static int F_CF = 0x0001; /* CARRY flag */
+static int F_PF = 0x0004; /* PARITY flag */
+static int F_AF = 0x0010; /* AUX flag */
+static int F_ZF = 0x0040; /* ZERO flag */
+static int F_SF = 0x0080; /* SIGN flag */
+static int F_TF = 0x0100; /* TRAP flag */
+static int F_IF = 0x0200; /* INTERRUPT ENABLE flag */
+static int F_DF = 0x0400; /* DIR flag */
+static int F_OF = 0x0800; /* OVERFLOW flag */
 
 #define TOGGLE_FLAG(flag)     	(M.x86.R_FLG ^= (flag))
 #define SET_FLAG(flag)        	(M.x86.R_FLG |= (flag))
@@ -450,33 +450,33 @@ struct i386_segment_regs {
 #define CONDITIONAL_SET_FLAG(COND,FLAG) \
   if (COND) SET_FLAG(FLAG); else CLEAR_FLAG(FLAG)
 
-#define F_PF_CALC 0x010000      /* PARITY flag has been calced    */
-#define F_ZF_CALC 0x020000      /* ZERO flag has been calced      */
-#define F_SF_CALC 0x040000      /* SIGN flag has been calced      */
+static int F_PF_CALC = 0x010000; /* PARITY flag has been calced */
+static int F_ZF_CALC = 0x020000; /* ZERO flag has been calced */
+static int F_SF_CALC = 0x040000; /* SIGN flag has been calced */
 
-#define F_ALL_CALC      0xff0000        /* All have been calced   */
+static int F_ALL_CALC = 0xff0000; /* All have been calced */
 
 /*
  * Emulator machine state.
  * Segment usage control.
  */
-#define SYSMODE_SEG_DS_SS       0x00000001
-#define SYSMODE_SEGOVR_CS       0x00000002
-#define SYSMODE_SEGOVR_DS       0x00000004
-#define SYSMODE_SEGOVR_ES       0x00000008
-#define SYSMODE_SEGOVR_FS       0x00000010
-#define SYSMODE_SEGOVR_GS       0x00000020
-#define SYSMODE_SEGOVR_SS       0x00000040
-#define SYSMODE_PREFIX_REPE     0x00000080
-#define SYSMODE_PREFIX_REPNE    0x00000100
-#define SYSMODE_PREFIX_DATA     0x00000200
-#define SYSMODE_PREFIX_ADDR     0x00000400
+static int SYSMODE_SEG_DS_SS = 0x00000001;
+static int SYSMODE_SEGOVR_CS = 0x00000002;
+static int SYSMODE_SEGOVR_DS = 0x00000004;
+static int SYSMODE_SEGOVR_ES = 0x00000008;
+static int SYSMODE_SEGOVR_FS = 0x00000010;
+static int SYSMODE_SEGOVR_GS = 0x00000020;
+static int SYSMODE_SEGOVR_SS = 0x00000040;
+static int SYSMODE_PREFIX_REPE = 0x00000080;
+static int SYSMODE_PREFIX_REPNE = 0x00000100;
+static int SYSMODE_PREFIX_DATA = 0x00000200;
+static int SYSMODE_PREFIX_ADDR = 0x00000400;
 //phueper: for REP(E|NE) Instructions, we need to decide whether it should be
 //using the 32bit ECX register as or the 16bit CX register as count register
-#define SYSMODE_32BIT_REP       0x00000800
-#define SYSMODE_INTR_PENDING    0x10000000
-#define SYSMODE_EXTRN_INTR      0x20000000
-#define SYSMODE_HALTED          0x40000000
+static int SYSMODE_32BIT_REP = 0x00000800;
+static int SYSMODE_INTR_PENDING = 0x10000000;
+static int SYSMODE_EXTRN_INTR = 0x20000000;
+static int SYSMODE_HALTED = 0x40000000;
 
 #define SYSMODE_SEGMASK (SYSMODE_SEG_DS_SS      | \
 						 SYSMODE_SEGOVR_CS      | \
@@ -496,9 +496,9 @@ struct i386_segment_regs {
 						 SYSMODE_PREFIX_ADDR    | \
 						 SYSMODE_32BIT_REP)
 
-#define  INTR_SYNCH           0x1
-#define  INTR_ASYNCH          0x2
-#define  INTR_HALTED          0x4
+static int INTR_SYNCH = 0x1;
+static unsigned int INTR_ASYNCH = 0x2;
+static unsigned int INTR_HALTED = 0x4;
 
 /*typedef*/ struct X86EMU_regs{
 	struct i386_general_regs    gen;
@@ -705,25 +705,28 @@ void 	X86EMU_halt_sys(void);
 
 /* Debug options */
 
-#define DEBUG_DECODE_F          0x000001 /* print decoded instruction  */
-#define DEBUG_TRACE_F           0x000002 /* dump regs before/after execution */
-#define DEBUG_STEP_F            0x000004
-#define DEBUG_DISASSEMBLE_F     0x000008
-#define DEBUG_BREAK_F           0x000010
-#define DEBUG_SVC_F             0x000020
-#define DEBUG_FS_F              0x000080
-#define DEBUG_PROC_F            0x000100
-#define DEBUG_SYSINT_F          0x000200 /* bios system interrupts. */
-#define DEBUG_TRACECALL_F       0x000400
-#define DEBUG_INSTRUMENT_F      0x000800
-#define DEBUG_MEM_TRACE_F       0x001000
-#define DEBUG_IO_TRACE_F        0x002000
-#define DEBUG_TRACECALL_REGS_F  0x004000
-#define DEBUG_DECODE_NOPRINT_F  0x008000
-#define DEBUG_SAVE_IP_CS_F      0x010000
-#define DEBUG_TRACEJMP_F        0x020000
-#define DEBUG_TRACEJMP_REGS_F   0x040000
-#define DEBUG_SYS_F             (DEBUG_SVC_F|DEBUG_FS_F|DEBUG_PROC_F)
+static unsigned int DEBUG_DECODE_F = 0x000001; /* print decoded instruction */
+static unsigned int DEBUG_TRACE_F = 0x000002; /* dump regs before/after execution */
+static unsigned int DEBUG_STEP_F = 0x000004;
+static unsigned int DEBUG_DISASSEMBLE_F = 0x000008;
+static unsigned int DEBUG_BREAK_F = 0x000010;
+static unsigned int DEBUG_SVC_F = 0x000020;
+static unsigned int DEBUG_FS_F = 0x000080;
+static unsigned int DEBUG_PROC_F = 0x000100;
+static unsigned int DEBUG_SYSINT_F = 0x000200; /* bios system interrupts. */
+static unsigned int DEBUG_TRACECALL_F = 0x000400;
+static unsigned int DEBUG_INSTRUMENT_F = 0x000800;
+static unsigned int DEBUG_MEM_TRACE_F = 0x001000;
+static unsigned int DEBUG_IO_TRACE_F = 0x002000;
+static unsigned int DEBUG_TRACECALL_REGS_F = 0x004000;
+static unsigned int DEBUG_DECODE_NOPRINT_F = 0x008000;
+static unsigned int DEBUG_SAVE_IP_CS_F = 0x010000;
+static unsigned int DEBUG_TRACEJMP_F = 0x020000;
+static unsigned int DEBUG_TRACEJMP_REGS_F = 0x040000;
+static unsigned int DEBUG_SYS_F;
+static void initDEBUG_SYS_F() {
+	DEBUG_SYS_F  =            (DEBUG_SVC_F|DEBUG_FS_F|DEBUG_PROC_F);
+}
 
 void 	X86EMU_trace_regs(void);
 void 	X86EMU_trace_xregs(void);

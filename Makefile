@@ -1,4 +1,6 @@
-all: cppops.c
+all: cppops.go
+	go build cppops.go
+cppops.go:cppops.c
 	c2go transpile cppops.c
 
 cppops.c: ops.c defines.h
