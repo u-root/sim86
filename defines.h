@@ -431,15 +431,17 @@ static int FB_OF = 0x0800; /* OVERFLOW flag */
 
 /* following bits masked in to a 16bit quantity */
 
-static int F_CF = 0x0001; /* CARRY flag */
-static int F_PF = 0x0004; /* PARITY flag */
-static int F_AF = 0x0010; /* AUX flag */
-static int F_ZF = 0x0040; /* ZERO flag */
-static int F_SF = 0x0080; /* SIGN flag */
-static int F_TF = 0x0100; /* TRAP flag */
-static int F_IF = 0x0200; /* INTERRUPT ENABLE flag */
-static int F_DF = 0x0400; /* DIR flag */
-static int F_OF = 0x0800; /* OVERFLOW flag */
+enum {
+ F_CF = 0x0001, /* CARRY flag */
+ F_PF = 0x0004, /* PARITY flag */
+ F_AF = 0x0010, /* AUX flag */
+ F_ZF = 0x0040, /* ZERO flag */
+ F_SF = 0x0080, /* SIGN flag */
+ F_TF = 0x0100, /* TRAP flag */
+ F_IF = 0x0200, /* INTERRUPT ENABLE flag */
+ F_DF = 0x0400, /* DIR flag */
+ F_OF = 0x0800 /* OVERFLOW flag */
+};
 
 #define TOGGLE_FLAG(flag)     	(M.x86.R_FLG ^= (flag))
 #define SET_FLAG(flag)        	(M.x86.R_FLG |= (flag))
@@ -460,23 +462,25 @@ static int F_ALL_CALC = 0xff0000; /* All have been calced */
  * Emulator machine state.
  * Segment usage control.
  */
-static int SYSMODE_SEG_DS_SS = 0x00000001;
-static int SYSMODE_SEGOVR_CS = 0x00000002;
-static int SYSMODE_SEGOVR_DS = 0x00000004;
-static int SYSMODE_SEGOVR_ES = 0x00000008;
-static int SYSMODE_SEGOVR_FS = 0x00000010;
-static int SYSMODE_SEGOVR_GS = 0x00000020;
-static int SYSMODE_SEGOVR_SS = 0x00000040;
-static int SYSMODE_PREFIX_REPE = 0x00000080;
-static int SYSMODE_PREFIX_REPNE = 0x00000100;
-static int SYSMODE_PREFIX_DATA = 0x00000200;
-static int SYSMODE_PREFIX_ADDR = 0x00000400;
+enum {
+ SYSMODE_SEG_DS_SS = 0x00000001,
+ SYSMODE_SEGOVR_CS = 0x00000002,
+ SYSMODE_SEGOVR_DS = 0x00000004,
+ SYSMODE_SEGOVR_ES = 0x00000008,
+ SYSMODE_SEGOVR_FS = 0x00000010,
+ SYSMODE_SEGOVR_GS = 0x00000020,
+ SYSMODE_SEGOVR_SS = 0x00000040,
+ SYSMODE_PREFIX_REPE = 0x00000080,
+ SYSMODE_PREFIX_REPNE = 0x00000100,
+ SYSMODE_PREFIX_DATA = 0x00000200,
+ SYSMODE_PREFIX_ADDR = 0x00000400,
 //phueper: for REP(E|NE) Instructions, we need to decide whether it should be
 //using the 32bit ECX register as or the 16bit CX register as count register
-static int SYSMODE_32BIT_REP = 0x00000800;
-static int SYSMODE_INTR_PENDING = 0x10000000;
-static int SYSMODE_EXTRN_INTR = 0x20000000;
-static int SYSMODE_HALTED = 0x40000000;
+ SYSMODE_32BIT_REP = 0x00000800,
+ SYSMODE_INTR_PENDING = 0x10000000,
+ SYSMODE_EXTRN_INTR = 0x20000000,
+ SYSMODE_HALTED = 0x40000000
+ };
 
 #define SYSMODE_SEGMASK (SYSMODE_SEG_DS_SS      | \
 						 SYSMODE_SEGOVR_CS      | \
@@ -518,7 +522,7 @@ static unsigned int INTR_HALTED = 0x4;
 	 */
 	u32                         mode;
 	volatile int                intr;   /* mask of pending interrupts */
-	volatile int                         debug;
+	volatile u32                         debug;
 
 	int                         check;
 	u16                         saved_ip;
@@ -860,3 +864,6 @@ extern void x86emuOp_esc_coprocess_dc (u8 op1);
 extern void x86emuOp_esc_coprocess_dd (u8 op1);
 extern void x86emuOp_esc_coprocess_de (u8 op1);
 extern void x86emuOp_esc_coprocess_df (u8 op1);
+
+#define NULL ((void *)0)
+#define _INLINE 

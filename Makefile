@@ -1,8 +1,11 @@
-all: cppops.go
-	go build cppops.go
+all: cppprim_ops.go cppdecode.go cppdebug.go
+	go build cppprim_ops.go
+	go build cppdecode.go
+	go build cppdebug.go
+	echo go build cppops.go
+
 cppops.go:cppops.c
 	c2go transpile cppops.c
-
 cppops.c: ops.c defines.h
 	cpp --include defines.h ops.c cppops.c
 	sed -i 's/= \(genop.*\)\[\(.*\)\](\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' cppops.c
@@ -12,3 +15,48 @@ cppops.c: ops.c defines.h
 	sed -i 's/= (\*\(opcD.*\)\[\(.*\)\]) *(\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' cppops.c
 	sed -i 's/= (\*\(opcD.*\)\[\(.*\)\]) *(\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' cppops.c
 	sed -i '/^#/d' cppops.c
+
+cppdebug.go:cppdebug.c
+	c2go transpile cppdebug.c
+cppdebug.c: debug.c defines.h
+	cpp --include defines.h debug.c cppdebug.c
+	sed -i 's/= \(genop.*\)\[\(.*\)\](\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' cppdebug.c
+	sed -i 's/= (\*\(genop.*\)\[\(.*\)\]) *(\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' cppdebug.c
+	sed -i 's/(.x86emu_optab2.op2.)(op2)/call4("x86emu_optab2.op2", "op2", "op2", "")/' cppdebug.c
+	sed -i 's/(._X86EMU_intrTab.\(.*\)\])(\(.*\))/call4("_X86EMU_intrTab", "\1", "\2", "")/' cppdebug.c
+	sed -i 's/= (\*\(opcD.*\)\[\(.*\)\]) *(\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' cppdebug.c
+	sed -i 's/= (\*\(opcD.*\)\[\(.*\)\]) *(\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' cppdebug.c
+	sed -i '/^#/d' cppdebug.c
+	sed -i 's/X86EMU_sysEnv tregs/struct &/' cppdebug.c
+	sed -i 's/(x86emu_optab\[op1\])(op1)/call1("x86emu_optab.lop1", "op1")/' cppdebug.c
+
+cppdecode.go:cppdecode.c
+	c2go transpile cppdecode.c
+cppdecode.c: decode.c defines.h
+	cpp --include defines.h decode.c cppdecode.c
+	sed -i 's/= \(genop.*\)\[\(.*\)\](\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' cppdecode.c
+	sed -i 's/= (\*\(genop.*\)\[\(.*\)\]) *(\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' cppdecode.c
+	sed -i 's/(.x86emu_optab2.op2.)(op2)/call4("x86emu_optab2.op2", "op2", "op2", "")/' cppdecode.c
+	sed -i 's/(._X86EMU_intrTab.\(.*\)\])(\(.*\))/call4("_X86EMU_intrTab", "\1", "\2", "")/' cppdecode.c
+	sed -i 's/= (\*\(opcD.*\)\[\(.*\)\]) *(\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' cppdecode.c
+	sed -i 's/= (\*\(opcD.*\)\[\(.*\)\]) *(\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' cppdecode.c
+	sed -i '/^#/d' cppdecode.c
+	sed -i 's/X86EMU_sysEnv tregs/struct &/' cppdecode.c
+	sed -i 's/(x86emu_optab\[op1\])(op1)/call1("x86emu_optab.lop1", "op1")/' cppdecode.c
+	sed -i 's/(\*x86emu_optab\[op1\])(op1)/call1("x86emu_optab.lop1", "op1")/' cppdecode.c
+
+cppprim_ops.go:cppprim_ops.c
+	c2go transpile cppprim_ops.c
+cppprim_ops.c: prim_ops.c defines.h
+	cpp --include defines.h prim_ops.c cppprim_ops.c
+	sed -i 's/= \(genop.*\)\[\(.*\)\](\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' cppprim_ops.c
+	sed -i 's/= (\*\(genop.*\)\[\(.*\)\]) *(\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' cppprim_ops.c
+	sed -i 's/(.x86emu_optab2.op2.)(op2)/call4("x86emu_optab2.op2", "op2", "op2", "")/' cppprim_ops.c
+	sed -i 's/(._X86EMU_intrTab.\(.*\)\])(\(.*\))/call4("_X86EMU_intrTab", "\1", "\2", "")/' cppprim_ops.c
+	sed -i 's/= (\*\(opcD.*\)\[\(.*\)\]) *(\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' cppprim_ops.c
+	sed -i 's/= (\*\(opcD.*\)\[\(.*\)\]) *(\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' cppprim_ops.c
+	sed -i '/^#/d' cppprim_ops.c
+	sed -i 's/X86EMU_sysEnv tregs/struct &/' cppprim_ops.c
+	sed -i 's/(x86emu_optab\[op1\])(op1)/call1("x86emu_optab.lop1", "op1")/' cppprim_ops.c
+	sed -i 's/(\*x86emu_optab\[op1\])(op1)/call1("x86emu_optab.lop1", "op1")/' cppprim_ops.c
+	sed -i 's/_X86EMU_env.x86.spc.FLAGS .=/& (u32)/g' cppprim_ops.c
