@@ -443,11 +443,11 @@ enum {
  F_OF = 0x0800 /* OVERFLOW flag */
 };
 
-#define TOGGLE_FLAG(flag)     	(M.x86.R_FLG ^= (flag))
-#define SET_FLAG(flag)        	(M.x86.R_FLG |= (flag))
-#define CLEAR_FLAG(flag)      	(M.x86.R_FLG &= ~(flag))
-#define ACCESS_FLAG(flag)     	(M.x86.R_FLG & (flag))
-#define CLEARALL_FLAG(m)    	(M.x86.R_FLG = 0)
+#define TOGGLE_FLAG(flag)     	M.x86.R_FLG ^= (flag)
+#define SET_FLAG(flag)        	M.x86.R_FLG |= (flag)
+#define CLEAR_FLAG(flag)      	M.x86.R_FLG &= ~(flag)
+#define ACCESS_FLAG(flag)     	M.x86.R_FLG & (flag)
+#define CLEARALL_FLAG(m)    	M.x86.R_FLG = 0
 
 #define CONDITIONAL_SET_FLAG(COND,FLAG) \
   if (COND) SET_FLAG(FLAG); else CLEAR_FLAG(FLAG)
@@ -607,67 +607,6 @@ extern    struct X86EMU_sysEnv	_X86EMU_env;
 
 
 /****************************************************************************
-REMARKS:
-Data structure containing pointers to programmed I/O functions used by the
-emulator. This is used so that the user program can hook all programmed
-I/O for the emulator to handled as necessary by the user program. By
-default the emulator contains simple functions that do not do access the
-hardware in any way. To allow the emulator access the hardware, you will
-need to override the programmed I/O functions using the X86EMU_setupPioFuncs
-function.
-
-HEADER:
-x86emu.h
-
-MEMBERS:
-inb		- Function to read a byte from an I/O port
-inw		- Function to read a word from an I/O port
-inl     - Function to read a dword from an I/O port
-outb	- Function to write a byte to an I/O port
-outw    - Function to write a word to an I/O port
-outl    - Function to write a dword to an I/O port
-****************************************************************************/
-/*typedef*/ struct X86EMU_pioFuncs{
-	u8  	(* inb)(X86EMU_pioAddr addr);
-	u16 	(* inw)(X86EMU_pioAddr addr);
-	u32 	(* inl)(X86EMU_pioAddr addr);
-	void 	(* outb)(X86EMU_pioAddr addr, u8 val);
-	void 	(* outw)(X86EMU_pioAddr addr, u16 val);
-	void 	(* outl)(X86EMU_pioAddr addr, u32 val);
-	} ;
-
-/****************************************************************************
-REMARKS:
-Data structure containing pointers to memory access functions used by the
-emulator. This is used so that the user program can hook all memory
-access functions as necessary for the emulator. By default the emulator
-contains simple functions that only access the internal memory of the
-emulator. If you need specialized functions to handle access to different
-types of memory (ie: hardware framebuffer accesses and BIOS memory access
-etc), you will need to override this using the X86EMU_setupMemFuncs
-function.
-
-HEADER:
-x86emu.h
-
-MEMBERS:
-rdb		- Function to read a byte from an address
-rdw		- Function to read a word from an address
-rdl     - Function to read a dword from an address
-wrb		- Function to write a byte to an address
-wrw    	- Function to write a word to an address
-wrl    	- Function to write a dword to an address
-****************************************************************************/
-/*typedef*/ struct X86EMU_memFuncs{
-	u8  	(* rdb)(u32 addr);
-	u16 	(* rdw)(u32 addr);
-	u32 	(* rdl)(u32 addr);
-	void 	(* wrb)(u32 addr, u8 val);
-	void 	(* wrw)(u32 addr, u16 val);
-	void	(* wrl)(u32 addr, u32 val);
-	} ;
-
-/****************************************************************************
   Here are the default memory read and write
   function in case they are needed as fallbacks.
 ***************************************************************************/
@@ -682,18 +621,17 @@ extern void  wrl(u32 addr, u32 val);
 
 /*--------------------- type definitions -----------------------------------*/
 
+#if 0
 typedef void (* X86EMU_intrFuncs)(int num);
+#endif
 struct X86EMU_intrFuncs {
-       void *f;
+       unsigned int f;
 };
 extern struct X86EMU_intrFuncs * _X86EMU_intrTab[256];
 
 /*-------------------------- Function Prototypes --------------------------*/
 
 
-void 	X86EMU_setupMemFuncs(struct X86EMU_memFuncs *funcs);
-void 	X86EMU_setupPioFuncs(struct X86EMU_pioFuncs *funcs);
-void 	X86EMU_setupIntrFuncs(struct X86EMU_intrFuncs funcs[]);
 void 	X86EMU_prepareForInt(int num);
 
 void X86EMU_setMemBase(void *base, size_t size);
@@ -834,19 +772,19 @@ unsigned decode_rm10_address(int rm);
 unsigned decode_rmXX_address(int mod, int rm);
 
 
-extern u8  	(* sys_rdb)(u32 addr);
-extern u16 	(* sys_rdw)(u32 addr);
-extern u32 	(* sys_rdl)(u32 addr);
-extern void (* sys_wrb)(u32 addr,u8 val);
-extern void (* sys_wrw)(u32 addr,u16 val);
-extern void (* sys_wrl)(u32 addr,u32 val);
+extern u8  	 sys_rdb(u32 addr);
+extern u16 	 sys_rdw(u32 addr);
+extern u32 	 sys_rdl(u32 addr);
+extern void  sys_wrb(u32 addr,u8 val);
+extern void  sys_wrw(u32 addr,u16 val);
+extern void  sys_wrl(u32 addr,u32 val);
 
-extern u8  	(* sys_inb)(X86EMU_pioAddr addr);
-extern u16 	(* sys_inw)(X86EMU_pioAddr addr);
-extern u32 	(* sys_inl)(X86EMU_pioAddr addr);
-extern void (* sys_outb)(X86EMU_pioAddr addr,u8 val);
-extern void (* sys_outw)(X86EMU_pioAddr addr,u16 val);
-extern void	(* sys_outl)(X86EMU_pioAddr addr,u32 val);
+extern u8  	 sys_inb(X86EMU_pioAddr addr);
+extern u16 	 sys_inw(X86EMU_pioAddr addr);
+extern u32 	 sys_inl(X86EMU_pioAddr addr);
+extern void  sys_outb(X86EMU_pioAddr addr,u8 val);
+extern void  sys_outw(X86EMU_pioAddr addr,u16 val);
+extern void	 sys_outl(X86EMU_pioAddr addr,u32 val);
 
        
 // ops.h
