@@ -48,6 +48,7 @@ cppdecode.c: decode.c defines.h
 cppprim_ops.go:cppprim_ops.c
 	c2go transpile cppprim_ops.c
 cppprim_ops.c: prim_ops.c defines.h
+	sed -i 's/_X86EMU_env.x86.spc.FLAGS .=/& (u32)/g' cppprim_ops.c
 	cpp --include defines.h prim_ops.c cppprim_ops.c
 	sed -i 's/= \(genop.*\)\[\(.*\)\](\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' cppprim_ops.c
 	sed -i 's/= (\*\(genop.*\)\[\(.*\)\]) *(\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' cppprim_ops.c
@@ -59,4 +60,3 @@ cppprim_ops.c: prim_ops.c defines.h
 	sed -i 's/X86EMU_sysEnv tregs/struct &/' cppprim_ops.c
 	sed -i 's/(x86emu_optab\[op1\])(op1)/call1("x86emu_optab.lop1", "op1")/' cppprim_ops.c
 	sed -i 's/(\*x86emu_optab\[op1\])(op1)/call1("x86emu_optab.lop1", "op1")/' cppprim_ops.c
-	sed -i 's/_X86EMU_env.x86.spc.FLAGS .=/& (u32)/g' cppprim_ops.c
