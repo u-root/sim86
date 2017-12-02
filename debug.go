@@ -121,7 +121,7 @@ func disassemble_forward (seg uint16, off uint16, n int) {
      */
     for (i=0; i<n; i++) {
         op1 = sys_rdb((uint32(M.x86.R_CS)<<4) + (M.x86.R_IP++));
-        (x86emu_optab[op1])(op1);
+        x86emu_optab[op1](op1);
     }
     /* end major hack mode. */
 }
