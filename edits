@@ -1,7 +1,7 @@
 #!/bin/bash
 
 sed -i 's/printf/fmt.Printf/' $1
-sed -i 's/\(u*int[361][624]\)[^a-z][^a-z]*\([a-z][a-z]*\)/\2 \1/g' $1
+sed -i 's/u\([361][624]\)[^a-z][^a-z]*\([a-z][a-z]*\)/\2 uint\1/g' $1
 
 exit 0
 all: cppprim_ops.go cppdecode.go cppdebug.go
