@@ -5,6 +5,9 @@ sed -i 's/printf/fmt.Printf/' $1
 sed -i 's/(u\([361][624]\))\([A-Za-z][_A-Za-z\.0-9]*\)/uint\1(\2)/g' $1
 
 sed -i 's/u\([361][624]\)[^a-z][^a-z]*\([a-z][a-z]*\)/\2 uint\1/g' $1
+sed -i 's/, int[^a-z][^a-z]*\*\([a-z][a-z]*\)/, \1 *int/g' $1
+sed -i 's/, int[^a-z][^a-z]*\([a-z][a-z]*\)/, \1 int/g' $1
+sed -i 's/const char \*\([a-z][a-z]*\)/\1 string/g' $1
 
 exit 0
 all: cppprim_ops.go cppdecode.go cppdebug.go

@@ -72,7 +72,7 @@ func x86emu_just_disassemble () {
     print_decoded_instruction();
 }
 
-func disassemble_forward (seg uint16, off uint16, int n) {
+func disassemble_forward (seg uint16, off uint16, n int) {
     X86EMU_sysEnv tregs;
     int i;
     u8 op1;
@@ -145,12 +145,12 @@ func x86emu_inc_decoded_inst_len (int x) {
     M.x86.enc_pos += x;
 }
 
-func x86emu_decode_fmt.Printf (const char *x) {
+func x86emu_decode_fmt.Printf (x string) {
     strcpy(M.x86.decoded_buf+M.x86.enc_str_pos,x);
     M.x86.enc_str_pos += strlen(x);
 }
 
-func x86emu_decode_fmt.Printf2 (const char *x, int y) {
+func x86emu_decode_fmt.Printf2 (x string, y int) {
     char temp[100];
     snfmt.Printf(temp, sizeof (temp), x,y);
     strcpy(M.x86.decoded_buf+M.x86.enc_str_pos,temp);
@@ -304,7 +304,7 @@ int X86EMU_trace_off(void)
     return M.x86.debug &= ~(DEBUG_STEP_F | DEBUG_DECODE_F | DEBUG_TRACE_F);
 }
 
-int parse_line (char *s, int *ps, int *n)
+int parse_line (char *s, ps *int, n *int)
 {
 #if 0
     int cmd;
