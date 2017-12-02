@@ -40,15 +40,8 @@
 
 /*----------------------------- Implementation ----------------------------*/
 
-#ifdef DEBUG
-
-static void     print_encoded_bytes (u16 s, u16 o);
-static void     print_decoded_instruction (void);
-int      parse_line (char *s, int *ps, int *n);
-
 /* should look something like debug's output. */
-void X86EMU_trace_regs (void)
-{
+func X86EMU_trace_regs () {
     if (DEBUG_TRACE()) {
 	if (M.x86.mode & (SYSMODE_PREFIX_DATA | SYSMODE_PREFIX_ADDR)) {
 	        x86emu_dump_xregs();
@@ -63,15 +56,13 @@ void X86EMU_trace_regs (void)
     }
 }
 
-void X86EMU_trace_xregs (void)
-{
+func X86EMU_trace_xregs (){
     if (DEBUG_TRACE()) {
         x86emu_dump_xregs();
     }
 }
 
-void x86emu_just_disassemble (void)
-{
+func x86emu_just_disassemble () {
     /*
      * This routine called if the flag DEBUG_DISASSEMBLE is set kind
      * of a hack!
@@ -81,8 +72,7 @@ void x86emu_just_disassemble (void)
     print_decoded_instruction();
 }
 
-void disassemble_forward (u16 seg, u16 off, int n)
-{
+func disassemble_forward (u16 seg, u16 off, int n) {
     X86EMU_sysEnv tregs;
     int i;
     u8 op1;
@@ -136,46 +126,38 @@ void disassemble_forward (u16 seg, u16 off, int n)
     /* end major hack mode. */
 }
 
-void x86emu_check_ip_access (void)
-{
+func x86emu_check_ip_access () {
     /* NULL as of now */
 }
 
-void x86emu_check_sp_access (void)
-{
+func x86emu_check_sp_access () {
 }
 
-void x86emu_check_mem_access (u32 dummy)
-{
+func x86emu_check_mem_access (u32 dummy) {
     /*  check bounds, etc */
 }
 
-void x86emu_check_data_access (uint dummy1, uint dummy2)
-{
+func x86emu_check_data_access (uint dummy1, uint dummy2) {
     /*  check bounds, etc */
 }
 
-void x86emu_inc_decoded_inst_len (int x)
-{
+func x86emu_inc_decoded_inst_len (int x) {
     M.x86.enc_pos += x;
 }
 
-void x86emu_decode_printf (const char *x)
-{
+func x86emu_decode_printf (const char *x) {
     strcpy(M.x86.decoded_buf+M.x86.enc_str_pos,x);
     M.x86.enc_str_pos += strlen(x);
 }
 
-void x86emu_decode_printf2 (const char *x, int y)
-{
+func x86emu_decode_printf2 (const char *x, int y) {
     char temp[100];
     snprintf(temp, sizeof (temp), x,y);
     strcpy(M.x86.decoded_buf+M.x86.enc_str_pos,temp);
     M.x86.enc_str_pos += strlen(temp);
 }
 
-void x86emu_end_instr (void)
-{
+func x86emu_end_instr () {
     M.x86.enc_str_pos = 0;
     M.x86.enc_pos = 0;
 }
@@ -195,8 +177,7 @@ static void print_decoded_instruction (void)
     printf("%s", M.x86.decoded_buf);
 }
 
-void x86emu_print_int_vect (u16 iv)
-{
+func x86emu_print_int_vect (u16 iv) {
     u16 seg,off;
 
     if (iv > 256) return;
@@ -205,8 +186,7 @@ void x86emu_print_int_vect (u16 iv)
     printf("%04x:%04x ", seg, off);
 }
 
-void X86EMU_dump_memory (u16 seg, u16 off, u32 amt)
-{
+func X86EMU_dump_memory (u16 seg, u16 off, u32 amt) {
     u32 start = off & 0xfffffff0;
     u32 end  = (off+16) & 0xfffffff0;
     u32 i;
@@ -223,8 +203,7 @@ void X86EMU_dump_memory (u16 seg, u16 off, u32 amt)
     }
 }
 
-void x86emu_single_step (void)
-{
+func x86emu_single_step () {
 #if 0
     char s[1024];
     int ps[10];
@@ -360,8 +339,7 @@ int parse_line (char *s, int *ps, int *n)
 
 #endif /* DEBUG */
 
-void x86emu_dump_regs (void)
-{
+func x86emu_dump_regs () {
     printf("\tAX=%04x  ", M.x86.R_AX );
     printf("BX=%04x  ", M.x86.R_BX );
     printf("CX=%04x  ", M.x86.R_CX );
@@ -394,8 +372,7 @@ void x86emu_dump_regs (void)
     printf("\n");
 }
 
-void x86emu_dump_xregs (void)
-{
+func x86emu_dump_xregs () {
     printf("\tEAX=%08x  ", M.x86.R_EAX );
     printf("EBX=%08x  ", M.x86.R_EBX );
     printf("ECX=%08x  ", M.x86.R_ECX );
