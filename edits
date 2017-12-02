@@ -9,6 +9,9 @@ sed -i 's/, int[^a-z][^a-z]*\*\([a-z][a-z]*\)/, \1 *int/g' $1
 sed -i 's/, int[^a-z][^a-z]*\([a-z][a-z]*\)/, \1 int/g' $1
 sed -i 's/const char \*\([a-z][a-z]*\)/\1 string/g' $1
 
+sed -i 's/(\*\(sys_rd.\))/\1/' $1
+# sed -i 's/(x86emu_optab[\(op1\)])/x86emu_optab[\1]/' $1
+
 exit 0
 all: cppprim_ops.go cppdecode.go cppdebug.go
 	go build cppprim_ops.go
