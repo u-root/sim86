@@ -37,6 +37,9 @@
 *
 ****************************************************************************/
 
+import (
+	"fmt"
+)
 
 /*----------------------------- Implementation ----------------------------*/
 
@@ -145,12 +148,12 @@ func x86emu_inc_decoded_inst_len (int x) {
     M.x86.enc_pos += x;
 }
 
-func x86emu_decode_fmt.Printf (x string) {
+func x86emu_decode_printf (x string) {
     strcpy(M.x86.decoded_buf+M.x86.enc_str_pos,x);
     M.x86.enc_str_pos += strlen(x);
 }
 
-func x86emu_decode_fmt.Printf2 (x string, y int) {
+func x86emu_decode_printf2 (x string, y int) {
     char temp[100];
     snfmt.Printf(temp, sizeof (temp), x,y);
     strcpy(M.x86.decoded_buf+M.x86.enc_str_pos,temp);
@@ -204,7 +207,7 @@ func X86EMU_dump_memory (seg uint16, off uint16, amt uint32) {
 }
 
 func x86emu_single_step () {
-#if 0
+	var notyet = `
     char s[1024];
     int ps[10];
     int ntok;
@@ -291,7 +294,7 @@ func x86emu_single_step () {
             break;
         }
     }
-#endif
+`
 }
 
 int X86EMU_trace_on(void)
@@ -304,9 +307,9 @@ int X86EMU_trace_off(void)
     return M.x86.debug &= ~(DEBUG_STEP_F | DEBUG_DECODE_F | DEBUG_TRACE_F);
 }
 
-int parse_line (char *s, ps *int, n *int)
+int parse_line (s string, ps *int, n *int) error
 {
-#if 0
+	var notyet=`
     int cmd;
 
     *n = 0;
@@ -332,13 +335,9 @@ int parse_line (char *s, ps *int, n *int)
         sscanf(s,"%x",&ps[*n]);
         *n += 1;
     }
-#else
-    return 0;
-#endif
+    `
+    return errors.New("not yet")
 }
-
-#endif /* DEBUG */
-
 func x86emu_dump_regs () {
     fmt.Printf("\tAX=%04x  ", M.x86.R_AX );
     fmt.Printf("BX=%04x  ", M.x86.R_BX );
