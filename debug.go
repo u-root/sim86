@@ -50,7 +50,7 @@ func X86EMU_trace_regs () {
 	}
     }
     if (DEBUG_DECODE() && ! DEBUG_DECODE_NOPRINT()) {
-        printf("%04x:%04x ",M.x86.saved_cs, M.x86.saved_ip);
+        fmt.Printf("%04x:%04x ",M.x86.saved_cs, M.x86.saved_ip);
         print_encoded_bytes( M.x86.saved_cs, M.x86.saved_ip);
         print_decoded_instruction();
     }
@@ -67,7 +67,7 @@ func x86emu_just_disassemble () {
      * This routine called if the flag DEBUG_DISASSEMBLE is set kind
      * of a hack!
      */
-    printf("%04x:%04x ",M.x86.saved_cs, M.x86.saved_ip);
+    fmt.Printf("%04x:%04x ",M.x86.saved_cs, M.x86.saved_ip);
     print_encoded_bytes( M.x86.saved_cs, M.x86.saved_ip);
     print_decoded_instruction();
 }
@@ -145,14 +145,14 @@ func x86emu_inc_decoded_inst_len (int x) {
     M.x86.enc_pos += x;
 }
 
-func x86emu_decode_printf (const char *x) {
+func x86emu_decode_fmt.Printf (const char *x) {
     strcpy(M.x86.decoded_buf+M.x86.enc_str_pos,x);
     M.x86.enc_str_pos += strlen(x);
 }
 
-func x86emu_decode_printf2 (const char *x, int y) {
+func x86emu_decode_fmt.Printf2 (const char *x, int y) {
     char temp[100];
-    snprintf(temp, sizeof (temp), x,y);
+    snfmt.Printf(temp, sizeof (temp), x,y);
     strcpy(M.x86.decoded_buf+M.x86.enc_str_pos,temp);
     M.x86.enc_str_pos += strlen(temp);
 }
@@ -167,14 +167,14 @@ static void print_encoded_bytes (u16 s, u16 o)
     int i;
     char buf1[64];
     for (i=0; i< M.x86.enc_pos; i++) {
-	    snprintf(buf1+2*i, 64 - 2 * i, "%02x", fetch_data_byte_abs(s,o+i));
+	    snfmt.Printf(buf1+2*i, 64 - 2 * i, "%02x", fetch_data_byte_abs(s,o+i));
     }
-    printf("%-20s ",buf1);
+    fmt.Printf("%-20s ",buf1);
 }
 
 static void print_decoded_instruction (void)
 {
-    printf("%s", M.x86.decoded_buf);
+    fmt.Printf("%s", M.x86.decoded_buf);
 }
 
 func x86emu_print_int_vect (u16 iv) {
@@ -183,7 +183,7 @@ func x86emu_print_int_vect (u16 iv) {
     if (iv > 256) return;
     seg   = fetch_data_word_abs(0,iv*4);
     off   = fetch_data_word_abs(0,iv*4+2);
-    printf("%04x:%04x ", seg, off);
+    fmt.Printf("%04x:%04x ", seg, off);
 }
 
 func X86EMU_dump_memory (u16 seg, u16 off, u32 amt) {
@@ -192,12 +192,12 @@ func X86EMU_dump_memory (u16 seg, u16 off, u32 amt) {
     u32 i;
 
     while (end <= off + amt) {
-        printf("%04x:%04x ", seg, start);
+        fmt.Printf("%04x:%04x ", seg, start);
         for (i=start; i< off; i++)
-          printf("   ");
+          fmt.Printf("   ");
         for (       ; i< end; i++)
-          printf("%02x ", fetch_data_byte_abs(seg,i));
-        printf("\n");
+          fmt.Printf("%02x ", fetch_data_byte_abs(seg,i));
+        fmt.Printf("\n");
         start = end;
         end = start + 16;
     }
@@ -229,7 +229,7 @@ func x86emu_single_step () {
     done=0;
     offset = M.x86.saved_ip;
     while (!done) {
-        printf("-");
+        fmt.Printf("-");
         (void)fgets(s, 1023, stdin);
         cmd = parse_line(s, ps, &ntok);
         switch(cmd) {
@@ -283,7 +283,7 @@ func x86emu_single_step () {
           return;
       case 'P':
           noDecode = (noDecode)?0:1;
-          printf("Toggled decoding to %s\n",(noDecode)?"FALSE":"TRUE");
+          fmt.Printf("Toggled decoding to %s\n",(noDecode)?"FALSE":"TRUE");
           break;
           case 't':
       case 0:
@@ -340,67 +340,67 @@ int parse_line (char *s, int *ps, int *n)
 #endif /* DEBUG */
 
 func x86emu_dump_regs () {
-    printf("\tAX=%04x  ", M.x86.R_AX );
-    printf("BX=%04x  ", M.x86.R_BX );
-    printf("CX=%04x  ", M.x86.R_CX );
-    printf("DX=%04x  ", M.x86.R_DX );
-    printf("SP=%04x  ", M.x86.R_SP );
-    printf("BP=%04x  ", M.x86.R_BP );
-    printf("SI=%04x  ", M.x86.R_SI );
-    printf("DI=%04x\n", M.x86.R_DI );
-    printf("\tDS=%04x  ", M.x86.R_DS );
-    printf("ES=%04x  ", M.x86.R_ES );
-    printf("SS=%04x  ", M.x86.R_SS );
-    printf("CS=%04x  ", M.x86.R_CS );
-    printf("IP=%04x   ", M.x86.R_IP );
-    if (ACCESS_FLAG(F_OF))    printf("OV ");     /* CHECKED... */
-    else                        printf("NV ");
-    if (ACCESS_FLAG(F_DF))    printf("DN ");
-    else                        printf("UP ");
-    if (ACCESS_FLAG(F_IF))    printf("EI ");
-    else                        printf("DI ");
-    if (ACCESS_FLAG(F_SF))    printf("NG ");
-    else                        printf("PL ");
-    if (ACCESS_FLAG(F_ZF))    printf("ZR ");
-    else                        printf("NZ ");
-    if (ACCESS_FLAG(F_AF))    printf("AC ");
-    else                        printf("NA ");
-    if (ACCESS_FLAG(F_PF))    printf("PE ");
-    else                        printf("PO ");
-    if (ACCESS_FLAG(F_CF))    printf("CY ");
-    else                        printf("NC ");
-    printf("\n");
+    fmt.Printf("\tAX=%04x  ", M.x86.R_AX );
+    fmt.Printf("BX=%04x  ", M.x86.R_BX );
+    fmt.Printf("CX=%04x  ", M.x86.R_CX );
+    fmt.Printf("DX=%04x  ", M.x86.R_DX );
+    fmt.Printf("SP=%04x  ", M.x86.R_SP );
+    fmt.Printf("BP=%04x  ", M.x86.R_BP );
+    fmt.Printf("SI=%04x  ", M.x86.R_SI );
+    fmt.Printf("DI=%04x\n", M.x86.R_DI );
+    fmt.Printf("\tDS=%04x  ", M.x86.R_DS );
+    fmt.Printf("ES=%04x  ", M.x86.R_ES );
+    fmt.Printf("SS=%04x  ", M.x86.R_SS );
+    fmt.Printf("CS=%04x  ", M.x86.R_CS );
+    fmt.Printf("IP=%04x   ", M.x86.R_IP );
+    if (ACCESS_FLAG(F_OF))    fmt.Printf("OV ");     /* CHECKED... */
+    else                        fmt.Printf("NV ");
+    if (ACCESS_FLAG(F_DF))    fmt.Printf("DN ");
+    else                        fmt.Printf("UP ");
+    if (ACCESS_FLAG(F_IF))    fmt.Printf("EI ");
+    else                        fmt.Printf("DI ");
+    if (ACCESS_FLAG(F_SF))    fmt.Printf("NG ");
+    else                        fmt.Printf("PL ");
+    if (ACCESS_FLAG(F_ZF))    fmt.Printf("ZR ");
+    else                        fmt.Printf("NZ ");
+    if (ACCESS_FLAG(F_AF))    fmt.Printf("AC ");
+    else                        fmt.Printf("NA ");
+    if (ACCESS_FLAG(F_PF))    fmt.Printf("PE ");
+    else                        fmt.Printf("PO ");
+    if (ACCESS_FLAG(F_CF))    fmt.Printf("CY ");
+    else                        fmt.Printf("NC ");
+    fmt.Printf("\n");
 }
 
 func x86emu_dump_xregs () {
-    printf("\tEAX=%08x  ", M.x86.R_EAX );
-    printf("EBX=%08x  ", M.x86.R_EBX );
-    printf("ECX=%08x  ", M.x86.R_ECX );
-    printf("EDX=%08x\n", M.x86.R_EDX );
-    printf("\tESP=%08x  ", M.x86.R_ESP );
-    printf("EBP=%08x  ", M.x86.R_EBP );
-    printf("ESI=%08x  ", M.x86.R_ESI );
-    printf("EDI=%08x\n", M.x86.R_EDI );
-    printf("\tDS=%04x  ", M.x86.R_DS );
-    printf("ES=%04x  ", M.x86.R_ES );
-    printf("SS=%04x  ", M.x86.R_SS );
-    printf("CS=%04x  ", M.x86.R_CS );
-    printf("EIP=%08x\n\t", M.x86.R_EIP );
-    if (ACCESS_FLAG(F_OF))    printf("OV ");     /* CHECKED... */
-    else                        printf("NV ");
-    if (ACCESS_FLAG(F_DF))    printf("DN ");
-    else                        printf("UP ");
-    if (ACCESS_FLAG(F_IF))    printf("EI ");
-    else                        printf("DI ");
-    if (ACCESS_FLAG(F_SF))    printf("NG ");
-    else                        printf("PL ");
-    if (ACCESS_FLAG(F_ZF))    printf("ZR ");
-    else                        printf("NZ ");
-    if (ACCESS_FLAG(F_AF))    printf("AC ");
-    else                        printf("NA ");
-    if (ACCESS_FLAG(F_PF))    printf("PE ");
-    else                        printf("PO ");
-    if (ACCESS_FLAG(F_CF))    printf("CY ");
-    else                        printf("NC ");
-    printf("\n");
+    fmt.Printf("\tEAX=%08x  ", M.x86.R_EAX );
+    fmt.Printf("EBX=%08x  ", M.x86.R_EBX );
+    fmt.Printf("ECX=%08x  ", M.x86.R_ECX );
+    fmt.Printf("EDX=%08x\n", M.x86.R_EDX );
+    fmt.Printf("\tESP=%08x  ", M.x86.R_ESP );
+    fmt.Printf("EBP=%08x  ", M.x86.R_EBP );
+    fmt.Printf("ESI=%08x  ", M.x86.R_ESI );
+    fmt.Printf("EDI=%08x\n", M.x86.R_EDI );
+    fmt.Printf("\tDS=%04x  ", M.x86.R_DS );
+    fmt.Printf("ES=%04x  ", M.x86.R_ES );
+    fmt.Printf("SS=%04x  ", M.x86.R_SS );
+    fmt.Printf("CS=%04x  ", M.x86.R_CS );
+    fmt.Printf("EIP=%08x\n\t", M.x86.R_EIP );
+    if (ACCESS_FLAG(F_OF))    fmt.Printf("OV ");     /* CHECKED... */
+    else                        fmt.Printf("NV ");
+    if (ACCESS_FLAG(F_DF))    fmt.Printf("DN ");
+    else                        fmt.Printf("UP ");
+    if (ACCESS_FLAG(F_IF))    fmt.Printf("EI ");
+    else                        fmt.Printf("DI ");
+    if (ACCESS_FLAG(F_SF))    fmt.Printf("NG ");
+    else                        fmt.Printf("PL ");
+    if (ACCESS_FLAG(F_ZF))    fmt.Printf("ZR ");
+    else                        fmt.Printf("NZ ");
+    if (ACCESS_FLAG(F_AF))    fmt.Printf("AC ");
+    else                        fmt.Printf("NA ");
+    if (ACCESS_FLAG(F_PF))    fmt.Printf("PE ");
+    else                        fmt.Printf("PO ");
+    if (ACCESS_FLAG(F_CF))    fmt.Printf("CY ");
+    else                        fmt.Printf("NC ");
+    fmt.Printf("\n");
 }
