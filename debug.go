@@ -72,7 +72,7 @@ func x86emu_just_disassemble () {
     print_decoded_instruction();
 }
 
-func disassemble_forward (u16 seg, u16 off, int n) {
+func disassemble_forward (seg uint16, off uint16, int n) {
     X86EMU_sysEnv tregs;
     int i;
     u8 op1;
@@ -120,7 +120,7 @@ func disassemble_forward (u16 seg, u16 off, int n) {
      * Note the use of a copy of the register structure...
      */
     for (i=0; i<n; i++) {
-        op1 = (*sys_rdb)(((u32)M.x86.R_CS<<4) + (M.x86.R_IP++));
+        op1 = (*sys_rdb)((uint32(M.x86.R_CS)<<4) + (M.x86.R_IP++));
         (x86emu_optab[op1])(op1);
     }
     /* end major hack mode. */
@@ -133,7 +133,7 @@ func x86emu_check_ip_access () {
 func x86emu_check_sp_access () {
 }
 
-func x86emu_check_mem_access (u32 dummy) {
+func x86emu_check_mem_access (dummy uint32) {
     /*  check bounds, etc */
 }
 
@@ -162,7 +162,7 @@ func x86emu_end_instr () {
     M.x86.enc_pos = 0;
 }
 
-static void print_encoded_bytes (u16 s, u16 o)
+static void print_encoded_bytes (s uint16, o uint16)
 {
     int i;
     char buf1[64];
@@ -177,8 +177,8 @@ static void print_decoded_instruction (void)
     fmt.Printf("%s", M.x86.decoded_buf);
 }
 
-func x86emu_print_int_vect (u16 iv) {
-    u16 seg,off;
+func x86emu_print_int_vect (iv uint16) {
+    seg uint16,off;
 
     if (iv > 256) return;
     seg   = fetch_data_word_abs(0,iv*4);
@@ -186,10 +186,10 @@ func x86emu_print_int_vect (u16 iv) {
     fmt.Printf("%04x:%04x ", seg, off);
 }
 
-func X86EMU_dump_memory (u16 seg, u16 off, u32 amt) {
-    u32 start = off & 0xfffffff0;
-    u32 end  = (off+16) & 0xfffffff0;
-    u32 i;
+func X86EMU_dump_memory (seg uint16, off uint16, amt uint32) {
+    start uint32 = off & 0xfffffff0;
+    end uint32  = (off+16) & 0xfffffff0;
+    i uint32;
 
     while (end <= off + amt) {
         fmt.Printf("%04x:%04x ", seg, start);
@@ -234,22 +234,22 @@ func x86emu_single_step () {
         cmd = parse_line(s, ps, &ntok);
         switch(cmd) {
           case 'u':
-            disassemble_forward(M.x86.saved_cs,(u16)offset,10);
+            disassemble_forward(M.x86.saved_cs,uint16(offset),10);
             break;
           case 'd':
                             if (ntok == 2) {
                                     segment = M.x86.saved_cs;
                                     offset = ps[1];
-                                    X86EMU_dump_memory(segment,(u16)offset,16);
+                                    X86EMU_dump_memory(segment,uint16(offset),16);
                                     offset += 16;
                             } else if (ntok == 3) {
                                     segment = ps[1];
                                     offset = ps[2];
-                                    X86EMU_dump_memory(segment,(u16)offset,16);
+                                    X86EMU_dump_memory(segment,uint16(offset),16);
                                     offset += 16;
                             } else {
                                     segment = M.x86.saved_cs;
-                                    X86EMU_dump_memory(segment,(u16)offset,16);
+                                    X86EMU_dump_memory(segment,uint16(offset),16);
                                     offset += 16;
                             }
             break;
