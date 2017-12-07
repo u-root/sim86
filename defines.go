@@ -155,10 +155,3 @@ func initDEBUG_SYS_F() {
 	DEBUG_SYS_F = (DEBUG_SVC_F | DEBUG_FS_F | DEBUG_PROC_F)
 }
 
-var x86emu_optab interface {
-}
-var x86emu_optab2 interface {
-}
-
-func __init() {
-}

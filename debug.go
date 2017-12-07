@@ -79,9 +79,9 @@ func x86emu_just_disassemble() {
 
 func disassemble_forward(seg uint16, off uint16, n int) {
 	var (
-		treg X86EMU_sysEnv
+		tregs X86EMU_sysEnv
 		i    int
-		op1  u8
+		op1  uint8
 	)
 	/*
 	 * hack, hack, hack.  What we do is use the exact machinery set up
@@ -141,11 +141,11 @@ func x86emu_check_ip_access() {
 func x86emu_check_sp_access() {
 }
 
-func x86emu_check_mem_access(dummy uint32) {
+func x86emu_check_mem_access(_ uint32) {
 	/*  check bounds, etc */
 }
 
-func x86emu_check_data_access(uint dummy1, uint dummy2) {
+func x86emu_check_data_access(_, _ uint) {
 	/*  check bounds, etc */
 }
 
@@ -175,7 +175,7 @@ func print_encoded_bytes(s uint16, o uint16) {
     fmt.Printf("%-20s ",buf1);`
 }
 
-func print_decoded_instruction(void) {
+func print_decoded_instruction() {
 	fmt.Printf("%s", M.x86.decoded_buf)
 }
 
