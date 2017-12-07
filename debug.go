@@ -37,6 +37,7 @@
 *
 ****************************************************************************/
 
+package main
 import (
 	"fmt"
 )
@@ -76,9 +77,11 @@ func x86emu_just_disassemble () {
 }
 
 func disassemble_forward (seg uint16, off uint16, n int) {
-    X86EMU_sysEnv tregs;
-    int i;
-    u8 op1;
+	var (
+    treg X86EMU_sysEnv
+    i int
+    op1 u8
+    )
     /*
      * hack, hack, hack.  What we do is use the exact machinery set up
      * for execution, except that now there is an additional state
@@ -122,8 +125,9 @@ func disassemble_forward (seg uint16, off uint16, n int) {
      * the instruction.  XXX --- CHECK THAT MEM IS NOT AFFECTED!!!
      * Note the use of a copy of the register structure...
      */
-    for (i=0; i<n; i++) {
-        op1 = sys_rdb((uint32(M.x86.R_CS)<<4) + (M.x86.R_IP++));
+     for i:=0; i<n; i += 1 {
+        op1 = sys_rdb((uint32(M.x86.R_CS)<<4) + (M.x86.R_IP));
+        M.x86.R_IP++
         x86emu_optab[op1](op1);
     }
     /* end major hack mode. */
@@ -154,55 +158,56 @@ func x86emu_decode_printf (x string) {
 }
 
 func x86emu_decode_printf2 (x string, y int) {
-    char temp[100];
-    snfmt.Printf(temp, sizeof (temp), x,y);
-    strcpy(M.x86.decoded_buf+M.x86.enc_str_pos,temp);
-    M.x86.enc_str_pos += strlen(temp);
+    temp = fmt.Sprintf(x, y)
+    M.x86.decoded_buf += temp
 }
 
 func x86emu_end_instr () {
-    M.x86.enc_str_pos = 0;
-    M.x86.enc_pos = 0;
+    M.x86.decoded_buf = ""
 }
 
-static void print_encoded_bytes (s uint16, o uint16)
-{
-    int i;
-    char buf1[64];
-    for (i=0; i< M.x86.enc_pos; i++) {
+func print_encoded_bytes (s uint16, o uint16) {
+	var notyet=`
+    for (i:=0; i< M.x86.enc_pos; i++) {
 	    snfmt.Printf(buf1+2*i, 64 - 2 * i, "%02x", fetch_data_byte_abs(s,o+i));
     }
-    fmt.Printf("%-20s ",buf1);
+    fmt.Printf("%-20s ",buf1);`
 }
 
-static void print_decoded_instruction (void)
-{
+func print_decoded_instruction (void) {
     fmt.Printf("%s", M.x86.decoded_buf);
 }
 
 func x86emu_print_int_vect (iv uint16) {
-    seg uint16,off;
+    var seg, off uint16
 
-    if (iv > 256) return;
+    if iv > 256  {
+    	return;
+	}
     seg   = fetch_data_word_abs(0,iv*4);
     off   = fetch_data_word_abs(0,iv*4+2);
     fmt.Printf("%04x:%04x ", seg, off);
 }
 
 func X86EMU_dump_memory (seg uint16, off uint16, amt uint32) {
-    start uint32 = off & 0xfffffff0;
-    end uint32  = (off+16) & 0xfffffff0;
+	var (
+    start = uint32 (off) & 0xfffffff0;
+    end = uint32  (off+16) & 0xfffffff0;
     i uint32;
+    )
 
-    while (end <= off + amt) {
+    for end <= off + amt {
         fmt.Printf("%04x:%04x ", seg, start);
-        for (i=start; i< off; i++)
+        for i=start; i< off; i++ {
           fmt.Printf("   ");
-        for (       ; i< end; i++)
+  }
+        for i< end {
           fmt.Printf("%02x ", fetch_data_byte_abs(seg,i));
         fmt.Printf("\n");
         start = end;
         end = start + 16;
+	i++
+    }
     }
 }
 
@@ -297,18 +302,17 @@ func x86emu_single_step () {
 `
 }
 
-int X86EMU_trace_on(void)
-{
-    return M.x86.debug |= DEBUG_STEP_F | DEBUG_DECODE_F | DEBUG_TRACE_F;
+func X86EMU_trace_on() int {
+    M.x86.debug = M.x86.debug | DEBUG_STEP_F | DEBUG_DECODE_F | DEBUG_TRACE_F;
+    return M.x86.debug
 }
 
-int X86EMU_trace_off(void)
-{
-    return M.x86.debug &= ~(DEBUG_STEP_F | DEBUG_DECODE_F | DEBUG_TRACE_F);
+func X86EMU_trace_off()int {
+    M.x86.debug = M.x86.debug & ^(DEBUG_STEP_F | DEBUG_DECODE_F | DEBUG_TRACE_F);
+    return M.x86.debug
 }
 
-int parse_line (s string, ps *int, n *int) error
-{
+func parse_line (s string, ps *int, n *int) error {
 	var notyet=`
     int cmd;
 
