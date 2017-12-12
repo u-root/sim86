@@ -80,7 +80,6 @@ func x86emu_just_disassemble() {
 func disassemble_forward(seg uint16, off uint16, n int) {
 	var (
 		tregs *X86EMU_sysEnv
-		i    int
 		op1  uint8
 	)
 	/*
@@ -167,7 +166,8 @@ func x86emu_end_instr() {
 }
 
 func print_encoded_bytes(s uint16, o uint16) {
-	var notyet = `
+	panic("print encoded bytes")
+	var _ = `
     for (i:=0; i< M().x86.enc_pos; i++) {
 	    snfmt.Printf(buf1+2*i, 64 - 2 * i, "%02x", fetch_data_byte_abs(s,o+i));
     }
@@ -213,7 +213,8 @@ func X86EMU_dump_memory(seg uint16, o uint16, amt uint32) {
 }
 
 func x86emu_single_step() {
-	var notyet = `
+	panic("single step")
+	var _ = `
     char s[1024];
     int ps[10];
     int ntok;
@@ -314,7 +315,7 @@ func X86EMU_trace_off() uint32 {
 }
 
 func parse_line(s string, ps *int, n *int) error {
-	var notyet = `
+	panic(`
     int cmd;
 
     *n = 0;
@@ -340,8 +341,7 @@ func parse_line(s string, ps *int, n *int) error {
         sscanf(s,"%x",&ps[*n]);
         *n += 1;
     }
-    `
-	return fmt.Error("not yet")
+    `)
 }
 func x86emu_dump_regs() {
 	fmt.Printf("\tAX=%04x  ", M().x86.gen.A.Get16())
@@ -402,19 +402,19 @@ func x86emu_dump_regs() {
 }
 
 func x86emu_dump_xregs() {
-	fmt.Printf("\tEAX=%08x  ", M().x86.R_EAX)
-	fmt.Printf("EBX=%08x  ", M().x86.R_EBX)
-	fmt.Printf("ECX=%08x  ", M().x86.R_ECX)
-	fmt.Printf("EDX=%08x\n", M().x86.R_EDX)
-	fmt.Printf("\tESP=%08x  ", M().x86.R_ESP)
-	fmt.Printf("EBP=%08x  ", M().x86.R_EBP)
-	fmt.Printf("ESI=%08x  ", M().x86.R_ESI)
-	fmt.Printf("EDI=%08x\n", M().x86.R_EDI)
-	fmt.Printf("\tDS=%04x  ", M().x86.R_DS)
-	fmt.Printf("ES=%04x  ", M().x86.R_ES)
-	fmt.Printf("SS=%04x  ", M().x86.R_SS)
-	fmt.Printf("CS=%04x  ", M().x86.R_CS)
-	fmt.Printf("EIP=%08x\n\t", M().x86.R_EIP)
+	fmt.Printf("\tAX=%08x  ", M().x86.gen.A.Get32())
+	fmt.Printf("BX=%08x  ", M().x86.gen.B.Get32())
+	fmt.Printf("CX=%08x  ", M().x86.gen.C.Get32())
+	fmt.Printf("DX=%08x  ", M().x86.gen.D.Get32())
+	fmt.Printf("SP=%08x  ", M().x86.spc.SP.Get32())
+	fmt.Printf("BP=%08x  ", M().x86.spc.BP.Get32())
+	fmt.Printf("SI=%08x  ", M().x86.spc.SI.Get32())
+	fmt.Printf("DI=%08x\n", M().x86.spc.DI.Get32())
+	fmt.Printf("\tDS=%04x  ", M().x86.seg.DS.Get())
+	fmt.Printf("ES=%04x  ", M().x86.seg.ES.Get())
+	fmt.Printf("SS=%04x  ", M().x86.seg.SS.Get())
+	fmt.Printf("CS=%04x  ", M().x86.seg.CS.Get())
+	fmt.Printf("IP=%08x   ", M().x86.spc.IP.Get32())
 
 	/* CHECKED... */
 	if ACCESS_FLAG(F_OF) {

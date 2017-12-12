@@ -4,31 +4,50 @@
 
 package main
 
-const F_CF int = 1
-const F_PF int = 4
-const F_AF int = 16
-const F_ZF int = 64
-const F_SF int = 128
-const F_TF int = 256
-const F_IF int = 512
-const F_DF int = 1024
-const F_OF int = 2048
+const F_CF uint32 = 1
+const F_PF uint32 = 4
+const F_AF uint32 = 16
+const F_ZF uint32 = 64
+const F_SF uint32 = 128
+const F_TF uint32 = 256
+const F_IF uint32 = 512
+const F_DF uint32 = 1024
+const F_OF uint32 = 2048
 
-const SYSMODE_SEG_DS_SS int = 1
-const SYSMODE_SEGOVR_CS int = 2
-const SYSMODE_SEGOVR_DS int = 4
-const SYSMODE_SEGOVR_ES int = 8
-const SYSMODE_SEGOVR_FS int = 16
-const SYSMODE_SEGOVR_GS int = 32
-const SYSMODE_SEGOVR_SS int = 64
-const SYSMODE_PREFIX_REPE int = 128
-const SYSMODE_PREFIX_REPNE int = 256
-const SYSMODE_PREFIX_DATA int = 512
-const SYSMODE_PREFIX_ADDR int = 1024
-const SYSMODE_32BIT_REP int = 2048
-const SYSMODE_INTR_PENDING int = 268435456
-const SYSMODE_EXTRN_INTR int = 536870912
-const SYSMODE_HALTED int = 1073741824
+const SYSMODE_SEG_DS_SS uint32 = 1
+const SYSMODE_SEGOVR_CS uint32 = 2
+const SYSMODE_SEGOVR_DS uint32 = 4
+const SYSMODE_SEGOVR_ES uint32 = 8
+const SYSMODE_SEGOVR_FS uint32 = 16
+const SYSMODE_SEGOVR_GS uint32 = 32
+const SYSMODE_SEGOVR_SS uint32 = 64
+
+const SYSMODE_SEGMASK uint32 = (SYSMODE_SEG_DS_SS      | 
+						 SYSMODE_SEGOVR_CS      | 
+						 SYSMODE_SEGOVR_DS      | 
+						 SYSMODE_SEGOVR_ES      | 
+						 SYSMODE_SEGOVR_FS      | 
+						 SYSMODE_SEGOVR_GS      | 
+	SYSMODE_SEGOVR_SS)
+const SYSMODE_CLRMASK uint32 = (SYSMODE_SEG_DS_SS      | 
+						 SYSMODE_SEGOVR_CS      | 
+						 SYSMODE_SEGOVR_DS      | 
+						 SYSMODE_SEGOVR_ES      | 
+						 SYSMODE_SEGOVR_FS      | 
+						 SYSMODE_SEGOVR_GS      | 
+						 SYSMODE_SEGOVR_SS      | 
+						 SYSMODE_PREFIX_DATA    | 
+						 SYSMODE_PREFIX_ADDR    | 
+						 SYSMODE_32BIT_REP)
+
+const SYSMODE_PREFIX_REPE uint32 = 128
+const SYSMODE_PREFIX_REPNE uint32 = 256
+const SYSMODE_PREFIX_DATA uint32 = 512
+const SYSMODE_PREFIX_ADDR uint32 = 1024
+const SYSMODE_32BIT_REP uint32 = 2048
+const SYSMODE_INTR_PENDING uint32 = 268435456
+const SYSMODE_EXTRN_INTR uint32 = 536870912
+const SYSMODE_HALTED uint32 = 1073741824
 
 // These can almost certainly become const at some point.
 var CHECK_IP_FETCH_F int = 1

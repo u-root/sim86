@@ -29,7 +29,7 @@ type reg16 struct {
 }
 
 func (r reg) Set32(i uint32) {
-	r.r = i
+	r.reg = i
 }
 func (r reg) Get32() uint32 {
 	return r.reg
@@ -39,17 +39,17 @@ func (r reg) Set16(i uint16) {
 	r.reg = uint32(i)
 }
 func (r reg) Get16() uint16 {
-	return r.reg
+	return uint16(r.reg)
 }
 
 func (r reg) Seth8(i uint8) {
-	r.reg = (r.reg & ^0xff00) | uint32(i)<<8
+	r.reg = (r.reg & 0x0000ff00) | uint32(i)<<8
 }
 func (r reg) Get8h() uint8 {
 	return uint8(r.reg>>8)
 }
 func (r reg) Setl8(i uint8) {
-	r.reg = (r.reg & ^0xff) | uint32(i)
+	r.reg = (r.reg & 0xffffff00) | uint32(i)
 }
 func (r reg) Get8l() uint8 {
 	return uint8(r.reg>>8)
