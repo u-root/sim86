@@ -303,12 +303,12 @@ func x86emu_single_step() {
 `
 }
 
-func X86EMU_trace_on() int {
+func X86EMU_trace_on() uint32 {
 	M().x86.debug = M().x86.debug | DEBUG_STEP_F | DEBUG_DECODE_F | DEBUG_TRACE_F
 	return M().x86.debug
 }
 
-func X86EMU_trace_off() int {
+func X86EMU_trace_off() uint32 {
 	M().x86.debug = M().x86.debug & ^(DEBUG_STEP_F | DEBUG_DECODE_F | DEBUG_TRACE_F)
 	return M().x86.debug
 }
@@ -341,22 +341,22 @@ func parse_line(s string, ps *int, n *int) error {
         *n += 1;
     }
     `
-	return errors.New("not yet")
+	return fmt.Error("not yet")
 }
 func x86emu_dump_regs() {
-	fmt.Printf("\tAX=%04x  ", M().x86.R_AX)
-	fmt.Printf("BX=%04x  ", M().x86.R_BX)
-	fmt.Printf("CX=%04x  ", M().x86.R_CX)
-	fmt.Printf("DX=%04x  ", M().x86.R_DX)
-	fmt.Printf("SP=%04x  ", M().x86.R_SP)
-	fmt.Printf("BP=%04x  ", M().x86.R_BP)
-	fmt.Printf("SI=%04x  ", M().x86.R_SI)
-	fmt.Printf("DI=%04x\n", M().x86.R_DI)
-	fmt.Printf("\tDS=%04x  ", M().x86.R_DS)
-	fmt.Printf("ES=%04x  ", M().x86.R_ES)
-	fmt.Printf("SS=%04x  ", M().x86.R_SS)
-	fmt.Printf("CS=%04x  ", M().x86.R_CS)
-	fmt.Printf("IP=%04x   ", M().x86.R_IP)
+	fmt.Printf("\tAX=%04x  ", M().x86.gen.A.Get16())
+	fmt.Printf("BX=%04x  ", M().x86.gen.B.Get16())
+	fmt.Printf("CX=%04x  ", M().x86.gen.C.Get16())
+	fmt.Printf("DX=%04x  ", M().x86.gen.D.Get16())
+	fmt.Printf("SP=%04x  ", M().x86.spc.SP.Get16())
+	fmt.Printf("BP=%04x  ", M().x86.spc.BP.Get16())
+	fmt.Printf("SI=%04x  ", M().x86.spc.SI.Get16())
+	fmt.Printf("DI=%04x\n", M().x86.spc.DI.Get16())
+	fmt.Printf("\tDS=%04x  ", M().x86.seg.DS.Get())
+	fmt.Printf("ES=%04x  ", M().x86.seg.ES.Get())
+	fmt.Printf("SS=%04x  ", M().x86.seg.SS.Get())
+	fmt.Printf("CS=%04x  ", M().x86.seg.CS.Get())
+	fmt.Printf("IP=%04x   ", M().x86.spc.IP.Get16())
 	/* CHECKED... */
 	if ACCESS_FLAG(F_OF) {
 		fmt.Printf("OV ")
