@@ -5,13 +5,30 @@ sed -i 's/printf/fmt.Printf/' $1
 sed -i 's/(u\([361][624]\))\([A-Za-z][_A-Za-z\.0-9]*\)/uint\1(\2)/g' $1
 
 sed -i 's/u\([361][624]\)[^a-z][^a-z]*\([a-z][a-z]*\)/\2 uint\1/g' $1
+sed -i 's/u8  *\(.*\);/var \1 uint8/' $1
 sed -i 's/, int[^a-z][^a-z]*\*\([a-z][a-z]*\)/, \1 *int/g' $1
 sed -i 's/, int[^a-z][^a-z]*\([a-z][a-z]*\)/, \1 int/g' $1
 sed -i 's/const char \*\([a-z][a-z]*\)/\1 string/g' $1
 
+sed -i 's/intno = M.x86.intno;/intno = uint8(M().x86.intno)/' $1
+
 sed -i 's/(\*\(sys_rd.\))/\1/' $1
 sed -i 's/(x86emu_optab\[\(op1\)\])/x86emu_optab[\1]/' $1
 sed -i 's/\(func.*\)(void)\(.*\)/\1()\2/' $1
+sed -i 's/^static void \(.*\)(void)/func \1() {/' $1
+sed -i 's/^{$//' $1
+sed -i 's/if (_X86EMU_intrTab\[intno\])/if _X86EMU_intrTab[intno] != nil/' $1
+sed -i 's/(u16)M.x86.R_FLG/M().x86.spc.FLAGS.Get16()/' $1
+sed -i 's/M.x86.R_FLG/M().x86.spc.FLAGS.Get16()/' $1
+sed -i 's/M.x86.R_CS = \(.*\);/M().x86.seg.CS.Set16(\1)/' $1
+sed -i 's/M.x86.R_IP = \(.*\);/M().x86.spc.IP.Set16(\1)/' $1
+sed -i 's/(\*_X86EMU_intrTab.intno.)(intno);/_X86EMU_intrTab[intno](intno)/' $1
+sed -i 's/M.x86.R_CS/M().x86.seg.CS.Get()/' $1
+sed -i 's/M.x86.R_IP/M().x86.spc.IP.Get16()/' $1
+sed -i 's/^.if.*DEBUG.*//' $1
+sed -i 's/^.endif.*//' $1
+sed -i 's/M.x86.mode/M().x86.mode/' $1
+
 
 exit 0
 all: cppprim_ops.go cppdecode.go cppdebug.go
