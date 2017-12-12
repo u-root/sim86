@@ -78,8 +78,7 @@ REMARKS:
 Raise the specified interrupt to be handled before the execution of the
 next instruction.
 ****************************************************************************/
-void x86emu_intr_raise(
-    u8 intrnum)
+void x86emu_intr_raise( u8 intrnum)
 {
     printf("%s, raising exception %x\n", __func__, intrnum);
     x86emu_dump_regs();
@@ -153,10 +152,7 @@ next instruction.
 
 NOTE: Do not inline this function, as (*sys_rdb) is already inline!
 ****************************************************************************/
-void fetch_decode_modrm(
-    int *mod,
-    int *regh,
-    int *regl)
+void fetch_decode_modrm( int *mod, int *regh, int *regl)
 {
     int fetched;
 
@@ -306,8 +302,7 @@ Byte value read from the absolute memory location.
 
 NOTE: Do not inline this function as (*sys_rdX) is already inline!
 ****************************************************************************/
-u8 fetch_data_byte(
-    uint offset)
+u8 fetch_data_byte( uint offset)
 {
 #ifdef DEBUG
     if (CHECK_DATA_ACCESS())
@@ -325,8 +320,7 @@ Word value read from the absolute memory location.
 
 NOTE: Do not inline this function as (*sys_rdX) is already inline!
 ****************************************************************************/
-u16 fetch_data_word(
-    uint offset)
+u16 fetch_data_word( uint offset)
 {
 #ifdef DEBUG
     if (CHECK_DATA_ACCESS())
@@ -344,8 +338,7 @@ Long value read from the absolute memory location.
 
 NOTE: Do not inline this function as (*sys_rdX) is already inline!
 ****************************************************************************/
-u32 fetch_data_long(
-    uint offset)
+u32 fetch_data_long( uint offset)
 {
 #ifdef DEBUG
     if (CHECK_DATA_ACCESS())
@@ -364,9 +357,7 @@ Byte value read from the absolute memory location.
 
 NOTE: Do not inline this function as (*sys_rdX) is already inline!
 ****************************************************************************/
-u8 fetch_data_byte_abs(
-    uint segment,
-    uint offset)
+u8 fetch_data_byte_abs( uint segment, uint offset)
 {
 #ifdef DEBUG
     if (CHECK_DATA_ACCESS())
@@ -385,9 +376,7 @@ Word value read from the absolute memory location.
 
 NOTE: Do not inline this function as (*sys_rdX) is already inline!
 ****************************************************************************/
-u16 fetch_data_word_abs(
-    uint segment,
-    uint offset)
+u16 fetch_data_word_abs( uint segment, uint offset)
 {
 #ifdef DEBUG
     if (CHECK_DATA_ACCESS())
@@ -406,9 +395,7 @@ Long value read from the absolute memory location.
 
 NOTE: Do not inline this function as (*sys_rdX) is already inline!
 ****************************************************************************/
-u32 fetch_data_long_abs(
-    uint segment,
-    uint offset)
+u32 fetch_data_long_abs( uint segment, uint offset)
 {
 #ifdef DEBUG
     if (CHECK_DATA_ACCESS())
@@ -428,9 +415,7 @@ the current 'default' segment, which may have been overridden.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-void store_data_byte(
-    uint offset,
-    u8 val)
+void store_data_byte( uint offset, u8 val)
 {
 #ifdef DEBUG
     if (CHECK_DATA_ACCESS())
@@ -450,9 +435,7 @@ the current 'default' segment, which may have been overridden.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-void store_data_word(
-    uint offset,
-    u16 val)
+void store_data_word( uint offset, u16 val)
 {
 #ifdef DEBUG
     if (CHECK_DATA_ACCESS())
@@ -472,9 +455,7 @@ the current 'default' segment, which may have been overridden.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-void store_data_long(
-    uint offset,
-    u32 val)
+void store_data_long( uint offset, u32 val)
 {
 #ifdef DEBUG
     if (CHECK_DATA_ACCESS())
@@ -494,10 +475,7 @@ Writes a byte value to an absolute memory location.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-void store_data_byte_abs(
-    uint segment,
-    uint offset,
-    u8 val)
+void store_data_byte_abs( uint segment, uint offset, u8 val)
 {
 #ifdef DEBUG
     if (CHECK_DATA_ACCESS())
@@ -517,10 +495,7 @@ Writes a word value to an absolute memory location.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-void store_data_word_abs(
-    uint segment,
-    uint offset,
-    u16 val)
+void store_data_word_abs( uint segment, uint offset, u16 val)
 {
 #ifdef DEBUG
     if (CHECK_DATA_ACCESS())
@@ -540,10 +515,7 @@ Writes a long value to an absolute memory location.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-void store_data_long_abs(
-    uint segment,
-    uint offset,
-    u32 val)
+void store_data_long_abs( uint segment, uint offset, u32 val)
 {
 #ifdef DEBUG
     if (CHECK_DATA_ACCESS())
@@ -563,8 +535,7 @@ REMARKS:
 Return a pointer to the register given by the R/RM field of the
 modrm byte, for byte operands. Also enables the decoding of instructions.
 ****************************************************************************/
-u8* decode_rm_byte_register(
-    int reg)
+u8* decode_rm_byte_register( int reg)
 {
     switch (reg) {
       case 0:
@@ -607,8 +578,7 @@ REMARKS:
 Return a pointer to the register given by the R/RM field of the
 modrm byte, for word operands.  Also enables the decoding of instructions.
 ****************************************************************************/
-u16* decode_rm_word_register(
-    int reg)
+u16* decode_rm_word_register( int reg)
 {
     switch (reg) {
       case 0:
@@ -651,8 +621,7 @@ REMARKS:
 Return a pointer to the register given by the R/RM field of the
 modrm byte, for dword operands.  Also enables the decoding of instructions.
 ****************************************************************************/
-u32* decode_rm_long_register(
-    int reg)
+u32* decode_rm_long_register( int reg)
 {
     switch (reg) {
       case 0:
@@ -696,8 +665,7 @@ Return a pointer to the register given by the R/RM field of the
 modrm byte, for word operands, modified from above for the weirdo
 special case of segreg operands.  Also enables the decoding of instructions.
 ****************************************************************************/
-u16* decode_rm_seg_register(
-    int reg)
+u16* decode_rm_seg_register( int reg)
 {
     switch (reg) {
       case 0:
@@ -739,9 +707,7 @@ REMARKS:
 Decodes scale/index of SIB byte and returns relevant offset part of
 effective address.
 ****************************************************************************/
-static unsigned decode_sib_si(
-    int scale,
-    int index)
+static unsigned decode_sib_si( int scale, int index)
 {
     scale = 1 << scale;
     if (scale > 1) {
@@ -789,8 +755,7 @@ Offset in memory for the address decoding
 REMARKS:
 Decodes SIB addressing byte and returns calculated effective address.
 ****************************************************************************/
-static unsigned decode_sib_address(
-    int mod)
+static unsigned decode_sib_address( int mod)
 {
     int sib   = fetch_byte_imm();
     int ss    = (sib >> 6) & 0x03;
@@ -878,8 +843,7 @@ NOTE:   The code which specifies the corresponding segment (ds vs ss)
         if a SS access is needed, set this bit.  Otherwise, DS access
         occurs (unless any of the segment override bits are set).
 ****************************************************************************/
-unsigned decode_rm00_address(
-    int rm)
+unsigned decode_rm00_address( int rm)
 {
     unsigned offset;
 
@@ -958,8 +922,7 @@ REMARKS:
 Return the offset given by mod=01 addressing.  Also enables the
 decoding of instructions.
 ****************************************************************************/
-unsigned decode_rm01_address(
-    int rm)
+unsigned decode_rm01_address( int rm)
 {
     int displacement;
 
@@ -1047,8 +1010,7 @@ REMARKS:
 Return the offset given by mod=10 addressing.  Also enables the
 decoding of instructions.
 ****************************************************************************/
-unsigned decode_rm10_address(
-    int rm)
+unsigned decode_rm10_address( int rm)
 {
     if (M.x86.mode & SYSMODE_PREFIX_ADDR) {
         int displacement;
