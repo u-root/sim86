@@ -108,8 +108,8 @@ func disassemble_forward(seg uint16, off uint16, n int) {
 	 * nice way to get the system to help debug codes.
 	 */
 	tregs = M()
-	tregs.x86.R_IP = off
-	tregs.x86.R_CS = seg
+	tregs.x86.spc.IP.Set16(off)
+	tregs.x86.seg.CS.Set(seg)
 
 	/* reset the decoding buffers */
 	tregs.x86.enc_str_pos = 0
@@ -127,8 +127,9 @@ func disassemble_forward(seg uint16, off uint16, n int) {
 	 * Note the use of a copy of the register structure...
 	 */
 	for i := 0; i < n; i += 1 {
-		op1 = sys_rdb((uint32(M().x86.R_CS) << 4) + (M().x86.R_IP))
-		M().x86.R_IP++
+		ip := M().x86.spc.IP.Get16()
+		op1 = sys_rdb(uint32(M().x86.seg.CS.Get()) << 4 + uint32(ip))
+		M().x86.spc.IP.Set16(ip+1)
 		x86emu_optab[op1](op1)
 	}
 	/* end major hack mode. */
@@ -149,22 +150,20 @@ func x86emu_check_data_access(_, _ uint) {
 	/*  check bounds, etc */
 }
 
-func x86emu_inc_decoded_inst_len(int x) {
+func x86emu_inc_decoded_inst_len(x int) {
 	M().x86.enc_pos += x
 }
 
-func x86emu_decode_printf(x string) {
-	strcpy(M().x86.decoded_buf+M().x86.enc_str_pos, x)
-	M().x86.enc_str_pos += strlen(x)
+func x86emu_decode_printf(x string, y ...interface{}) {
+	M().x86.decoded_buf = []byte(string(M().x86.decoded_buf) + fmt.Sprintf(x, y...))
 }
 
 func x86emu_decode_printf2(x string, y int) {
-	temp = fmt.Sprintf(x, y)
-	M().x86.decoded_buf += temp
+	x86emu_decode_printf(x , y)
 }
 
 func x86emu_end_instr() {
-	M().x86.decoded_buf = ""
+	M().x86.decoded_buf = []byte{}
 }
 
 func print_encoded_bytes(s uint16, o uint16) {
@@ -190,8 +189,9 @@ func x86emu_print_int_vect(iv uint16) {
 	fmt.Printf("%04x:%04x ", seg, off)
 }
 
-func X86EMU_dump_memory(seg uint16, off uint16, amt uint32) {
+func X86EMU_dump_memory(seg uint16, o uint16, amt uint32) {
 	var (
+		off = uint32(o)
 		start = uint32(off) & 0xfffffff0
 		end   = uint32(off+16) & 0xfffffff0
 		i     uint32
@@ -203,7 +203,7 @@ func X86EMU_dump_memory(seg uint16, off uint16, amt uint32) {
 			fmt.Printf("   ")
 		}
 		for i < end {
-			fmt.Printf("%02x ", fetch_data_byte_abs(seg, i))
+			fmt.Printf("%02x ", fetch_data_byte_abs(seg, uint16(i)))
 			fmt.Printf("\n")
 			start = end
 			end = start + 16

@@ -220,3 +220,16 @@ func DEBUG_DECODE_NOPRINT() bool {
 func initDEBUG_SYS_F() {
 	DEBUG_SYS_F = (DEBUG_SVC_F | DEBUG_FS_F | DEBUG_PROC_F)
 }
+func sys_rdb(ip uint32) byte {
+	panic("fix me")
+	return 0
+}
+
+func fetch_data_word_abs(seg, off uint16) uint16 {
+	panic("fix me")
+	return 0
+}
+func fetch_data_byte_abs(seg, off uint16) uint8 {
+		panic("fix me")
+	return 0
+}
