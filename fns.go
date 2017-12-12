@@ -217,3 +217,6 @@ func DEBUG_IO_TRACE() bool {
 func DEBUG_DECODE_NOPRINT() bool {
 	return 	(M.x86.debug & DEBUG_DECODE_NOPRINT_F) != 0
 }
+func initDEBUG_SYS_F() {
+	DEBUG_SYS_F = (DEBUG_SVC_F | DEBUG_FS_F | DEBUG_PROC_F)
+}

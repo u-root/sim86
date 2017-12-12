@@ -48,15 +48,15 @@ import (
 /* should look something like debug's output. */
 func X86EMU_trace_regs() {
 	if DEBUG_TRACE() {
-		if M.x86.mode & (SYSMODE_PREFIX_DATA | SYSMODE_PREFIX_ADDR) {
+		if (M().x86.mode & uint32(SYSMODE_PREFIX_DATA | SYSMODE_PREFIX_ADDR)) != 0  {
 			x86emu_dump_xregs()
 		} else {
 			x86emu_dump_regs()
 		}
 	}
 	if DEBUG_DECODE() && !DEBUG_DECODE_NOPRINT() {
-		fmt.Printf("%04x:%04x ", M.x86.saved_cs, M.x86.saved_ip)
-		print_encoded_bytes(M.x86.saved_cs, M.x86.saved_ip)
+		fmt.Printf("%04x:%04x ", M().x86.saved_cs, M().x86.saved_ip)
+		print_encoded_bytes(M().x86.saved_cs, M().x86.saved_ip)
 		print_decoded_instruction()
 	}
 }
@@ -72,14 +72,14 @@ func x86emu_just_disassemble() {
 	 * This routine called if the flag DEBUG_DISASSEMBLE is set kind
 	 * of a hack!
 	 */
-	fmt.Printf("%04x:%04x ", M.x86.saved_cs, M.x86.saved_ip)
-	print_encoded_bytes(M.x86.saved_cs, M.x86.saved_ip)
+	fmt.Printf("%04x:%04x ", M().x86.saved_cs, M().x86.saved_ip)
+	print_encoded_bytes(M().x86.saved_cs, M().x86.saved_ip)
 	print_decoded_instruction()
 }
 
 func disassemble_forward(seg uint16, off uint16, n int) {
 	var (
-		tregs X86EMU_sysEnv
+		tregs *X86EMU_sysEnv
 		i    int
 		op1  uint8
 	)
@@ -107,7 +107,7 @@ func disassemble_forward(seg uint16, off uint16, n int) {
 	 * This was done for an entirely different reason, but makes a
 	 * nice way to get the system to help debug codes.
 	 */
-	tregs = M
+	tregs = M()
 	tregs.x86.R_IP = off
 	tregs.x86.R_CS = seg
 
@@ -127,8 +127,8 @@ func disassemble_forward(seg uint16, off uint16, n int) {
 	 * Note the use of a copy of the register structure...
 	 */
 	for i := 0; i < n; i += 1 {
-		op1 = sys_rdb((uint32(M.x86.R_CS) << 4) + (M.x86.R_IP))
-		M.x86.R_IP++
+		op1 = sys_rdb((uint32(M().x86.R_CS) << 4) + (M().x86.R_IP))
+		M().x86.R_IP++
 		x86emu_optab[op1](op1)
 	}
 	/* end major hack mode. */
@@ -150,33 +150,33 @@ func x86emu_check_data_access(_, _ uint) {
 }
 
 func x86emu_inc_decoded_inst_len(int x) {
-	M.x86.enc_pos += x
+	M().x86.enc_pos += x
 }
 
 func x86emu_decode_printf(x string) {
-	strcpy(M.x86.decoded_buf+M.x86.enc_str_pos, x)
-	M.x86.enc_str_pos += strlen(x)
+	strcpy(M().x86.decoded_buf+M().x86.enc_str_pos, x)
+	M().x86.enc_str_pos += strlen(x)
 }
 
 func x86emu_decode_printf2(x string, y int) {
 	temp = fmt.Sprintf(x, y)
-	M.x86.decoded_buf += temp
+	M().x86.decoded_buf += temp
 }
 
 func x86emu_end_instr() {
-	M.x86.decoded_buf = ""
+	M().x86.decoded_buf = ""
 }
 
 func print_encoded_bytes(s uint16, o uint16) {
 	var notyet = `
-    for (i:=0; i< M.x86.enc_pos; i++) {
+    for (i:=0; i< M().x86.enc_pos; i++) {
 	    snfmt.Printf(buf1+2*i, 64 - 2 * i, "%02x", fetch_data_byte_abs(s,o+i));
     }
     fmt.Printf("%-20s ",buf1);`
 }
 
 func print_decoded_instruction() {
-	fmt.Printf("%s", M.x86.decoded_buf)
+	fmt.Printf("%s", M().x86.decoded_buf)
 }
 
 func x86emu_print_int_vect(iv uint16) {
@@ -225,29 +225,29 @@ func x86emu_single_step() {
     static int noDecode = 1;
 
         if (DEBUG_BREAK()) {
-                if (M.x86.saved_ip != breakpoint) {
+                if (M().x86.saved_ip != breakpoint) {
                         return;
                 } else {
-              M.x86.debug &= ~DEBUG_DECODE_NOPRINT_F;
-                        M.x86.debug |= DEBUG_TRACE_F;
-                        M.x86.debug &= ~DEBUG_BREAK_F;
+              M().x86.debug &= ~DEBUG_DECODE_NOPRINT_F;
+                        M().x86.debug |= DEBUG_TRACE_F;
+                        M().x86.debug &= ~DEBUG_BREAK_F;
                         print_decoded_instruction ();
                         X86EMU_trace_regs();
                 }
         }
     done=0;
-    offset = M.x86.saved_ip;
+    offset = M().x86.saved_ip;
     while (!done) {
         fmt.Printf("-");
         (void)fgets(s, 1023, stdin);
         cmd = parse_line(s, ps, &ntok);
         switch(cmd) {
           case 'u':
-            disassemble_forward(M.x86.saved_cs,uint16(offset),10);
+            disassemble_forward(M().x86.saved_cs,uint16(offset),10);
             break;
           case 'd':
                             if (ntok == 2) {
-                                    segment = M.x86.saved_cs;
+                                    segment = M().x86.saved_cs;
                                     offset = ps[1];
                                     X86EMU_dump_memory(segment,uint16(offset),16);
                                     offset += 16;
@@ -257,16 +257,16 @@ func x86emu_single_step() {
                                     X86EMU_dump_memory(segment,uint16(offset),16);
                                     offset += 16;
                             } else {
-                                    segment = M.x86.saved_cs;
+                                    segment = M().x86.saved_cs;
                                     X86EMU_dump_memory(segment,uint16(offset),16);
                                     offset += 16;
                             }
             break;
           case 'c':
-            M.x86.debug ^= DEBUG_TRACECALL_F;
+            M().x86.debug ^= DEBUG_TRACECALL_F;
             break;
           case 's':
-            M.x86.debug ^= DEBUG_SVC_F | DEBUG_SYS_F | DEBUG_SYSINT_F;
+            M().x86.debug ^= DEBUG_SVC_F | DEBUG_SYS_F | DEBUG_SYSINT_F;
             break;
           case 'r':
             X86EMU_trace_regs();
@@ -278,17 +278,17 @@ func x86emu_single_step() {
             if (ntok == 2) {
                 breakpoint = ps[1];
         if (noDecode) {
-                        M.x86.debug |= DEBUG_DECODE_NOPRINT_F;
+                        M().x86.debug |= DEBUG_DECODE_NOPRINT_F;
         } else {
-                        M.x86.debug &= ~DEBUG_DECODE_NOPRINT_F;
+                        M().x86.debug &= ~DEBUG_DECODE_NOPRINT_F;
         }
-        M.x86.debug &= ~DEBUG_TRACE_F;
-        M.x86.debug |= DEBUG_BREAK_F;
+        M().x86.debug &= ~DEBUG_TRACE_F;
+        M().x86.debug |= DEBUG_BREAK_F;
         done = 1;
             }
             break;
           case 'q':
-          M.x86.debug |= DEBUG_EXIT;
+          M().x86.debug |= DEBUG_EXIT;
           return;
       case 'P':
           noDecode = (noDecode)?0:1;
@@ -304,13 +304,13 @@ func x86emu_single_step() {
 }
 
 func X86EMU_trace_on() int {
-	M.x86.debug = M.x86.debug | DEBUG_STEP_F | DEBUG_DECODE_F | DEBUG_TRACE_F
-	return M.x86.debug
+	M().x86.debug = M().x86.debug | DEBUG_STEP_F | DEBUG_DECODE_F | DEBUG_TRACE_F
+	return M().x86.debug
 }
 
 func X86EMU_trace_off() int {
-	M.x86.debug = M.x86.debug & ^(DEBUG_STEP_F | DEBUG_DECODE_F | DEBUG_TRACE_F)
-	return M.x86.debug
+	M().x86.debug = M().x86.debug & ^(DEBUG_STEP_F | DEBUG_DECODE_F | DEBUG_TRACE_F)
+	return M().x86.debug
 }
 
 func parse_line(s string, ps *int, n *int) error {
@@ -344,19 +344,19 @@ func parse_line(s string, ps *int, n *int) error {
 	return errors.New("not yet")
 }
 func x86emu_dump_regs() {
-	fmt.Printf("\tAX=%04x  ", M.x86.R_AX)
-	fmt.Printf("BX=%04x  ", M.x86.R_BX)
-	fmt.Printf("CX=%04x  ", M.x86.R_CX)
-	fmt.Printf("DX=%04x  ", M.x86.R_DX)
-	fmt.Printf("SP=%04x  ", M.x86.R_SP)
-	fmt.Printf("BP=%04x  ", M.x86.R_BP)
-	fmt.Printf("SI=%04x  ", M.x86.R_SI)
-	fmt.Printf("DI=%04x\n", M.x86.R_DI)
-	fmt.Printf("\tDS=%04x  ", M.x86.R_DS)
-	fmt.Printf("ES=%04x  ", M.x86.R_ES)
-	fmt.Printf("SS=%04x  ", M.x86.R_SS)
-	fmt.Printf("CS=%04x  ", M.x86.R_CS)
-	fmt.Printf("IP=%04x   ", M.x86.R_IP)
+	fmt.Printf("\tAX=%04x  ", M().x86.R_AX)
+	fmt.Printf("BX=%04x  ", M().x86.R_BX)
+	fmt.Printf("CX=%04x  ", M().x86.R_CX)
+	fmt.Printf("DX=%04x  ", M().x86.R_DX)
+	fmt.Printf("SP=%04x  ", M().x86.R_SP)
+	fmt.Printf("BP=%04x  ", M().x86.R_BP)
+	fmt.Printf("SI=%04x  ", M().x86.R_SI)
+	fmt.Printf("DI=%04x\n", M().x86.R_DI)
+	fmt.Printf("\tDS=%04x  ", M().x86.R_DS)
+	fmt.Printf("ES=%04x  ", M().x86.R_ES)
+	fmt.Printf("SS=%04x  ", M().x86.R_SS)
+	fmt.Printf("CS=%04x  ", M().x86.R_CS)
+	fmt.Printf("IP=%04x   ", M().x86.R_IP)
 	/* CHECKED... */
 	if ACCESS_FLAG(F_OF) {
 		fmt.Printf("OV ")
@@ -402,19 +402,19 @@ func x86emu_dump_regs() {
 }
 
 func x86emu_dump_xregs() {
-	fmt.Printf("\tEAX=%08x  ", M.x86.R_EAX)
-	fmt.Printf("EBX=%08x  ", M.x86.R_EBX)
-	fmt.Printf("ECX=%08x  ", M.x86.R_ECX)
-	fmt.Printf("EDX=%08x\n", M.x86.R_EDX)
-	fmt.Printf("\tESP=%08x  ", M.x86.R_ESP)
-	fmt.Printf("EBP=%08x  ", M.x86.R_EBP)
-	fmt.Printf("ESI=%08x  ", M.x86.R_ESI)
-	fmt.Printf("EDI=%08x\n", M.x86.R_EDI)
-	fmt.Printf("\tDS=%04x  ", M.x86.R_DS)
-	fmt.Printf("ES=%04x  ", M.x86.R_ES)
-	fmt.Printf("SS=%04x  ", M.x86.R_SS)
-	fmt.Printf("CS=%04x  ", M.x86.R_CS)
-	fmt.Printf("EIP=%08x\n\t", M.x86.R_EIP)
+	fmt.Printf("\tEAX=%08x  ", M().x86.R_EAX)
+	fmt.Printf("EBX=%08x  ", M().x86.R_EBX)
+	fmt.Printf("ECX=%08x  ", M().x86.R_ECX)
+	fmt.Printf("EDX=%08x\n", M().x86.R_EDX)
+	fmt.Printf("\tESP=%08x  ", M().x86.R_ESP)
+	fmt.Printf("EBP=%08x  ", M().x86.R_EBP)
+	fmt.Printf("ESI=%08x  ", M().x86.R_ESI)
+	fmt.Printf("EDI=%08x\n", M().x86.R_EDI)
+	fmt.Printf("\tDS=%04x  ", M().x86.R_DS)
+	fmt.Printf("ES=%04x  ", M().x86.R_ES)
+	fmt.Printf("SS=%04x  ", M().x86.R_SS)
+	fmt.Printf("CS=%04x  ", M().x86.R_CS)
+	fmt.Printf("EIP=%08x\n\t", M().x86.R_EIP)
 
 	/* CHECKED... */
 	if ACCESS_FLAG(F_OF) {
