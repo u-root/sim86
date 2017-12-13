@@ -1,5 +1,6 @@
 #!/bin/bash
-
+cpp -CC -nostdinc -include  erasedb.h $1 | grep -v '^#' > x
+cp x decode.go
 sed -i 's/printf/fmt.Printf/' $1
 # casts first
 sed -i 's/(u\([361][624]\))\([A-Za-z][_A-Za-z\.0-9]*\)/uint\1(\2)/g' $1
@@ -16,6 +17,7 @@ sed -i 's/(\*\(sys_rd.\))/\1/' $1
 sed -i 's/(x86emu_optab\[\(op1\)\])/x86emu_optab[\1]/' $1
 sed -i 's/\(func.*\)(void)\(.*\)/\1()\2/' $1
 sed -i 's/^static void \(.*\)(void)/func \1() {/' $1
+sed -i 's/^void \(.*\)(\(.*\))/func \1(\2) {/' $1
 sed -i 's/^{$//' $1
 sed -i 's/if (_X86EMU_intrTab\[intno\])/if _X86EMU_intrTab[intno] != nil/' $1
 sed -i 's/(u16)M.x86.R_FLG/M().x86.spc.FLAGS.Get16()/' $1
@@ -28,6 +30,8 @@ sed -i 's/M.x86.R_IP/M().x86.spc.IP.Get16()/' $1
 sed -i 's/^.if.*DEBUG.*//' $1
 sed -i 's/^.endif.*//' $1
 sed -i 's/M.x86.mode/M().x86.mode/' $1
+
+echo now do the functions
 
 
 exit 0
