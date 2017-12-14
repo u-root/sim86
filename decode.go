@@ -77,8 +77,7 @@ REMARKS:
 Raise the specified interrupt to be handled before the execution of the
 next instruction.
 ****************************************************************************/
-void x86emu_intr_raise( u8 intrnum)
-{
+void x86emu_intr_raise( u8 intrnum) {
     printf("%s, raising exception %x\n", __func__, intrnum);
     x86emu_dump_regs();
     M.x86.intno = intrnum;
@@ -91,8 +90,7 @@ Main execution loop for the emulator. We return from here when the system
 halts, which is normally caused by a stack fault when we return from the
 original real mode call.
 ****************************************************************************/
-void X86EMU_exec(void)
-{
+void X86EMU_exec(void) {
     u8 op1;
 
     M.x86.intr = 0;
@@ -134,8 +132,7 @@ DB(     if (CHECK_IP_FETCH())
 REMARKS:
 Halts the system by setting the halted system flag.
 ****************************************************************************/
-void X86EMU_halt_sys(void)
-{
+void X86EMU_halt_sys(void) {
     M.x86.intr |= INTR_HALTED;
 }
 
@@ -151,8 +148,7 @@ next instruction.
 
 NOTE: Do not inline this function, as (*sys_rdb) is already inline!
 ****************************************************************************/
-void fetch_decode_modrm( int *mod, int *regh, int *regl)
-{
+void fetch_decode_modrm( int *mod, int *regh, int *regl) {
     int fetched;
 
 DB( if (CHECK_IP_FETCH())
@@ -404,8 +400,7 @@ the current 'default' segment, which may have been overridden.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-void store_data_byte( uint offset, u8 val)
-{
+void store_data_byte( uint offset, u8 val) {
 #ifdef DEBUG
     if (CHECK_DATA_ACCESS())
         x86emu_check_data_access((u16)get_data_segment(), offset);
@@ -424,8 +419,7 @@ the current 'default' segment, which may have been overridden.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-void store_data_word( uint offset, u16 val)
-{
+void store_data_word( uint offset, u16 val) {
 #ifdef DEBUG
     if (CHECK_DATA_ACCESS())
         x86emu_check_data_access((u16)get_data_segment(), offset);
@@ -444,8 +438,7 @@ the current 'default' segment, which may have been overridden.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-void store_data_long( uint offset, u32 val)
-{
+void store_data_long( uint offset, u32 val) {
 #ifdef DEBUG
     if (CHECK_DATA_ACCESS())
         x86emu_check_data_access((u16)get_data_segment(), offset);
@@ -464,8 +457,7 @@ Writes a byte value to an absolute memory location.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-void store_data_byte_abs( uint segment, uint offset, u8 val)
-{
+void store_data_byte_abs( uint segment, uint offset, u8 val) {
 #ifdef DEBUG
     if (CHECK_DATA_ACCESS())
         x86emu_check_data_access(segment, offset);
@@ -484,8 +476,7 @@ Writes a word value to an absolute memory location.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-void store_data_word_abs( uint segment, uint offset, u16 val)
-{
+void store_data_word_abs( uint segment, uint offset, u16 val) {
 #ifdef DEBUG
     if (CHECK_DATA_ACCESS())
         x86emu_check_data_access(segment, offset);
@@ -504,8 +495,7 @@ Writes a long value to an absolute memory location.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-void store_data_long_abs( uint segment, uint offset, u32 val)
-{
+void store_data_long_abs( uint segment, uint offset, u32 val) {
 #ifdef DEBUG
     if (CHECK_DATA_ACCESS())
         x86emu_check_data_access(segment, offset);
