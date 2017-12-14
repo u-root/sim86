@@ -1,6 +1,8 @@
 #!/bin/bash
 cpp -CC -nostdinc -include  erasedb.h $1 | grep -v '^#' > x
 cp x decode.go
+sed -i 's/^u\([361][624]\)\(.*\)/func \2 uint\1/' $1
+sed -i 's/^u8\(.*\)/func \1 uint8/' $1
 sed -i 's/^if  *(\([^)][^)]*\))\(.*{.*}\)/  if \1  \2 /' $1
 sed -i 's/^if  *(\([^)][^)]*\))\(.*\)/if \1 { \2 }/' $1
 sed -i 's/( { )/() {/' $1
@@ -33,9 +35,12 @@ sed -i 's/M.x86.R_CS/M().x86.seg.CS.Get()/' $1
 sed -i 's/M.x86.R_IP/M().x86.spc.IP.Get16()/' $1
 sed -i 's/^.if.*DEBUG.*//' $1
 sed -i 's/^.endif.*//' $1
-sed -i 's/M.x86.mode/M().x86.mode/' $1
+sed -i 's/M.x86/M().x86/' $1
 sed -i 's/^#.*//' $1
 sed -i 's/for (;;)/for/' $1
+sed -i 's/( *void *)/()/' $1
+sed -i 's/(.x86emu_optab.op1..(op1);/x86emu_optab[op1](op1)/' $1
+sed -i 's/M.x86/M().x86/g' $1
 
 
 echo now do the functions

@@ -107,14 +107,15 @@ DB(     if (CHECK_IP_FETCH())
         INC_DECODED_INST_LEN(1);
         if (M.x86.intr) {
             if (M.x86.intr & INTR_HALTED) {
-DB(             if (M.x86.R_SP != 0) {
+             if (M.x86.R_SP != 0) {
                     printf("halted\n");
                     X86EMU_trace_regs();
                     }
                 else {
-                    if (M.x86.debug)
+                    if (M.x86.debug) {
                         printf("Service completed successfully\n");
-                    })
+		}
+                    }
                 return;
             }
             if (((M.x86.intr & INTR_SYNCH) && (M.x86.intno == 0 || M.x86.intno == 2)) ||
