@@ -110,8 +110,7 @@ DB(     if (CHECK_IP_FETCH())
              if (M.x86.R_SP != 0) {
                     printf("halted\n");
                     X86EMU_trace_regs();
-                    }
-                else {
+                    } else {
                     if (M.x86.debug) {
                         printf("Service completed successfully\n");
 		}
