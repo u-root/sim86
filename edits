@@ -2,8 +2,9 @@
 set -e
 cpp -CC -nostdinc -include  erasedb.h $1 | grep -v '^#' > x
 cp x decode.go
-sed -i 's/^u\([361][624]\)\(.*\)/func \2 uint\1/' $1
-sed -i 's/^u8\(.*\)/func \1 uint8/' $1
+sed -i 's/_INLINE  *//' $1
+sed -i 's/^u\([361][624]\)\(.*\){/func \2 uint\1{/' $1
+sed -i 's/^u8\(.*\){/func \1 uint8{/' $1
 sed -i 's/^if  *(\([^)][^)]*\))\(.*{.*}\)/  if \1  \2 /' $1
 sed -i 's/^if  *(\([^)][^)]*\))\(.*\)/if \1 { \2 }/' $1
 sed -i 's/( { )/() {/' $1
@@ -12,8 +13,8 @@ sed -i 's/printf/fmt.Printf/g' $1
 # casts first
 sed -i 's/(u\([361][624]\))\([A-Za-z][_A-Za-z\.0-9]*\)/uint\1(\2)/g' $1
 
-sed -i 's/u\([361][624]\)[^a-z][^a-z]*\([a-z][a-z]*\)/\2 uint\1/g' $1
-sed -i 's/u8  *\(.*\);/var \1 uint8/' $1
+sed -i 's/^  *u\([361][624]\)[^a-z][^a-z]*\([a-z][a-z]*\)/var \2 uint\1/g' $1
+sed -i 's/^  *u8  *\(.*\);/var \1 uint8/' $1
 sed -i 's/, int[^a-z][^a-z]*\*\([a-z][a-z]*\)/, \1 *int/g' $1
 sed -i 's/, int[^a-z][^a-z]*\([a-z][a-z]*\)/, \1 int/g' $1
 sed -i 's/const char \*\([a-z][a-z]*\)/\1 string/g' $1
@@ -42,6 +43,8 @@ sed -i 's/for (;;)/for/' $1
 sed -i 's/( *void *)/()/' $1
 sed -i 's/(.x86emu_optab.op1..(op1);/x86emu_optab[op1](op1)/' $1
 sed -i 's/M.x86/M().x86/g' $1
+sed -i 's/\(.*\)M().x86.spc.IP.Get16()++\(.*\)/ip := M().x86.spc.IP.Get16(); \1ip\2M().x86.spc.IP.Set16(ip+1)/' $1
+sed -i 's/^  *int  *\(.*\);/var \1 int/' $1
 
 
 echo now do the functions
