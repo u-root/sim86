@@ -49,8 +49,7 @@ import (
 REMARKS:
 Handles any pending asynchronous interrupts.
 ****************************************************************************/
-static void x86emu_intr_handle(void)
-{
+void x86emu_intr_handle(void) {
     u8  intno;
 
     if (M.x86.intr & INTR_SYNCH) {
@@ -693,8 +692,7 @@ REMARKS:
 Decodes scale/index of SIB byte and returns relevant offset part of
 effective address.
 ****************************************************************************/
-static unsigned decode_sib_si( int scale, int index)
-{
+unsigned decode_sib_si( int scale, int index) {
     scale = 1 << scale;
     if (scale > 1) {
         DECODE_PRINTF2("[%d*", scale);
@@ -741,8 +739,7 @@ Offset in memory for the address decoding
 REMARKS:
 Decodes SIB addressing byte and returns calculated effective address.
 ****************************************************************************/
-static unsigned decode_sib_address( int mod)
-{
+unsigned decode_sib_address( int mod) {
     int sib   = fetch_byte_imm();
     int ss    = (sib >> 6) & 0x03;
     int index = (sib >> 3) & 0x07;
