@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 cpp -CC -nostdinc -include  erasedb.h $1 | grep -v '^#' > x
 cp x decode.go
 sed -i 's/^u\([361][624]\)\(.*\)/func \2 uint\1/' $1
