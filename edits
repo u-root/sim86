@@ -18,9 +18,11 @@ sed -i 's/(u\([361][624]\))\([A-Za-z][_A-Za-z\.0-9]*\)/uint\1(\2)/g' $1
 # types
 sed -i 's/^  *u\([361][624]\)[^a-z][^a-z]*\([a-z][a-z]*\)/var \2 uint\1/g' $1
 sed -i 's/^  *u8  *\(.*\);/var \1 uint8/' $1
+sed -i 's/^  *unsigned  *\(.*\);/var \1 uint/' $1
 sed -i 's/, int[^a-z][^a-z]*\*\([a-z][a-z]*\)/, \1 *int/g' $1
 sed -i 's/, int[^a-z][^a-z]*\([a-z][a-z]*\)/, \1 int/g' $1
 sed -i 's/( int[^a-z][^a-z]*\([a-z][a-z]*\),/( \1 int,/g' $1
+sed -i 's/( *int[^a-z][^a-z]*\([a-z][a-z]*\) *)/( \1 int)/g' $1
 sed -i 's/const char \*\([a-z][a-z]*\)/\1 string/g' $1
 
 sed -i 's/intno = M.x86.intno;/intno = uint8(M().x86.intno)/' $1
@@ -50,6 +52,12 @@ sed -i 's/M.x86/M().x86/g' $1
 sed -i 's/\(.*\)M().x86.spc.IP.Get16()++\(.*\)/ip := M().x86.spc.IP.Get16(); \1ip\2M().x86.spc.IP.Set16(ip+1)/' $1
 sed -i 's/^  *int  *\(.*\);/var \1 int/' $1
 
+sed -i 's/^  *\(.*\) = (s32)\(.*\);$/\1 = int32(\2)/' $1
+sed -i 's/^  *\(.*\) = (s8)\(.*\);$/\1 = int8(\2)/' $1
+
+
+echo cleanup from edits
+sed -i 's/^var \(.*\) = \(.*\) int$/var \1 = int(\2)/' $1
 
 echo now do the functions
 
