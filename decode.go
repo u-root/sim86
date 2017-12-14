@@ -256,8 +256,7 @@ cpu-state-variable M.x86.mode. There are several potential states:
 
 Each of the above 7 items are handled with a bit in the mode field.
 ****************************************************************************/
-_INLINE u32 get_data_segment(void)
-{
+u32 get_data_segment(void) {
 #define GET_SEGMENT(segment)
     switch (M.x86.mode & SYSMODE_SEGMASK) {
       case 0:                   /* default case: use ds register */
