@@ -341,7 +341,7 @@ NOTE: Do not inline this function as sys_rdX is already inline!
 ****************************************************************************/
 func fetch_data_long(offset uint16) uint32 {
 
-	return sys_rdl((get_data_segment() << 4) + uint32(offset))
+	return sys_rdl(uint32(get_data_segment() << 4) + uint32(offset))
 }
 
 /****************************************************************************
@@ -421,7 +421,7 @@ the current 'default' segment, which may have been overridden.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-func store_data_word(offset uint, val uint16) {
+func store_data_word(offset uint, val uint16) uint16 {
 
 	panic("fix me")
 	return 0 // (*sys_wrw)((get_data_segment() << 4) + offset, val);
@@ -512,28 +512,28 @@ func decode_rm_byte_register(reg int) *uint8 {
 	switch reg {
 	case 0:
 		DECODE_PRINTF("AL")
-		return &M().x86.R_AL
+		return &M().x86.gen.A.Getl8()
 	case 1:
 		DECODE_PRINTF("CL")
-		return &M().x86.R_CL
+		return &M().x86.gen.C.Getl8()
 	case 2:
 		DECODE_PRINTF("DL")
-		return &M().x86.R_DL
+		return &M().x86.gen.D.Getl8()
 	case 3:
 		DECODE_PRINTF("BL")
-		return &M().x86.R_BL
+		return &M().x86.gen.B.Getl8()
 	case 4:
 		DECODE_PRINTF("AH")
-		return &M().x86.R_AH
+		return &M().x86.gen.A.Geth8()
 	case 5:
 		DECODE_PRINTF("CH")
-		return &M().x86.R_CH
+		return &M().x86.gen.C.Geth8()
 	case 6:
 		DECODE_PRINTF("DH")
-		return &M().x86.R_DH
+		return &M().x86.gen.D.Geth8()
 	case 7:
 		DECODE_PRINTF("BH")
-		return &M().x86.R_BH
+		return &M().x86.gen.B.Geth8()
 	}
 	HALT_SYS()
 	return NULL /* NOT REACHED OR REACHED ON ERROR */
@@ -554,28 +554,28 @@ func decode_rm_word_register(reg int) *uint16 {
 	switch reg {
 	case 0:
 		DECODE_PRINTF("AX")
-		return &M().x86.R_AX
+		return &M().x86.gen.A.Get16()
 	case 1:
 		DECODE_PRINTF("CX")
-		return &M().x86.R_CX
+		return &M().x86.gen.C.Get16()
 	case 2:
 		DECODE_PRINTF("DX")
-		return &M().x86.R_DX
+		return &M().x86.gen.D.Get16()
 	case 3:
 		DECODE_PRINTF("BX")
-		return &M().x86.R_BX
+		return &M().x86.gen.B.Get16()
 	case 4:
 		DECODE_PRINTF("SP")
-		return &M().x86.R_SP
+		return &M().x86.spc.SP.Get16()
 	case 5:
 		DECODE_PRINTF("BP")
-		return &M().x86.R_BP
+		return &M().x86.spc.BP.Get16()
 	case 6:
 		DECODE_PRINTF("SI")
-		return &M().x86.R_SI
+		return &M().x86.spc.SI.Get16()
 	case 7:
 		DECODE_PRINTF("DI")
-		return &M().x86.R_DI
+		return &M().x86.spc.DI.Get16()
 	}
 	HALT_SYS()
 	return NULL /* NOTREACHED OR REACHED ON ERROR */
@@ -1097,4 +1097,16 @@ func sys_rdl(add uint32) uint32 {
 
 func HALT_SYS() {
 	os.Exit(0)
+}
+
+func DECODE_PRINTF(x string, y...interface{}) {
+     	if (DEBUG_DECODE()) {
+		x86emu_decode_printf(x, y...)
+	}
+}
+
+func DECODE_PRINTF2(x string, y...interface{}) {
+     	if (DEBUG_DECODE()) {
+		x86emu_decode_printf(x, y...)
+	}
 }
