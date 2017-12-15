@@ -48,7 +48,7 @@ import (
 /* should look something like debug's output. */
 func X86EMU_trace_regs() {
 	if DEBUG_TRACE() {
-		if (M().x86.mode & uint32(SYSMODE_PREFIX_DATA | SYSMODE_PREFIX_ADDR)) != 0  {
+		if (M().x86.mode & uint32(SYSMODE_PREFIX_DATA|SYSMODE_PREFIX_ADDR)) != 0 {
 			x86emu_dump_xregs()
 		} else {
 			x86emu_dump_regs()
@@ -80,7 +80,7 @@ func x86emu_just_disassemble() {
 func disassemble_forward(seg uint16, off uint16, n int) {
 	var (
 		tregs *X86EMU_sysEnv
-		op1  uint8
+		op1   uint8
 	)
 	/*
 	 * hack, hack, hack.  What we do is use the exact machinery set up
@@ -127,8 +127,8 @@ func disassemble_forward(seg uint16, off uint16, n int) {
 	 */
 	for i := 0; i < n; i += 1 {
 		ip := M().x86.spc.IP.Get16()
-		op1 = sys_rdb(uint32(M().x86.seg.CS.Get()) << 4 + uint32(ip))
-		M().x86.spc.IP.Set16(ip+1)
+		op1 = sys_rdb(uint32(M().x86.seg.CS.Get())<<4 + uint32(ip))
+		M().x86.spc.IP.Set16(ip + 1)
 		x86emu_optab[op1](op1)
 	}
 	/* end major hack mode. */
@@ -158,7 +158,7 @@ func x86emu_decode_printf(x string, y ...interface{}) {
 }
 
 func x86emu_decode_printf2(x string, y int) {
-	x86emu_decode_printf(x , y)
+	x86emu_decode_printf(x, y)
 }
 
 func x86emu_end_instr() {
@@ -191,7 +191,7 @@ func x86emu_print_int_vect(iv uint16) {
 
 func X86EMU_dump_memory(seg uint16, o uint16, amt uint32) {
 	var (
-		off = uint32(o)
+		off   = uint32(o)
 		start = uint32(off) & 0xfffffff0
 		end   = uint32(off+16) & 0xfffffff0
 		i     uint32

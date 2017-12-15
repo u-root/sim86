@@ -46,13 +46,13 @@ func (r reg) Seth8(i uint8) {
 	r.reg = (r.reg & 0x0000ff00) | uint32(i)<<8
 }
 func (r reg) Get8h() uint8 {
-	return uint8(r.reg>>8)
+	return uint8(r.reg >> 8)
 }
 func (r reg) Setl8(i uint8) {
 	r.reg = (r.reg & 0xffffff00) | uint32(i)
 }
 func (r reg) Get8l() uint8 {
-	return uint8(r.reg>>8)
+	return uint8(r.reg >> 8)
 }
 
 func (r reg16) Set(i uint16) {
@@ -61,7 +61,6 @@ func (r reg16) Set(i uint16) {
 func (r reg16) Get() uint16 {
 	return r.reg
 }
-
 
 type i386_general_regs struct {
 	A reg
@@ -119,4 +118,3 @@ type X86EMU_intrFuncs struct {
 type __int128_t int64
 type __uint128_t uint64
 type __builtin_ms_va_list []byte
-

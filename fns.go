@@ -147,89 +147,80 @@ func CLEARALL_FLAG(_ uint32) {
 
 // :.,$s/func \(.*\) {^M\(.*\)/func \1() {\2}/^M}
 func CHECK_IP_FETCH() bool {
-	return 	(M().x86.check & CHECK_IP_FETCH_F) != 0
+	return (M().x86.check & CHECK_IP_FETCH_F) != 0
 }
 func CHECK_SP_ACCESS() bool {
-	return 	(M().x86.check & CHECK_SP_ACCESS_F) != 0
+	return (M().x86.check & CHECK_SP_ACCESS_F) != 0
 }
 func CHECK_MEM_ACCESS() bool {
-	return 	(M().x86.check & CHECK_MEM_ACCESS_F) != 0
+	return (M().x86.check & CHECK_MEM_ACCESS_F) != 0
 }
 func CHECK_DATA_ACCESS() bool {
-	return 	(M().x86.check & CHECK_DATA_ACCESS_F) != 0
+	return (M().x86.check & CHECK_DATA_ACCESS_F) != 0
 }
 
 func DEBUG_INSTRUMENT() bool {
-	return 	(M().x86.debug & DEBUG_INSTRUMENT_F) != 0
+	return (M().x86.debug & DEBUG_INSTRUMENT_F) != 0
 }
 func DEBUG_DECODE() bool {
-	return 	(M().x86.debug & DEBUG_DECODE_F) != 0
+	return (M().x86.debug & DEBUG_DECODE_F) != 0
 }
 func DEBUG_TRACE() bool {
-	return 	(M().x86.debug & DEBUG_TRACE_F) != 0
+	return (M().x86.debug & DEBUG_TRACE_F) != 0
 }
 func DEBUG_STEP() bool {
-	return 	(M().x86.debug & DEBUG_STEP_F) != 0
+	return (M().x86.debug & DEBUG_STEP_F) != 0
 }
 func DEBUG_DISASSEMBLE() bool {
-	return 	(M().x86.debug & DEBUG_DISASSEMBLE_F) != 0
+	return (M().x86.debug & DEBUG_DISASSEMBLE_F) != 0
 }
 func DEBUG_BREAK() bool {
-	return 	(M().x86.debug & DEBUG_BREAK_F) != 0
+	return (M().x86.debug & DEBUG_BREAK_F) != 0
 }
 func DEBUG_SVC() bool {
-	return 	(M().x86.debug & DEBUG_SVC_F) != 0
+	return (M().x86.debug & DEBUG_SVC_F) != 0
 }
 func DEBUG_SAVE_IP_CS() bool {
-	return 	(M().x86.debug & DEBUG_SAVE_IP_CS_F) != 0
+	return (M().x86.debug & DEBUG_SAVE_IP_CS_F) != 0
 }
 
 func DEBUG_FS() bool {
-	return 	(M().x86.debug & DEBUG_FS_F) != 0
+	return (M().x86.debug & DEBUG_FS_F) != 0
 }
 func DEBUG_PROC() bool {
-	return 	(M().x86.debug & DEBUG_PROC_F) != 0
+	return (M().x86.debug & DEBUG_PROC_F) != 0
 }
 func DEBUG_SYSINT() bool {
-	return 	(M().x86.debug & DEBUG_SYSINT_F) != 0
+	return (M().x86.debug & DEBUG_SYSINT_F) != 0
 }
 func DEBUG_TRACECALL() bool {
-	return 	(M().x86.debug & DEBUG_TRACECALL_F) != 0
+	return (M().x86.debug & DEBUG_TRACECALL_F) != 0
 }
 func DEBUG_TRACECALLREGS() bool {
-	return 	(M().x86.debug & DEBUG_TRACECALL_REGS_F) != 0
+	return (M().x86.debug & DEBUG_TRACECALL_REGS_F) != 0
 }
 func DEBUG_TRACEJMP() bool {
-	return 	(M().x86.debug & DEBUG_TRACEJMP_F) != 0
+	return (M().x86.debug & DEBUG_TRACEJMP_F) != 0
 }
 func DEBUG_TRACEJMPREGS() bool {
-	return 	(M().x86.debug & DEBUG_TRACEJMP_REGS_F) != 0
+	return (M().x86.debug & DEBUG_TRACEJMP_REGS_F) != 0
 }
 func DEBUG_SYS() bool {
-	return 	(M().x86.debug & DEBUG_SYS_F) != 0
+	return (M().x86.debug & DEBUG_SYS_F) != 0
 }
 func DEBUG_MEM_TRACE() bool {
-	return 	(M().x86.debug & DEBUG_MEM_TRACE_F) != 0
+	return (M().x86.debug & DEBUG_MEM_TRACE_F) != 0
 }
 func DEBUG_IO_TRACE() bool {
-	return 	(M().x86.debug & DEBUG_IO_TRACE_F) != 0
+	return (M().x86.debug & DEBUG_IO_TRACE_F) != 0
 }
 func DEBUG_DECODE_NOPRINT() bool {
-	return 	(M().x86.debug & DEBUG_DECODE_NOPRINT_F) != 0
+	return (M().x86.debug & DEBUG_DECODE_NOPRINT_F) != 0
 }
 func initDEBUG_SYS_F() {
 	DEBUG_SYS_F = (DEBUG_SVC_F | DEBUG_FS_F | DEBUG_PROC_F)
 }
 func sys_rdb(ip uint32) byte {
 	panic("fix me")
-	return 0
-}
-
-func fetch_data_word_abs(seg, off uint16) uint16 {
-	panic("fix me")
-	return 0
-}
-func fetch_data_byte_abs(seg, off uint16) uint8 {
-		panic("fix me")
 	return 0
 }
