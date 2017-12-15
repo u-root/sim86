@@ -91,7 +91,7 @@ type X86EMU_regs struct {
 	spc         i386_special_regs
 	seg         i386_segment_regs
 	mode        uint32
-	intr        int
+	intr        uint32
 	debug       uint32
 	check       int
 	saved_ip    uint16

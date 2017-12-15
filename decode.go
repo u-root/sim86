@@ -41,6 +41,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 )
 
 /*----------------------------- Implementation ----------------------------*/
@@ -57,13 +58,13 @@ func x86emu_intr_handle() {
 		if _X86EMU_intrTab[intno] != nil {
 			panic("_X86EMU_intrTab[intno](intno)")
 		} else {
-			push_word(uint16(M().x86.spc.FLAGS.Get16()))
+			push_word(uint16(M().x86.spc.FLAGS))
 			CLEAR_FLAG(F_IF)
 			CLEAR_FLAG(F_TF)
 			push_word(M().x86.seg.CS.Get())
-			M().x86.seg.CS.Set16(mem_access_word(intno*4 + 2))
+			M().x86.seg.CS.Set(mem_access_word(uint32(intno*4 + 2)))
 			push_word(M().x86.spc.IP.Get16())
-			M().x86.spc.IP.Set16(mem_access_word(intno * 4))
+			M().x86.spc.IP.Set16(mem_access_word(uint32(intno * 4)))
 			M().x86.intr = 0
 		}
 	}
@@ -78,7 +79,7 @@ Raise the specified interrupt to be handled before the execution of the
 next instruction.
 ****************************************************************************/
 func x86emu_intr_raise(intrnum uint8) {
-	fmt.Printf("%s, raising exception %x\n", __func__, intrnum)
+	fmt.Printf("raising exception %x\n", intrnum)
 	x86emu_dump_regs()
 	M().x86.intno = intrnum
 	M().x86.intr |= INTR_SYNCH
@@ -104,25 +105,24 @@ func X86EMU_exec() {
 		/* If debugging, save the IP and CS values. */
 		SAVE_IP_CS(M().x86.seg.CS.Get(), M().x86.spc.IP.Get16())
 		INC_DECODED_INST_LEN(1)
-		if M().x86.intr {
-			if M().x86.intr & INTR_HALTED {
-				if M().x86.R_SP != 0 {
+		if M().x86.intr != 0 {
+			if (M().x86.intr & INTR_HALTED) != 0 {
+				if M().x86.spc.SP.Get16() != 0 {
 					fmt.Printf("halted\n")
 					X86EMU_trace_regs()
 				} else {
-					if M().x86.debug {
+					if M().x86.debug != 0 {
 						fmt.Printf("Service completed successfully\n")
 					}
 				}
 				return
 			}
-			if ((M().x86.intr & INTR_SYNCH) && (M().x86.intno == 0 || M().x86.intno == 2)) ||
-				!ACCESS_FLAG(F_IF) {
+			if ((M().x86.intr & INTR_SYNCH != 0 ) && ((M().x86.intno == 0) || M().x86.intno == 2)) || !ACCESS_FLAG(F_IF) {
 				x86emu_intr_handle()
 			}
 		}
 		ip := M().x86.spc.IP.Get16()
-		op1 = sys_rdb((uint32(M().x86.seg.CS.Get()) << 4) + (ip))
+		op1 = sys_rdb((uint32(M().x86.seg.CS.Get()) << 4 + uint32(ip)))
 		M().x86.spc.IP.Set16(ip + 1)
 		x86emu_optab[op1](op1)
 		//if (M().x86.debug & DEBUG_EXIT) {
@@ -152,20 +152,20 @@ next instruction.
 
 NOTE: Do not inline this function, as sys_rdb is already inline!
 ****************************************************************************/
-func fetch_decode_modrm(mod int, regh *int, regl *int) {
-	var fetched int
+func fetch_decode_modrm(mod *int, regh *int, regl *int) {
+	var fetched byte
 
 	if CHECK_IP_FETCH() {
 		x86emu_check_ip_access()
 	}
 
 	ip := M().x86.spc.IP.Get16()
-	fetched = sys_rdb((uint32(M().x86.seg.CS.Get()) << 4) + (ip))
+	fetched = sys_rdb(uint32(M().x86.seg.CS.Get()) << 4 + uint32(ip))
 	M().x86.spc.IP.Set16(ip + 1)
 	INC_DECODED_INST_LEN(1)
-	*mod = (fetched >> 6) & 0x03
-	*regh = (fetched >> 3) & 0x07
-	*regl = (fetched >> 0) & 0x07
+	*mod = int((fetched >> 6) & 0x03)
+	*regh = int((fetched >> 3) & 0x07)
+	*regl = int((fetched >> 0) & 0x07)
 }
 
 /****************************************************************************
@@ -186,7 +186,7 @@ func fetch_byte_imm() uint8 {
 	}
 
 	ip := M().x86.spc.IP.Get16()
-	fetched = sys_rdb((uint32(M().x86.seg.CS.Get()) << 4) + (ip))
+	fetched = sys_rdb((uint32(M().x86.seg.CS.Get()) << 4) + uint32(ip))
 	M().x86.spc.IP.Set16(ip + 1)
 	INC_DECODED_INST_LEN(1)
 	return fetched
@@ -208,9 +208,9 @@ func fetch_word_imm() uint16 {
 	if CHECK_IP_FETCH() {
 		x86emu_check_ip_access()
 	}
-
-	fetched = sys_rdw((uint32(M().x86.seg.CS.Get()) << 4) + (M().x86.spc.IP.Get16()))
-	M().x86.spc.IP.Get16() += 2
+	ip := M().x86.spc.IP.Get16()
+	fetched = sys_rdw((uint32(M().x86.seg.CS.Get()) << 4) + uint32(ip))
+	M().x86.spc.IP.Set16(ip+2)
 	INC_DECODED_INST_LEN(2)
 	return fetched
 }
@@ -231,9 +231,9 @@ func fetch_long_imm() uint32 {
 	if CHECK_IP_FETCH() {
 		x86emu_check_ip_access()
 	}
-
-	fetched = sys_rdl((uint32(M().x86.seg.CS.Get()) << 4) + (M().x86.spc.IP.Get16()))
-	M().x86.spc.IP.Get16() += 4
+	ip := M().x86.spc.IP.Get16()
+	fetched = sys_rdl((uint32(M().x86.seg.CS.Get()) << 4) + uint32(ip))
+	M().x86.spc.IP.Set16(ip+4)
 	INC_DECODED_INST_LEN(4)
 	return fetched
 }
@@ -267,35 +267,36 @@ cpu-state-variable M().x86.mode. There are several potential states:
 
 Each of the above 7 items are handled with a bit in the mode field.
 ****************************************************************************/
-func get_data_segment() uint32 {
+func get_data_segment() uint16 {
 
 	switch M().x86.mode & SYSMODE_SEGMASK {
 	case 0: /* default case: use ds register */
 	case SYSMODE_SEGOVR_DS:
 	case SYSMODE_SEGOVR_DS | SYSMODE_SEG_DS_SS:
-		return M().x86.R_DS
+		return M().x86.seg.DS.Get()
 	case SYSMODE_SEG_DS_SS: /* non-overridden, use ss register */
-		return M().x86.R_SS
+		return M().x86.seg.SS.Get()
 	case SYSMODE_SEGOVR_CS:
 	case SYSMODE_SEGOVR_CS | SYSMODE_SEG_DS_SS:
 		return M().x86.seg.CS.Get()
 	case SYSMODE_SEGOVR_ES:
 	case SYSMODE_SEGOVR_ES | SYSMODE_SEG_DS_SS:
-		return M().x86.R_ES
+		return M().x86.seg.ES.Get()
 	case SYSMODE_SEGOVR_FS:
 	case SYSMODE_SEGOVR_FS | SYSMODE_SEG_DS_SS:
-		return M().x86.R_FS
+		return M().x86.seg.FS.Get()
 	case SYSMODE_SEGOVR_GS:
 	case SYSMODE_SEGOVR_GS | SYSMODE_SEG_DS_SS:
-		return M().x86.R_GS
+		return M().x86.seg.GS.Get()
 	case SYSMODE_SEGOVR_SS:
 	case SYSMODE_SEGOVR_SS | SYSMODE_SEG_DS_SS:
-		return M().x86.R_SS
+		return M().x86.seg.SS.Get()
 	default:
 
 		HALT_SYS()
 		return 0
 	}
+	return 0
 }
 
 /****************************************************************************
@@ -338,9 +339,9 @@ Long value read from the absolute memory location.
 
 NOTE: Do not inline this function as sys_rdX is already inline!
 ****************************************************************************/
-func fetch_data_long(offset uint) uint32 {
+func fetch_data_long(offset uint16) uint32 {
 
-	return sys_rdl((get_data_segment() << 4) + offset)
+	return sys_rdl((get_data_segment() << 4) + uint32(offset))
 }
 
 /****************************************************************************
@@ -353,9 +354,9 @@ Byte value read from the absolute memory location.
 
 NOTE: Do not inline this function as sys_rdX is already inline!
 ****************************************************************************/
-func fetch_data_byte_abs(segment uint, offset uint) uint8 {
+func fetch_data_byte_abs(segment uint16, offset uint16) uint8 {
 
-	return sys_rdb((uint32(segment) << 4) + offset)
+	return sys_rdb(uint32(segment << 4 + offset))
 }
 
 /****************************************************************************
@@ -368,7 +369,7 @@ Word value read from the absolute memory location.
 
 NOTE: Do not inline this function as sys_rdX is already inline!
 ****************************************************************************/
-func fetch_data_word_abs(segment uint, offset uint) uint16 {
+func fetch_data_word_abs(segment uint16, offset uint16) uint16 {
 
 	panic("fix me")
 	return 0
@@ -403,7 +404,7 @@ the current 'default' segment, which may have been overridden.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-func store_data_byte(offset uint, val uint8) {
+func store_data_byte(offset uint, val uint8) byte {
 
 	panic("fix me")
 	return 0 //(*sys_wrb)((get_data_segment() << 4) + offset, val);
@@ -420,7 +421,7 @@ the current 'default' segment, which may have been overridden.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-func store_data_word(offset uint, u16 val) {
+func store_data_word(offset uint, val uint16) {
 
 	panic("fix me")
 	return 0 // (*sys_wrw)((get_data_segment() << 4) + offset, val);
@@ -437,7 +438,7 @@ the current 'default' segment, which may have been overridden.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-func store_data_long(offset uint, val uint32) {
+func store_data_long(offset uint, val uint32) uint32 {
 
 	panic("fix me")
 
@@ -458,8 +459,6 @@ NOTE: Do not inline this function as (*sys_wrX) is already inline!
 func store_data_byte_abs(segment uint, offset uint, val uint8) {
 
 	panic("fix me")
-
-	return 0 // (*sys_wrb)((uint32(segment) << 4) + offset, val);
 }
 
 /****************************************************************************
@@ -473,11 +472,11 @@ Writes a word value to an absolute memory location.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-func store_data_word_abs(segment uint, offset uint, u16 val) {
+func store_data_word_abs(segment uint, offset uint, val uint16) {
 
 	panic("fix me")
 
-	(*sys_wrw)((uint32(segment)<<4)+offset, val)
+	//(*sys_wrw)((uint32(segment)<<4)+offset, val)
 }
 
 /****************************************************************************
@@ -1074,4 +1073,28 @@ func decode_rmXX_address(mod int, rm int) uint {
 		return decode_rm01_address(rm)
 	}
 	return decode_rm10_address(rm)
+}
+
+func push_word(w uint16) {
+	panic("fix me")
+}
+
+func mem_access_word(addr uint32) uint16 {
+	panic("fix me")
+}
+
+func INC_DECODED_INST_LEN(amt uint16) {
+	if (DEBUG_DECODE())  	       {
+		x86emu_inc_decoded_inst_len(amt)
+	}
+}
+func sys_rdw(add uint32) uint16 {
+	panic("fix me")
+}
+func sys_rdl(add uint32) uint32 {
+	panic("fix me")
+}
+
+func HALT_SYS() {
+	os.Exit(0)
 }

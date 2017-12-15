@@ -224,3 +224,9 @@ func sys_rdb(ip uint32) byte {
 	panic("fix me")
 	return 0
 }
+func SAVE_IP_CS(cs, ip uint16) {
+	if (DEBUG_DECODE() | DEBUG_TRACECALL() | DEBUG_BREAK() | DEBUG_IO_TRACE() | DEBUG_SAVE_IP_CS()) {
+		M.x86.saved_cs = cs
+		M.x86.saved_ip = ip
+	      }
+}
