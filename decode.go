@@ -508,35 +508,35 @@ REMARKS:
 Return a pointer to the register given by the R/RM field of the
 modrm byte, for byte operands. Also enables the decoding of instructions.
 ****************************************************************************/
-func decode_rm_byte_register(reg int) *uint8 {
+func decode_rm_byte_register(reg int) register {
 	switch reg {
 	case 0:
 		DECODE_PRINTF("AL")
-		return &M().x86.gen.A.Getl8()
+		return M().x86.gen.A
 	case 1:
 		DECODE_PRINTF("CL")
-		return &M().x86.gen.C.Getl8()
+		return M().x86.gen.C
 	case 2:
 		DECODE_PRINTF("DL")
-		return &M().x86.gen.D.Getl8()
+		return M().x86.gen.D
 	case 3:
 		DECODE_PRINTF("BL")
-		return &M().x86.gen.B.Getl8()
+		return M().x86.gen.B
 	case 4:
 		DECODE_PRINTF("AH")
-		return &M().x86.gen.A.Geth8()
+		return M().x86.gen.A
 	case 5:
 		DECODE_PRINTF("CH")
-		return &M().x86.gen.C.Geth8()
+		return M().x86.gen.C
 	case 6:
 		DECODE_PRINTF("DH")
-		return &M().x86.gen.D.Geth8()
+		return M().x86.gen.D
 	case 7:
 		DECODE_PRINTF("BH")
-		return &M().x86.gen.B.Geth8()
+		return M().x86.gen.B
 	}
 	HALT_SYS()
-	return NULL /* NOT REACHED OR REACHED ON ERROR */
+	return nil /* NOT REACHED OR REACHED ON ERROR */
 }
 
 /****************************************************************************
@@ -550,35 +550,35 @@ REMARKS:
 Return a pointer to the register given by the R/RM field of the
 modrm byte, for word operands.  Also enables the decoding of instructions.
 ****************************************************************************/
-func decode_rm_word_register(reg int) *uint16 {
+func decode_rm_word_register(reg int) register {
 	switch reg {
 	case 0:
 		DECODE_PRINTF("AX")
-		return &M().x86.gen.A.Get16()
+		return &M().x86.gen.A
 	case 1:
 		DECODE_PRINTF("CX")
-		return &M().x86.gen.C.Get16()
+		return &M().x86.gen.C
 	case 2:
 		DECODE_PRINTF("DX")
-		return &M().x86.gen.D.Get16()
+		return &M().x86.gen.D
 	case 3:
 		DECODE_PRINTF("BX")
-		return &M().x86.gen.B.Get16()
+		return &M().x86.gen.B
 	case 4:
 		DECODE_PRINTF("SP")
-		return &M().x86.spc.SP.Get16()
+		return &M().x86.spc.SP
 	case 5:
 		DECODE_PRINTF("BP")
-		return &M().x86.spc.BP.Get16()
+		return &M().x86.spc.BP
 	case 6:
 		DECODE_PRINTF("SI")
-		return &M().x86.spc.SI.Get16()
+		return &M().x86.spc.SI
 	case 7:
 		DECODE_PRINTF("DI")
-		return &M().x86.spc.DI.Get16()
+		return &M().x86.spc.DI
 	}
 	HALT_SYS()
-	return NULL /* NOTREACHED OR REACHED ON ERROR */
+	return nil /* NOTREACHED OR REACHED ON ERROR */
 }
 
 /****************************************************************************
@@ -592,35 +592,35 @@ REMARKS:
 Return a pointer to the register given by the R/RM field of the
 modrm byte, for dword operands.  Also enables the decoding of instructions.
 ****************************************************************************/
-func decode_rm_long_register(reg int) *uint32 {
+func decode_rm_long_register(reg int) register {
 	switch reg {
 	case 0:
 		DECODE_PRINTF("EAX")
-		return &M().x86.R_EAX
+		return &M().x86.gen.A
 	case 1:
 		DECODE_PRINTF("ECX")
-		return &M().x86.R_ECX
+		return &M().x86.gen.C
 	case 2:
 		DECODE_PRINTF("EDX")
-		return &M().x86.R_EDX
+		return &M().x86.gen.D
 	case 3:
 		DECODE_PRINTF("EBX")
-		return &M().x86.R_EBX
+		return &M().x86.gen.B
 	case 4:
 		DECODE_PRINTF("ESP")
-		return &M().x86.R_ESP
+		return &M().x86.spc.SP
 	case 5:
 		DECODE_PRINTF("EBP")
-		return &M().x86.R_EBP
+		return &M().x86.spc.BP
 	case 6:
 		DECODE_PRINTF("ESI")
-		return &M().x86.R_ESI
+		return &M().x86.spc.SI
 	case 7:
 		DECODE_PRINTF("EDI")
-		return &M().x86.R_EDI
+		return &M().x86.spc.DI
 	}
 	HALT_SYS()
-	return NULL /* NOTREACHED OR REACHED ON ERROR */
+	return nil /* NOTREACHED OR REACHED ON ERROR */
 }
 
 /****************************************************************************
@@ -661,7 +661,7 @@ func decode_rm_seg_register(reg int) *uint16 {
 		break
 	}
 	HALT_SYS()
-	return NULL /* NOT REACHED OR REACHED ON ERROR */
+	return nil /* NOT REACHED OR REACHED ON ERROR */
 }
 
 /****************************************************************************

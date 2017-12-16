@@ -45,13 +45,13 @@ func (r reg) Get16() uint16 {
 func (r reg) Seth8(i uint8) {
 	r.reg = (r.reg & 0x0000ff00) | uint32(i)<<8
 }
-func (r reg) Get8h() uint8 {
+func (r reg) Geth8() uint8 {
 	return uint8(r.reg >> 8)
 }
 func (r reg) Setl8(i uint8) {
 	r.reg = (r.reg & 0xffffff00) | uint32(i)
 }
-func (r reg) Get8l() uint8 {
+func (r reg) Getl8() uint8 {
 	return uint8(r.reg >> 8)
 }
 
