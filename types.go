@@ -16,8 +16,8 @@ type register interface {
 }
 
 type register16 interface {
-	Set16(uint16)
-	Get16(uint16)
+	Set(uint16)
+	Get() uint16
 }
 
 type reg struct {

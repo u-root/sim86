@@ -1,13 +1,16 @@
 package mem
 
-var memory []uint32
+var memory []byte
 
 func (a u32address) Write(val uint32) {
-	memory[a] = val
+	memory[a] = byte(val)
+	memory[a+1] = byte(val>>8)
+	memory[a+2] = byte(val>>16)
+	memory[a+3] = byte(val>>24)
 }
 
 func (a u32address) Read() uint32 {
-	return memory[a]
+	return uint32(memory[a]) | uint32(memory[a+1]) << 8 | uint32(memory[a+2]) << 16 | uint32(memory[a+3]) << 24
 }
 
 func NewLongMemReader(a u32address) LongReader {
@@ -19,22 +22,12 @@ func NewLongMemWriter(a u32address) LongWriter{
 }
 
 func (a u16address) Write(val uint16) {
-	mem := memory[a>>1]
-	v := uint32(val)
-	if a & 1 == 0 {
-		mem = ((mem>>16)<<16) | v
-	} else {
-		mem = (mem & 0xffff) | (v<<16)
-	}
-	memory[a>>1] = mem
+	memory[a] = byte(val)
+	memory[a+1] = byte(val>>8)
 }
 
 func (a u16address) Read() uint16 {
-	mem := memory[a>>1]
-	if a & 1 == 0 {
-		return uint16(mem)
-	}
-	return uint16(mem>>16)
+	return uint16(memory[a]) | uint16(memory[a+1]) << 8
 }
 
 func NewWordMemReader(a u16address) WordReader {
@@ -46,18 +39,11 @@ func NewWordMemWriter(a u16address) WordWriter{
 }
 
 func (a u8address) Write(val uint8) {
-	ff := 0xff
-	b := (a&3)*8
-	v := memory[a>>2]
-	v &= ^uint32(ff<<b)
-	v |= uint32(val)<<b
-	memory[a>>2] = v
+	memory[a] = val
 }
 
 func (a u8address) Read() uint8 {
-	b := (a&3)*8
-	v := memory[a]
-	return uint8(v>>b)
+	return memory[a]
 }
 
 func NewByteMemReader(a u8address) ByteReader {

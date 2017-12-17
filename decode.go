@@ -635,26 +635,26 @@ Return a pointer to the register given by the R/RM field of the
 modrm byte, for word operands, modified from above for the weirdo
 special case of segreg operands.  Also enables the decoding of instructions.
 ****************************************************************************/
-func decode_rm_seg_register(reg int) *uint16 {
+func decode_rm_seg_register(reg int) register16 {
 	switch reg {
 	case 0:
 		DECODE_PRINTF("ES")
-		return &M().x86.R_ES
+		return M().x86.seg.ES
 	case 1:
 		DECODE_PRINTF("CS")
-		return &M().x86.seg.CS.Get()
+		return M().x86.seg.CS
 	case 2:
 		DECODE_PRINTF("SS")
-		return &M().x86.R_SS
+		return M().x86.seg.SS
 	case 3:
 		DECODE_PRINTF("DS")
-		return &M().x86.R_DS
+		return M().x86.seg.DS
 	case 4:
 		DECODE_PRINTF("FS")
-		return &M().x86.R_FS
+		return M().x86.seg.FS
 	case 5:
 		DECODE_PRINTF("GS")
-		return &M().x86.R_GS
+		return M().x86.seg.GS
 	case 6:
 	case 7:
 		DECODE_PRINTF("ILLEGAL SEGREG")
@@ -676,7 +676,7 @@ REMARKS:
 Decodes scale/index of SIB byte and returns relevant offset part of
 effective address.
 ****************************************************************************/
-func decode_sib_si(scale int, index int) uint {
+func decode_sib_si(scale uint, index int) uint {
 	scale = 1 << scale
 	if scale > 1 {
 		DECODE_PRINTF2("[%d*", scale)

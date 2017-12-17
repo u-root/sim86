@@ -4,9 +4,9 @@ import (
 	"testing"
 )
 func TestLong(t*testing.T) {
-	memory = make([]uint32, 262144)
+	memory = make([]byte, 262144)
 	r := NewLongMemReader(0)
-	t.Log("r.Read is %v", r.Read)
+	t.Logf("r.Read is %v", r.Read)
 	w := NewLongMemWriter(0)
 	w.Write(0xdeadbeef)
 	if r.Read() != 0xdeadbeef {
@@ -44,8 +44,8 @@ func TestLong(t*testing.T) {
 	}
 	ww = NewWordMemWriter(1)
 	ww.Write(0xcafe)
-	if r.Read() != 0xcafeaa55 {
-		t.Errorf("r: got %#08x, want %#08x", r.Read(), 0xcafeaa55)
+	if r.Read() != 0x03cafe55 {
+		t.Errorf("r: got %#08x, want %#08x", r.Read(), 0x03cafe55)
 	}
 
 }
