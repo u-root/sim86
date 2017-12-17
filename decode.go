@@ -692,22 +692,22 @@ func decode_sib_si(scale uint32, index uint32) uint32 {
 		return M().x86.gen.C.Get32() * index
 	case 2:
 		DECODE_PRINTF("EDX]")
-		return M().x86.R_EDX * index
+		return M().x86.gen.D.Get32() * index
 	case 3:
 		DECODE_PRINTF("EBX]")
-		return M().x86.R_EBX * index
+		return M().x86.gen.B.Get32() * index
 	case 4:
 		DECODE_PRINTF("0]")
 		return 0
 	case 5:
 		DECODE_PRINTF("EBP]")
-		return M().x86.R_EBP * index
+		return M().x86.spc.BP.Get32() * index
 	case 6:
 		DECODE_PRINTF("ESI]")
-		return M().x86.R_ESI * index
+		return M().x86.spc.SI.Get32() * index
 	case 7:
 		DECODE_PRINTF("EDI]")
-		return M().x86.R_EDI * index
+		return M().x86.spc.DI.Get32() * index
 	}
 	HALT_SYS()
 	return 0 /* NOT REACHED OR REACHED ON ERROR */
@@ -724,17 +724,17 @@ REMARKS:
 Decodes SIB addressing byte and returns calculated effective address.
 ****************************************************************************/
 func decode_sib_address(mod int) uint {
-	var sib = int(fetch_byte_imm())
-	var ss = int((sib >> 6) & 0x03)
-	var index = int((sib >> 3) & 0x07)
-	var base = int(sib & 0x07)
-	var offset = int(0)
-	var displacement int
+	var sib = uint32(fetch_byte_imm())
+	var ss = uint32((sib >> 6) & 0x03)
+	var index = uint32((sib >> 3) & 0x07)
+	var base = uint32(sib & 0x07)
+	var offset uint32
+	var displacement uint32
 
 	switch base {
 	case 0:
 		DECODE_PRINTF("[EAX]")
-		offset = M().x86.R_EAX
+		offset = M().x86.gen.A.Get32()
 		break
 	case 1:
 		DECODE_PRINTF("[ECX]")
@@ -742,32 +742,32 @@ func decode_sib_address(mod int) uint {
 		break
 	case 2:
 		DECODE_PRINTF("[EDX]")
-		offset = M().x86.R_EDX
+		offset = M().x86.gen.D.Get32()
 		break
 	case 3:
 		DECODE_PRINTF("[EBX]")
-		offset = M().x86.R_EBX
+		offset = M().x86.gen.B.Get32()
 		break
 	case 4:
 		DECODE_PRINTF("[ESP]")
-		offset = M().x86.R_ESP
+		offset = M().x86.spc.SP.Get32()
 		break
 	case 5:
 		switch mod {
 		case 0:
-			displacement = int32(fetch_long_imm())
+			displacement = fetch_long_imm()
 			DECODE_PRINTF2("[%d]", displacement)
 			offset = displacement
 			break
 		case 1:
 			displacement = int8(fetch_byte_imm())
 			DECODE_PRINTF2("[%d][EBP]", displacement)
-			offset = M().x86.R_EBP + displacement
+			offset = M().x86.spc.BP.Get32() + displacement
 			break
 		case 2:
-			displacement = int32(fetch_long_imm())
+			displacement = fetch_long_imm()
 			DECODE_PRINTF2("[%d][EBP]", displacement)
-			offset = M().x86.R_EBP + displacement
+			offset = M().x86.spc.BP.Get32() + displacement
 			break
 		default:
 			HALT_SYS()
@@ -777,11 +777,11 @@ func decode_sib_address(mod int) uint {
 		break
 	case 6:
 		DECODE_PRINTF("[ESI]")
-		offset = M().x86.R_ESI
+		offset = M().x86.spc.SI.Get32()
 		break
 	case 7:
 		DECODE_PRINTF("[EDI]")
-		offset = M().x86.R_EDI
+		offset = M().x86.spc.DI.Get32()
 		break
 	default:
 		HALT_SYS()
@@ -824,10 +824,10 @@ func decode_rm00_address(rm int) uint {
 			return M().x86.gen.C.Get32()
 		case 2:
 			DECODE_PRINTF("[EDX]")
-			return M().x86.R_EDX
+			return M().x86.gen.D.Get32()
 		case 3:
 			DECODE_PRINTF("[EBX]")
-			return M().x86.R_EBX
+			return M().x86.gen.B.Get32()
 		case 4:
 			return decode_sib_address(0)
 		case 5:
@@ -836,10 +836,10 @@ func decode_rm00_address(rm int) uint {
 			return offset
 		case 6:
 			DECODE_PRINTF("[ESI]")
-			return M().x86.R_ESI
+			return M().x86.spc.SI.Get32()
 		case 7:
 			DECODE_PRINTF("[EDI]")
-			return M().x86.R_EDI
+			return M().x86.spc.DI.Get32()
 		}
 	} else {
 		/* 16-bit addressing */
@@ -906,10 +906,10 @@ func decode_rm01_address(rm int) uint {
 			return M().x86.gen.C.Get32() + displacement
 		case 2:
 			DECODE_PRINTF2("%d[EDX]", displacement)
-			return M().x86.R_EDX + displacement
+			return M().x86.gen.D.Get32() + displacement
 		case 3:
 			DECODE_PRINTF2("%d[EBX]", displacement)
-			return M().x86.R_EBX + displacement
+			return M().x86.gen.B.Get32() + displacement
 		case 4:
 			{
 				var offset = int(decode_sib_address(1))
@@ -919,13 +919,13 @@ func decode_rm01_address(rm int) uint {
 			}
 		case 5:
 			DECODE_PRINTF2("%d[EBP]", displacement)
-			return M().x86.R_EBP + displacement
+			return M().x86.spc.BP.Get32() + displacement
 		case 6:
 			DECODE_PRINTF2("%d[ESI]", displacement)
-			return M().x86.R_ESI + displacement
+			return M().x86.spc.SI.Get32() + displacement
 		case 7:
 			DECODE_PRINTF2("%d[EDI]", displacement)
-			return M().x86.R_EDI + displacement
+			return M().x86.spc.DI.Get32() + displacement
 		}
 	} else {
 		/* 16-bit addressing */
@@ -977,11 +977,11 @@ decoding of instructions.
 ****************************************************************************/
 func decode_rm10_address(rm int) uint {
 	if M().x86.mode & SYSMODE_PREFIX_ADDR {
-		var displacement int
+		var displacement uint32
 
 		/* 32-bit addressing */
 		if rm != 4 {
-			displacement = int32(fetch_long_imm())
+			displacement = fetch_long_imm()
 		}
 
 		switch rm {
@@ -993,26 +993,26 @@ func decode_rm10_address(rm int) uint {
 			return M().x86.gen.C.Get32() + displacement
 		case 2:
 			DECODE_PRINTF2("%d[EDX]", displacement)
-			return M().x86.R_EDX + displacement
+			return M().x86.gen.D.Get32() + displacement
 		case 3:
 			DECODE_PRINTF2("%d[EBX]", displacement)
-			return M().x86.R_EBX + displacement
+			return M().x86.gen.B.Get32() + displacement
 		case 4:
 			{
-				var offset = int(decode_sib_address(2))
-				displacement = int32(fetch_long_imm())
+				var offset = decode_sib_address(2)
+				displacement = fetch_long_imm()
 				DECODE_PRINTF2("[%d]", displacement)
 				return offset + displacement
 			}
 		case 5:
 			DECODE_PRINTF2("%d[EBP]", displacement)
-			return M().x86.R_EBP + displacement
+			return M().x86.spc.BP.Get32() + displacement
 		case 6:
 			DECODE_PRINTF2("%d[ESI]", displacement)
-			return M().x86.R_ESI + displacement
+			return M().x86.spc.SI.Get32() + displacement
 		case 7:
 			DECODE_PRINTF2("%d[EDI]", displacement)
-			return M().x86.R_EDI + displacement
+			return M().x86.spc.DI.Get32() + displacement
 		}
 	} else {
 		var displacement = int16(fetch_word_imm())
