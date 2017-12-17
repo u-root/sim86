@@ -676,7 +676,7 @@ REMARKS:
 Decodes scale/index of SIB byte and returns relevant offset part of
 effective address.
 ****************************************************************************/
-func decode_sib_si(scale uint, index int) uint {
+func decode_sib_si(scale uint32, index uint32) uint32 {
 	scale = 1 << scale
 	if scale > 1 {
 		DECODE_PRINTF2("[%d*", scale)
@@ -686,10 +686,10 @@ func decode_sib_si(scale uint, index int) uint {
 	switch index {
 	case 0:
 		DECODE_PRINTF("EAX]")
-		return M().x86.R_EAX * index
+		return M().x86.gen.A.Get32() * index
 	case 1:
 		DECODE_PRINTF("ECX]")
-		return M().x86.R_ECX * index
+		return M().x86.gen.C.Get32() * index
 	case 2:
 		DECODE_PRINTF("EDX]")
 		return M().x86.R_EDX * index
@@ -738,7 +738,7 @@ func decode_sib_address(mod int) uint {
 		break
 	case 1:
 		DECODE_PRINTF("[ECX]")
-		offset = M().x86.R_ECX
+		offset = M().x86.gen.C.Get32()
 		break
 	case 2:
 		DECODE_PRINTF("[EDX]")
@@ -821,7 +821,7 @@ func decode_rm00_address(rm int) uint {
 			return M().x86.R_EAX
 		case 1:
 			DECODE_PRINTF("[ECX]")
-			return M().x86.R_ECX
+			return M().x86.gen.C.Get32()
 		case 2:
 			DECODE_PRINTF("[EDX]")
 			return M().x86.R_EDX
@@ -903,7 +903,7 @@ func decode_rm01_address(rm int) uint {
 			return M().x86.R_EAX + displacement
 		case 1:
 			DECODE_PRINTF2("%d[ECX]", displacement)
-			return M().x86.R_ECX + displacement
+			return M().x86.gen.C.Get32() + displacement
 		case 2:
 			DECODE_PRINTF2("%d[EDX]", displacement)
 			return M().x86.R_EDX + displacement
@@ -990,7 +990,7 @@ func decode_rm10_address(rm int) uint {
 			return M().x86.R_EAX + displacement
 		case 1:
 			DECODE_PRINTF2("%d[ECX]", displacement)
-			return M().x86.R_ECX + displacement
+			return M().x86.gen.C.Get32() + displacement
 		case 2:
 			DECODE_PRINTF2("%d[EDX]", displacement)
 			return M().x86.R_EDX + displacement
