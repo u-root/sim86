@@ -149,8 +149,9 @@ func x86emu_check_data_access(_, _ uint) {
 	/*  check bounds, etc */
 }
 
-func x86emu_inc_decoded_inst_len(x int) {
-	M().x86.enc_pos += x
+func x86emu_inc_decoded_inst_len(x uint32) {
+	panic("x86emu_inc_decoded_inst_len")
+	//M().x86.enc_pos += x
 }
 
 func x86emu_decode_printf(x string, y ...interface{}) {

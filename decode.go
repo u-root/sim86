@@ -976,7 +976,7 @@ Return the offset given by mod=10 addressing.  Also enables the
 decoding of instructions.
 ****************************************************************************/
 func decode_rm10_address(rm uint32) uint32 {
-	if M().x86.mode & SYSMODE_PREFIX_ADDR !+ 0{
+	if M().x86.mode & SYSMODE_PREFIX_ADDR != 0{
 		var displacement uint32
 
 		/* 32-bit addressing */
@@ -987,7 +987,7 @@ func decode_rm10_address(rm uint32) uint32 {
 		switch rm {
 		case 0:
 			DECODE_PRINTF2("%d[EAX]", displacement)
-			return M().x86.R_EAX + displacement
+			return M().x86.gen.A.Get32() + displacement
 		case 1:
 			DECODE_PRINTF2("%d[ECX]", displacement)
 			return M().x86.gen.C.Get32() + displacement
@@ -1015,37 +1015,37 @@ func decode_rm10_address(rm uint32) uint32 {
 			return M().x86.spc.DI.Get32() + displacement
 		}
 	} else {
-		var displacement = int16(fetch_word_imm())
+		var displacement = uint16(fetch_word_imm())
 
 		/* 16-bit addressing */
 		switch rm {
 		case 0:
 			DECODE_PRINTF2("%d[BX+SI]", displacement)
-			uint16((M().x86.gen.B.Get16() + M().x86.spc.SI.Get16() + displacement))
+			return uint32((M().x86.gen.B.Get16() + M().x86.spc.SI.Get16() + displacement))
 		case 1:
 			DECODE_PRINTF2("%d[BX+DI]", displacement)
-			uint16((M().x86.gen.B.Get16() + M().x86.spc.DI.Get16() + displacement))
+			return uint32((M().x86.gen.B.Get16() + M().x86.spc.DI.Get16() + displacement))
 		case 2:
 			DECODE_PRINTF2("%d[BP+SI]", displacement)
 			M().x86.mode |= SYSMODE_SEG_DS_SS
-			uint16((M().x86.spc.BP.Get16() + M().x86.spc.SI.Get16() + displacement))
+			return uint32((M().x86.spc.BP.Get16() + M().x86.spc.SI.Get16() + displacement))
 		case 3:
 			DECODE_PRINTF2("%d[BP+DI]", displacement)
 			M().x86.mode |= SYSMODE_SEG_DS_SS
-			uint16((M().x86.spc.BP.Get16() + M().x86.spc.DI.Get16() + displacement))
+			return uint32((M().x86.spc.BP.Get16() + M().x86.spc.DI.Get16() + displacement))
 		case 4:
 			DECODE_PRINTF2("%d[SI]", displacement)
-			uint16((M().x86.spc.SI.Get16() + displacement))
+			return uint32((M().x86.spc.SI.Get16() + displacement))
 		case 5:
 			DECODE_PRINTF2("%d[DI]", displacement)
-			uint16((M().x86.spc.DI.Get16() + displacement))
+			return uint32((M().x86.spc.DI.Get16() + displacement))
 		case 6:
 			DECODE_PRINTF2("%d[BP]", displacement)
 			M().x86.mode |= SYSMODE_SEG_DS_SS
-			uint16((M().x86.spc.BP.Get16() + displacement))
+			return uint32((M().x86.spc.BP.Get16() + displacement))
 		case 7:
 			DECODE_PRINTF2("%d[BX]", displacement)
-			uint16((M().x86.gen.B.Get16() + displacement))
+			return uint32((M().x86.gen.B.Get16() + displacement))
 		}
 	}
 	HALT_SYS()
@@ -1065,7 +1065,7 @@ REMARKS:
 Return the offset given by "mod" addressing.
 ****************************************************************************/
 
-func decode_rmXX_address(mod int, rm int) uint {
+func decode_rmXX_address(mod uint32, rm uint32) uint32 {
 	if mod == 0 {
 		return decode_rm00_address(rm)
 	}
@@ -1085,7 +1085,7 @@ func mem_access_word(addr uint32) uint16 {
 
 func INC_DECODED_INST_LEN(amt uint16) {
 	if (DEBUG_DECODE())  	       {
-		x86emu_inc_decoded_inst_len(amt)
+		x86emu_inc_decoded_inst_len(uint32(amt))
 	}
 }
 func sys_rdw(add uint32) uint16 {
