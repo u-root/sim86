@@ -846,31 +846,31 @@ func decode_rm00_address(rm uint32) uint32 {
 		switch rm {
 		case 0:
 			DECODE_PRINTF("[BX+SI]")
-			return (M().x86.gen.B.Get16() + M().x86.spc.SI.Get16()) & 0xffff
+			return uint32(M().x86.gen.B.Get16() + M().x86.spc.SI.Get16())
 		case 1:
 			DECODE_PRINTF("[BX+DI]")
-			return (M().x86.gen.B.Get16() + M().x86.spc.DI.Get16()) & 0xffff
+			return uint32(M().x86.gen.B.Get16() + M().x86.spc.DI.Get16())
 		case 2:
 			DECODE_PRINTF("[BP+SI]")
 			M().x86.mode |= SYSMODE_SEG_DS_SS
-			return (M().x86.spc.BP.Get16() + M().x86.spc.SI.Get16()) & 0xffff
+			return uint32(M().x86.spc.BP.Get16() + M().x86.spc.SI.Get16())
 		case 3:
 			DECODE_PRINTF("[BP+DI]")
 			M().x86.mode |= SYSMODE_SEG_DS_SS
-			return (M().x86.spc.BP.Get16() + M().x86.spc.DI.Get16()) & 0xffff
+			return uint32(M().x86.spc.BP.Get16() + M().x86.spc.DI.Get16())
 		case 4:
 			DECODE_PRINTF("[SI]")
-			return M().x86.spc.SI.Get16()
+			return uint32(M().x86.spc.SI.Get16())
 		case 5:
 			DECODE_PRINTF("[DI]")
-			return M().x86.spc.DI.Get16()
+			return uint32(M().x86.spc.DI.Get16())
 		case 6:
-			offset = fetch_word_imm()
+			offset = uint32(fetch_word_imm())
 			DECODE_PRINTF2("[%04x]", offset)
 			return offset
 		case 7:
 			DECODE_PRINTF("[BX]")
-			return M().x86.gen.B.Get16()
+			return uint32(M().x86.gen.B.Get16())
 		}
 	}
 	HALT_SYS()
@@ -888,19 +888,19 @@ REMARKS:
 Return the offset given by mod=01 addressing.  Also enables the
 decoding of instructions.
 ****************************************************************************/
-func decode_rm01_address(rm int) uint {
-	var displacement int
+func decode_rm01_address(rm uint32) uint32 {
+	var displacement uint32
 
-	if M().x86.mode & SYSMODE_PREFIX_ADDR {
+	if M().x86.mode & SYSMODE_PREFIX_ADDR != 0{
 		/* 32-bit addressing */
 		if rm != 4 {
-			displacement = int8(fetch_byte_imm())
+			displacement = uint32(fetch_byte_imm())
 		}
 
 		switch rm {
 		case 0:
 			DECODE_PRINTF2("%d[EAX]", displacement)
-			return M().x86.R_EAX + displacement
+			return M().x86.gen.A.Get32() + displacement
 		case 1:
 			DECODE_PRINTF2("%d[ECX]", displacement)
 			return M().x86.gen.C.Get32() + displacement
@@ -912,8 +912,8 @@ func decode_rm01_address(rm int) uint {
 			return M().x86.gen.B.Get32() + displacement
 		case 4:
 			{
-				var offset = int(decode_sib_address(1))
-				displacement = int8(fetch_byte_imm())
+				var offset = uint32(decode_sib_address(1))
+				displacement = uint32(fetch_byte_imm())
 				DECODE_PRINTF2("[%d]", displacement)
 				return offset + displacement
 			}
@@ -929,35 +929,35 @@ func decode_rm01_address(rm int) uint {
 		}
 	} else {
 		/* 16-bit addressing */
-		displacement = int8(fetch_byte_imm())
+		d16 := uint16(fetch_byte_imm())
 		switch rm {
 		case 0:
-			DECODE_PRINTF2("%d[BX+SI]", displacement)
-			return (M().x86.gen.B.Get16() + M().x86.spc.SI.Get16() + displacement) & 0xffff
+			DECODE_PRINTF2("%d[BX+SI]", d16)
+			return uint32((M().x86.gen.B.Get16() + M().x86.spc.SI.Get16() + d16))
 		case 1:
-			DECODE_PRINTF2("%d[BX+DI]", displacement)
-			return (M().x86.gen.B.Get16() + M().x86.spc.DI.Get16() + displacement) & 0xffff
+			DECODE_PRINTF2("%d[BX+DI]", d16)
+			return uint32((M().x86.gen.B.Get16() + M().x86.spc.DI.Get16() + d16))
 		case 2:
-			DECODE_PRINTF2("%d[BP+SI]", displacement)
+			DECODE_PRINTF2("%d[BP+SI]", d16)
 			M().x86.mode |= SYSMODE_SEG_DS_SS
-			return (M().x86.spc.BP.Get16() + M().x86.spc.SI.Get16() + displacement) & 0xffff
+			return uint32((M().x86.spc.BP.Get16() + M().x86.spc.SI.Get16() + d16))
 		case 3:
-			DECODE_PRINTF2("%d[BP+DI]", displacement)
+			DECODE_PRINTF2("%d[BP+DI]", d16)
 			M().x86.mode |= SYSMODE_SEG_DS_SS
-			return (M().x86.spc.BP.Get16() + M().x86.spc.DI.Get16() + displacement) & 0xffff
+			return uint32((M().x86.spc.BP.Get16() + M().x86.spc.DI.Get16() + d16))
 		case 4:
-			DECODE_PRINTF2("%d[SI]", displacement)
-			return (M().x86.spc.SI.Get16() + displacement) & 0xffff
+			DECODE_PRINTF2("%d[SI]", d16)
+			return uint32((M().x86.spc.SI.Get16() + d16))
 		case 5:
-			DECODE_PRINTF2("%d[DI]", displacement)
-			return (M().x86.spc.DI.Get16() + displacement) & 0xffff
+			DECODE_PRINTF2("%d[DI]", d16)
+			return uint32((M().x86.spc.DI.Get16() + d16))
 		case 6:
-			DECODE_PRINTF2("%d[BP]", displacement)
+			DECODE_PRINTF2("%d[BP]", d16)
 			M().x86.mode |= SYSMODE_SEG_DS_SS
-			return (M().x86.spc.BP.Get16() + displacement) & 0xffff
+			return uint32((M().x86.spc.BP.Get16() + d16))
 		case 7:
-			DECODE_PRINTF2("%d[BX]", displacement)
-			return (M().x86.gen.B.Get16() + displacement) & 0xffff
+			DECODE_PRINTF2("%d[BX]", d16)
+			return uint32((M().x86.gen.B.Get16() + d16))
 		}
 	}
 	HALT_SYS()
@@ -975,8 +975,8 @@ REMARKS:
 Return the offset given by mod=10 addressing.  Also enables the
 decoding of instructions.
 ****************************************************************************/
-func decode_rm10_address(rm int) uint {
-	if M().x86.mode & SYSMODE_PREFIX_ADDR {
+func decode_rm10_address(rm uint32) uint32 {
+	if M().x86.mode & SYSMODE_PREFIX_ADDR !+ 0{
 		var displacement uint32
 
 		/* 32-bit addressing */
@@ -1021,31 +1021,31 @@ func decode_rm10_address(rm int) uint {
 		switch rm {
 		case 0:
 			DECODE_PRINTF2("%d[BX+SI]", displacement)
-			return (M().x86.gen.B.Get16() + M().x86.spc.SI.Get16() + displacement) & 0xffff
+			uint16((M().x86.gen.B.Get16() + M().x86.spc.SI.Get16() + displacement))
 		case 1:
 			DECODE_PRINTF2("%d[BX+DI]", displacement)
-			return (M().x86.gen.B.Get16() + M().x86.spc.DI.Get16() + displacement) & 0xffff
+			uint16((M().x86.gen.B.Get16() + M().x86.spc.DI.Get16() + displacement))
 		case 2:
 			DECODE_PRINTF2("%d[BP+SI]", displacement)
 			M().x86.mode |= SYSMODE_SEG_DS_SS
-			return (M().x86.spc.BP.Get16() + M().x86.spc.SI.Get16() + displacement) & 0xffff
+			uint16((M().x86.spc.BP.Get16() + M().x86.spc.SI.Get16() + displacement))
 		case 3:
 			DECODE_PRINTF2("%d[BP+DI]", displacement)
 			M().x86.mode |= SYSMODE_SEG_DS_SS
-			return (M().x86.spc.BP.Get16() + M().x86.spc.DI.Get16() + displacement) & 0xffff
+			uint16((M().x86.spc.BP.Get16() + M().x86.spc.DI.Get16() + displacement))
 		case 4:
 			DECODE_PRINTF2("%d[SI]", displacement)
-			return (M().x86.spc.SI.Get16() + displacement) & 0xffff
+			uint16((M().x86.spc.SI.Get16() + displacement))
 		case 5:
 			DECODE_PRINTF2("%d[DI]", displacement)
-			return (M().x86.spc.DI.Get16() + displacement) & 0xffff
+			uint16((M().x86.spc.DI.Get16() + displacement))
 		case 6:
 			DECODE_PRINTF2("%d[BP]", displacement)
 			M().x86.mode |= SYSMODE_SEG_DS_SS
-			return (M().x86.spc.BP.Get16() + displacement) & 0xffff
+			uint16((M().x86.spc.BP.Get16() + displacement))
 		case 7:
 			DECODE_PRINTF2("%d[BX]", displacement)
-			return (M().x86.gen.B.Get16() + displacement) & 0xffff
+			uint16((M().x86.gen.B.Get16() + displacement))
 		}
 	}
 	HALT_SYS()
