@@ -2,7 +2,8 @@
 set -e
 ls -l $1
 cpp -CC -nostdinc -include  erasedb.h $1 | grep -v '^#' > x
-cp x decode.go
+cp x $1
+sed -i 's/^static  *const  *char  *\*\([a-z][0-9_A-Za-z]*\)\[.*\]/var \1 = []string {/g' $1
 sed -i 's/_INLINE  *//' $1
 sed -i 's/^unsigned\([^a-zA-Z][^a-zA-Z]*\)\(.*\){/func \2 uint\1{/' $1
 sed -i 's/^u\([361][624]\)\([^a-zA-Z][^a-zA-Z]*\)\(.*\){/func \3 \2 uint\1{/' $1
@@ -16,6 +17,7 @@ sed -i 's/printf/fmt.Printf/g' $1
 sed -i 's/(u\([361][624]\))\([A-Za-z][_A-Za-z\.0-9]*\)/uint\1(\2)/g' $1
 
 # types
+
 sed -i 's/^  *u\([361][624]\)[^a-z][^a-z]*\([a-z][a-z]*\)/var \2 uint\1/g' $1
 sed -i 's/^  *u8  *\(.*\);/var \1 uint8/' $1
 sed -i 's/^  *unsigned  *\(.*\);/var \1 uint/' $1
@@ -23,7 +25,7 @@ sed -i 's/, int[^a-z][^a-z]*\*\([a-z][a-z]*\)/, \1 *int/g' $1
 sed -i 's/, int[^a-z][^a-z]*\([a-z][a-z]*\)/, \1 int/g' $1
 sed -i 's/( int[^a-z][^a-z]*\([a-z][a-z]*\),/( \1 int,/g' $1
 sed -i 's/( *int[^a-z][^a-z]*\([a-z][a-z]*\) *)/( \1 int)/g' $1
-sed -i 's/const char \*\([a-z][a-z]*\)/\1 string/g' $1
+
 
 sed -i 's/intno = M.x86.intno;/intno = uint8(M().x86.intno)/' $1
 
@@ -60,6 +62,26 @@ echo cleanup from edits
 sed -i 's/^var \(.*\) = \(.*\) int$/var \1 = int(\2)/' $1
 
 echo now do the functions
+sed -i 's/static \(u[^ ][^ ]*\).*(.\(genop_.*\)\[.*(\(.*\))/var \2 = []func (\3) \1 {'/ $1
+
+echo final
+sed -i 's/\([(,]\)  *u8  *\([a-z][a-z]*\)/\1\2 u8/g' $1
+sed -i 's/\([(,]\)u16  *\([a-z][a-z]*\)/\1\2 u16/g' $1
+sed -i 's/\([(,]\)u32  *\([a-z][a-z]*\)/\1\2 u32/g' $1
+
+echo FIIK
+sed -i 's/{ = {/{/' $1
+
+echo ops
+	sed -i 's/= \(genop.*\)\[\(.*\)\](\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' $1
+	sed -i 's/= (\*\(genop.*\)\[\(.*\)\]) *(\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' $1
+	sed -i 's/(.x86emu_optab2.op2.)(op2)/call4("x86emu_optab2.op2", "op2", "op2", "")/' $1
+	sed -i 's/(._X86EMU_intrTab.\(.*\)\])(\(.*\))/call4("_X86EMU_intrTab", "\1", "\2", "")/' $1
+	sed -i 's/= (\*\(opcD.*\)\[\(.*\)\]) *(\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' $1
+	sed -i 's/= (\*\(opcD.*\)\[\(.*\)\]) *(\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' $1
+	sed -i 's/X86EMU_sysEnv tregs/struct &/' $1
+	sed -i 's/(x86emu_optab\[op1\])(op1)/call1("x86emu_optab.lop1", "op1")/' $1
+	sed -i 's/(\*x86emu_optab\[op1\])(op1)/call1("x86emu_optab.lop1", "op1")/' $1
 
 
 exit 0
@@ -115,15 +137,3 @@ cppprim_ops.go:cppprim_ops.c
 	sed -i 's/\(const F_.. \)int/\1uint32/' cppprim_ops.go
 
 cppprim_ops.c: prim_ops.c defines.h
-	sed -i 's/_X86EMU_env.x86.spc.FLAGS .=/& (u32)/g' cppprim_ops.c
-	cpp --include defines.h prim_ops.c cppprim_ops.c
-	sed -i 's/= \(genop.*\)\[\(.*\)\](\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' cppprim_ops.c
-	sed -i 's/= (\*\(genop.*\)\[\(.*\)\]) *(\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' cppprim_ops.c
-	sed -i 's/(.x86emu_optab2.op2.)(op2)/call4("x86emu_optab2.op2", "op2", "op2", "")/' cppprim_ops.c
-	sed -i 's/(._X86EMU_intrTab.\(.*\)\])(\(.*\))/call4("_X86EMU_intrTab", "\1", "\2", "")/' cppprim_ops.c
-	sed -i 's/= (\*\(opcD.*\)\[\(.*\)\]) *(\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' cppprim_ops.c
-	sed -i 's/= (\*\(opcD.*\)\[\(.*\)\]) *(\(.*\),\(.*\))/= call4("\1", "\2", "\3", "\4")/' cppprim_ops.c
-	sed -i '/^#/d' cppprim_ops.c
-	sed -i 's/X86EMU_sysEnv tregs/struct &/' cppprim_ops.c
-	sed -i 's/(x86emu_optab\[op1\])(op1)/call1("x86emu_optab.lop1", "op1")/' cppprim_ops.c
-	sed -i 's/(\*x86emu_optab\[op1\])(op1)/call1("x86emu_optab.lop1", "op1")/' cppprim_ops.c
