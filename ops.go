@@ -79,10 +79,10 @@
 static const char *x86emu_GenOpName[8] = {
     "ADD", "OR", "ADC", "SBB", "AND", "SUB", "XOR", "CMP"};
 #endif
+// :g/^var/s/\(u.[624]*\)\(.*\)=/\2 \1 = 
 
 /* used by several opcodes  */
-static u8 (*genop_byte_operation[])(u8 d, u8 s) =
-{
+var  genop_byte_operation= []func(u8 d, u8 s)  u8 {
     add_byte,           /* 00 */
     or_byte,            /* 01 */
     adc_byte,           /* 02 */
@@ -93,8 +93,7 @@ static u8 (*genop_byte_operation[])(u8 d, u8 s) =
     cmp_byte,           /* 07 */
 };
 
-static u16 (*genop_word_operation[])(u16 d, u16 s) =
-{
+var  genop_word_operation= []func(u16 d, u16 s)  u16 {
     add_word,           /*00 */
     or_word,            /*01 */
     adc_word,           /*02 */
@@ -105,8 +104,7 @@ static u16 (*genop_word_operation[])(u16 d, u16 s) =
     cmp_word,           /*07 */
 };
 
-static u32 (*genop_long_operation[])(u32 d, u32 s) =
-{
+var  genop_long_operation= []func(u32 d, u32 s)  u32 {
     add_long,           /*00 */
     or_long,            /*01 */
     adc_long,           /*02 */
@@ -118,8 +116,7 @@ static u32 (*genop_long_operation[])(u32 d, u32 s) =
 };
 
 /* used by opcodes 80, c0, d0, and d2. */
-static u8(*opcD0_byte_operation[])(u8 d, u8 s) =
-{
+var opcD0_byte_operation= []func(u8 d, u8 s)  u8 {
     rol_byte,
     ror_byte,
     rcl_byte,
@@ -131,8 +128,7 @@ static u8(*opcD0_byte_operation[])(u8 d, u8 s) =
 };
 
 /* used by opcodes c1, d1, and d3. */
-static u16(*opcD1_word_operation[])(u16 s, u8 d) =
-{
+var opcD1_word_operation= []func(u16 s, u8 d)  u16 {
     rol_word,
     ror_word,
     rcl_word,
@@ -144,8 +140,7 @@ static u16(*opcD1_word_operation[])(u16 s, u8 d) =
 };
 
 /* used by opcodes c1, d1, and d3. */
-static u32 (*opcD1_long_operation[])(u32 s, u8 d) =
-{
+var  opcD1_long_operation= []func(u32 s, u8 d)  u32 {
     rol_long,
     ror_long,
     rcl_long,
