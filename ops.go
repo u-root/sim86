@@ -75,88 +75,88 @@
 
 /* constant arrays to do several instructions in just one function */
 
-#ifdef DEBUG
+
 static const char *x86emu_GenOpName[8] = {
     "ADD", "OR", "ADC", "SBB", "AND", "SUB", "XOR", "CMP"};
-#endif
+
 // :g/^var/s/\(u.[624]*\)\(.*\)=/\2 \1 = 
 
 /* used by several opcodes  */
-var  genop_byte_operation= []func(u8 d, u8 s)  u8 {
-    add_byte,           /* 00 */
-    or_byte,            /* 01 */
-    adc_byte,           /* 02 */
-    sbb_byte,           /* 03 */
-    and_byte,           /* 04 */
-    sub_byte,           /* 05 */
-    xor_byte,           /* 06 */
-    cmp_byte,           /* 07 */
+var genop_byte_operation= []func(u8 d, u8 s) u8 {
+    add_byte, /* 00 */
+    or_byte, /* 01 */
+    adc_byte, /* 02 */
+    sbb_byte, /* 03 */
+    and_byte, /* 04 */
+    sub_byte, /* 05 */
+    xor_byte, /* 06 */
+    cmp_byte, /* 07 */
 };
 
-var  genop_word_operation= []func(u16 d, u16 s)  u16 {
-    add_word,           /*00 */
-    or_word,            /*01 */
-    adc_word,           /*02 */
-    sbb_word,           /*03 */
-    and_word,           /*04 */
-    sub_word,           /*05 */
-    xor_word,           /*06 */
-    cmp_word,           /*07 */
+var genop_word_operation= []func(u16 d, u16 s) u16 {
+    add_word, /*00 */
+    or_word, /*01 */
+    adc_word, /*02 */
+    sbb_word, /*03 */
+    and_word, /*04 */
+    sub_word, /*05 */
+    xor_word, /*06 */
+    cmp_word, /*07 */
 };
 
-var  genop_long_operation= []func(u32 d, u32 s)  u32 {
-    add_long,           /*00 */
-    or_long,            /*01 */
-    adc_long,           /*02 */
-    sbb_long,           /*03 */
-    and_long,           /*04 */
-    sub_long,           /*05 */
-    xor_long,           /*06 */
-    cmp_long,           /*07 */
+var genop_long_operation= []func(u32 d, u32 s) u32 {
+    add_long, /*00 */
+    or_long, /*01 */
+    adc_long, /*02 */
+    sbb_long, /*03 */
+    and_long, /*04 */
+    sub_long, /*05 */
+    xor_long, /*06 */
+    cmp_long, /*07 */
 };
 
 /* used by opcodes 80, c0, d0, and d2. */
-var opcD0_byte_operation= []func(u8 d, u8 s)  u8 {
+var opcD0_byte_operation= []func(u8 d, u8 s) u8 {
     rol_byte,
     ror_byte,
     rcl_byte,
     rcr_byte,
     shl_byte,
     shr_byte,
-    shl_byte,           /* sal_byte === shl_byte  by definition */
+    shl_byte, /* sal_byte === shl_byte  by definition */
     sar_byte,
 };
 
 /* used by opcodes c1, d1, and d3. */
-var opcD1_word_operation= []func(u16 s, u8 d)  u16 {
+var opcD1_word_operation= []func(u16 s, u8 d) u16 {
     rol_word,
     ror_word,
     rcl_word,
     rcr_word,
     shl_word,
     shr_word,
-    shl_word,           /* sal_byte === shl_byte  by definition */
+    shl_word, /* sal_byte === shl_byte  by definition */
     sar_word,
 };
 
 /* used by opcodes c1, d1, and d3. */
-var  opcD1_long_operation= []func(u32 s, u8 d)  u32 {
+var opcD1_long_operation= []func(u32 s, u8 d) u32 {
     rol_long,
     ror_long,
     rcl_long,
     rcr_long,
     shl_long,
     shr_long,
-    shl_long,           /* sal_byte === shl_byte  by definition */
+    shl_long, /* sal_byte === shl_byte  by definition */
     sar_long,
 };
 
-#ifdef DEBUG
+
 
 static const char *opF6_names[8] =
   { "TEST\t", "", "NOT\t", "NEG\t", "MUL\t", "IMUL\t", "DIV\t", "IDIV\t" };
 
-#endif
+
 
 /****************************************************************************
 PARAMETERS:
@@ -170,8 +170,8 @@ static void x86emuOp_illegal_op( u8 op1) {
     if (M.x86.R_SP != 0) {
         DECODE_PRINTF("ILLEGAL X86 OPCODE\n");
         TRACE_REGS();
-        DB( printf("%04x:%04x: %02X ILLEGAL X86 OPCODE!\n",
-            M.x86.R_CS, M.x86.R_IP-1,op1));
+        printf("%04x:%04x: %02X ILLEGAL X86 OPCODE!\n", M.x86.R_CS, M.x86.R_IP-1,op1)
+                                          ;
         HALT_SYS();
         }
     else {
@@ -214,7 +214,7 @@ static void x86emuOp_genop_byte_RM_R(u8 op1) {
             store_data_byte(destoffset, destval);
         }
     else
-        {                       /* register to register */
+        { /* register to register */
         destreg = DECODE_RM_BYTE_REGISTER(rl);
         DECODE_PRINTF(",");
         srcreg = DECODE_RM_BYTE_REGISTER(rh);
@@ -268,7 +268,7 @@ static void x86emuOp_genop_word_RM_R(u8 op1) {
             if (op1 != 7)
                 store_data_word(destoffset, destval);
         }
-    } else {                    /* register to register */
+    } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 *destreg, *srcreg;
 
@@ -314,7 +314,7 @@ static void x86emuOp_genop_byte_R_RM(u8 op1) {
         DECODE_PRINTF(",");
         srcoffset = decode_rmXX_address(mod,rl);
         srcval = fetch_data_byte(srcoffset);
-    } else {     /* register to register */
+    } else { /* register to register */
         destreg = DECODE_RM_BYTE_REGISTER(rh);
         DECODE_PRINTF(",");
         srcreg = DECODE_RM_BYTE_REGISTER(rl);
@@ -361,7 +361,7 @@ static void x86emuOp_genop_word_R_RM(u8 op1) {
             TRACE_AND_STEP();
             *destreg = genop_word_operation[op1](*destreg, srcval);
         }
-    } else {                     /* register to register */
+    } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 *srcreg;
             destreg32 = DECODE_RM_LONG_REGISTER(rh);
@@ -438,7 +438,7 @@ static void x86emuOp_genop_word_AX_IMM(u8 op1) {
 REMARKS:
 Handles opcode 0x06
 ****************************************************************************/
-static void x86emuOp_push_ES(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_push_ES(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("PUSH\tES\n");
     TRACE_AND_STEP();
@@ -451,7 +451,7 @@ static void x86emuOp_push_ES(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x07
 ****************************************************************************/
-static void x86emuOp_pop_ES(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_pop_ES(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("POP\tES\n");
     TRACE_AND_STEP();
@@ -464,7 +464,7 @@ static void x86emuOp_pop_ES(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x0e
 ****************************************************************************/
-static void x86emuOp_push_CS(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_push_CS(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("PUSH\tCS\n");
     TRACE_AND_STEP();
@@ -477,7 +477,7 @@ static void x86emuOp_push_CS(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x0f. Escape for two-byte opcode (286 or better)
 ****************************************************************************/
-static void x86emuOp_two_byte(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_two_byte(u8 _) {
     u8 op2 = (*sys_rdb)(((u32)M.x86.R_CS << 4) + (M.x86.R_IP++));
     INC_DECODED_INST_LEN(1);
     (*x86emu_optab2[op2])(op2);
@@ -487,7 +487,7 @@ static void x86emuOp_two_byte(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x16
 ****************************************************************************/
-static void x86emuOp_push_SS(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_push_SS(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("PUSH\tSS\n");
     TRACE_AND_STEP();
@@ -500,7 +500,7 @@ static void x86emuOp_push_SS(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x17
 ****************************************************************************/
-static void x86emuOp_pop_SS(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_pop_SS(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("POP\tSS\n");
     TRACE_AND_STEP();
@@ -513,7 +513,7 @@ static void x86emuOp_pop_SS(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x1e
 ****************************************************************************/
-static void x86emuOp_push_DS(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_push_DS(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("PUSH\tDS\n");
     TRACE_AND_STEP();
@@ -526,7 +526,7 @@ static void x86emuOp_push_DS(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x1f
 ****************************************************************************/
-static void x86emuOp_pop_DS(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_pop_DS(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("POP\tDS\n");
     TRACE_AND_STEP();
@@ -539,7 +539,7 @@ static void x86emuOp_pop_DS(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x26
 ****************************************************************************/
-static void x86emuOp_segovr_ES(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_segovr_ES(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("ES:\n");
     TRACE_AND_STEP();
@@ -555,7 +555,7 @@ static void x86emuOp_segovr_ES(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x27
 ****************************************************************************/
-static void x86emuOp_daa(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_daa(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("DAA\n");
     TRACE_AND_STEP();
@@ -568,7 +568,7 @@ static void x86emuOp_daa(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x2e
 ****************************************************************************/
-static void x86emuOp_segovr_CS(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_segovr_CS(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("CS:\n");
     TRACE_AND_STEP();
@@ -581,7 +581,7 @@ static void x86emuOp_segovr_CS(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x2f
 ****************************************************************************/
-static void x86emuOp_das(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_das(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("DAS\n");
     TRACE_AND_STEP();
@@ -594,7 +594,7 @@ static void x86emuOp_das(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x36
 ****************************************************************************/
-static void x86emuOp_segovr_SS(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_segovr_SS(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("SS:\n");
     TRACE_AND_STEP();
@@ -607,7 +607,7 @@ static void x86emuOp_segovr_SS(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x37
 ****************************************************************************/
-static void x86emuOp_aaa(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_aaa(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("AAA\n");
     TRACE_AND_STEP();
@@ -620,7 +620,7 @@ static void x86emuOp_aaa(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x3e
 ****************************************************************************/
-static void x86emuOp_segovr_DS(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_segovr_DS(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("DS:\n");
     TRACE_AND_STEP();
@@ -633,7 +633,7 @@ static void x86emuOp_segovr_DS(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x3f
 ****************************************************************************/
-static void x86emuOp_aas(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_aas(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("AAS\n");
     TRACE_AND_STEP();
@@ -746,7 +746,7 @@ static void x86emuOp_pop_register(u8 op1) {
 REMARKS:
 Handles opcode 0x60
 ****************************************************************************/
-static void x86emuOp_push_all(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_push_all(u8 _) {
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF("PUSHAD\n");
@@ -785,7 +785,7 @@ static void x86emuOp_push_all(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x61
 ****************************************************************************/
-static void x86emuOp_pop_all(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_pop_all(u8 _) {
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF("POPAD\n");
@@ -797,7 +797,7 @@ static void x86emuOp_pop_all(u8 X86EMU_UNUSED(op1)) {
         M.x86.R_EDI = pop_long();
         M.x86.R_ESI = pop_long();
         M.x86.R_EBP = pop_long();
-        M.x86.R_ESP += 4;              /* skip ESP */
+        M.x86.R_ESP += 4; /* skip ESP */
         M.x86.R_EBX = pop_long();
         M.x86.R_EDX = pop_long();
         M.x86.R_ECX = pop_long();
@@ -806,7 +806,7 @@ static void x86emuOp_pop_all(u8 X86EMU_UNUSED(op1)) {
         M.x86.R_DI = pop_word();
         M.x86.R_SI = pop_word();
         M.x86.R_BP = pop_word();
-        M.x86.R_SP += 2;               /* skip SP */
+        M.x86.R_SP += 2; /* skip SP */
         M.x86.R_BX = pop_word();
         M.x86.R_DX = pop_word();
         M.x86.R_CX = pop_word();
@@ -823,7 +823,7 @@ static void x86emuOp_pop_all(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x64
 ****************************************************************************/
-static void x86emuOp_segovr_FS(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_segovr_FS(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("FS:\n");
     TRACE_AND_STEP();
@@ -839,7 +839,7 @@ static void x86emuOp_segovr_FS(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x65
 ****************************************************************************/
-static void x86emuOp_segovr_GS(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_segovr_GS(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("GS:\n");
     TRACE_AND_STEP();
@@ -855,7 +855,7 @@ static void x86emuOp_segovr_GS(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x66 - prefix for 32-bit register
 ****************************************************************************/
-static void x86emuOp_prefix_data(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_prefix_data(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("DATA:\n");
     TRACE_AND_STEP();
@@ -868,7 +868,7 @@ static void x86emuOp_prefix_data(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x67 - prefix for 32-bit address
 ****************************************************************************/
-static void x86emuOp_prefix_addr(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_prefix_addr(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("ADDR:\n");
     TRACE_AND_STEP();
@@ -881,7 +881,7 @@ static void x86emuOp_prefix_addr(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x68
 ****************************************************************************/
-static void x86emuOp_push_word_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_push_word_IMM(u8 _) {
     u32 imm;
 
     START_OF_INSTR();
@@ -905,7 +905,7 @@ static void x86emuOp_push_word_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x69
 ****************************************************************************/
-static void x86emuOp_imul_word_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_imul_word_IMM(u8 _) {
     int mod, rl, rh;
     uint srcoffset;
 
@@ -959,7 +959,7 @@ static void x86emuOp_imul_word_IMM(u8 X86EMU_UNUSED(op1)) {
             }
             *destreg = (u16)res;
         }
-    } else {                     /* register to register */
+    } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 *destreg,*srcreg;
             u32 res_lo,res_hi;
@@ -1011,7 +1011,7 @@ static void x86emuOp_imul_word_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x6a
 ****************************************************************************/
-static void x86emuOp_push_byte_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_push_byte_IMM(u8 _) {
     s16 imm;
 
     START_OF_INSTR();
@@ -1031,10 +1031,10 @@ static void x86emuOp_push_byte_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x6b
 ****************************************************************************/
-static void x86emuOp_imul_byte_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_imul_byte_IMM(u8 _) {
     int mod, rl, rh;
     uint srcoffset;
-    s8  imm;
+    s8 imm;
 
     START_OF_INSTR();
     DECODE_PRINTF("IMUL\t");
@@ -1084,7 +1084,7 @@ static void x86emuOp_imul_byte_IMM(u8 X86EMU_UNUSED(op1)) {
             }
             *destreg = (u16)res;
         }
-    } else {                     /* register to register */
+    } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 *destreg,*srcreg;
             u32 res_lo,res_hi;
@@ -1135,7 +1135,7 @@ static void x86emuOp_imul_byte_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x6c
 ****************************************************************************/
-static void x86emuOp_ins_byte(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_ins_byte(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("INSB\n");
     ins(1);
@@ -1148,7 +1148,7 @@ static void x86emuOp_ins_byte(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x6d
 ****************************************************************************/
-static void x86emuOp_ins_word(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_ins_word(u8 _) {
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF("INSD\n");
@@ -1166,7 +1166,7 @@ static void x86emuOp_ins_word(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x6e
 ****************************************************************************/
-static void x86emuOp_outs_byte(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_outs_byte(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("OUTSB\n");
     outs(1);
@@ -1179,7 +1179,7 @@ static void x86emuOp_outs_byte(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x6f
 ****************************************************************************/
-static void x86emuOp_outs_word(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_outs_word(u8 _) {
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF("OUTSD\n");
@@ -1211,7 +1211,7 @@ static void x86emuOp_jump_near_cond(u8 op1) {
     TRACE_AND_STEP();
     if (cond) {
         M.x86.R_IP = target;
-	JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.R_CS, M.x86.R_IP, " NEAR COND ");
+ JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.R_CS, M.x86.R_IP, " NEAR COND ");
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -1221,7 +1221,7 @@ static void x86emuOp_jump_near_cond(u8 op1) {
 REMARKS:
 Handles opcode 0x80
 ****************************************************************************/
-static void x86emuOp_opc80_byte_RM_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_opc80_byte_RM_IMM(u8 _) {
     int mod, rl, rh;
     u8 *destreg;
     uint destoffset;
@@ -1235,7 +1235,7 @@ static void x86emuOp_opc80_byte_RM_IMM(u8 X86EMU_UNUSED(op1)) {
      */
     START_OF_INSTR();
     FETCH_DECODE_MODRM(mod, rh, rl);
-#ifdef DEBUG
+
     if (DEBUG_DECODE()) {
         /* XXX DECODE_PRINTF may be changed to something more
            general, so that it is important to leave the strings
@@ -1269,7 +1269,7 @@ static void x86emuOp_opc80_byte_RM_IMM(u8 X86EMU_UNUSED(op1)) {
             break;
         }
     }
-#endif
+
     /* know operation, decode the mod byte to find the addressing
        mode. */
     if (mod < 3) {
@@ -1283,7 +1283,7 @@ static void x86emuOp_opc80_byte_RM_IMM(u8 X86EMU_UNUSED(op1)) {
         destval = (*genop_byte_operation[rh]) (destval, imm);
         if (rh != 7)
             store_data_byte(destoffset, destval);
-    } else {                     /* register to register */
+    } else { /* register to register */
         destreg = DECODE_RM_BYTE_REGISTER(rl);
         DECODE_PRINTF(",");
         imm = fetch_byte_imm();
@@ -1299,7 +1299,7 @@ static void x86emuOp_opc80_byte_RM_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x81
 ****************************************************************************/
-static void x86emuOp_opc81_word_RM_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_opc81_word_RM_IMM(u8 _) {
     int mod, rl, rh;
     uint destoffset;
 
@@ -1310,7 +1310,7 @@ static void x86emuOp_opc81_word_RM_IMM(u8 X86EMU_UNUSED(op1)) {
      */
     START_OF_INSTR();
     FETCH_DECODE_MODRM(mod, rh, rl);
-#ifdef DEBUG
+
     if (DEBUG_DECODE()) {
         /* XXX DECODE_PRINTF may be changed to something more
            general, so that it is important to leave the strings
@@ -1344,7 +1344,7 @@ static void x86emuOp_opc81_word_RM_IMM(u8 X86EMU_UNUSED(op1)) {
             break;
         }
     }
-#endif
+
     /*
      * Know operation, decode the mod byte to find the addressing
      * mode.
@@ -1375,7 +1375,7 @@ static void x86emuOp_opc81_word_RM_IMM(u8 X86EMU_UNUSED(op1)) {
             if (rh != 7)
                 store_data_word(destoffset, destval);
         }
-    } else {                     /* register to register */
+    } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 *destreg, imm;
 
@@ -1404,7 +1404,7 @@ static void x86emuOp_opc81_word_RM_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x82
 ****************************************************************************/
-static void x86emuOp_opc82_byte_RM_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_opc82_byte_RM_IMM(u8 _) {
     int mod, rl, rh;
     u8 *destreg;
     uint destoffset;
@@ -1419,7 +1419,7 @@ static void x86emuOp_opc82_byte_RM_IMM(u8 X86EMU_UNUSED(op1)) {
      */
     START_OF_INSTR();
     FETCH_DECODE_MODRM(mod, rh, rl);
-#ifdef DEBUG
+
     if (DEBUG_DECODE()) {
         /* XXX DECODE_PRINTF may be changed to something more
            general, so that it is important to leave the strings
@@ -1452,7 +1452,7 @@ static void x86emuOp_opc82_byte_RM_IMM(u8 X86EMU_UNUSED(op1)) {
             break;
         }
     }
-#endif
+
     /* know operation, decode the mod byte to find the addressing
        mode. */
     if (mod < 3) {
@@ -1465,7 +1465,7 @@ static void x86emuOp_opc82_byte_RM_IMM(u8 X86EMU_UNUSED(op1)) {
         destval = (*genop_byte_operation[rh]) (destval, imm);
         if (rh != 7)
             store_data_byte(destoffset, destval);
-    } else {                     /* register to register */
+    } else { /* register to register */
         destreg = DECODE_RM_BYTE_REGISTER(rl);
         imm = fetch_byte_imm();
         DECODE_PRINTF2(",%x\n", imm);
@@ -1480,7 +1480,7 @@ static void x86emuOp_opc82_byte_RM_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x83
 ****************************************************************************/
-static void x86emuOp_opc83_word_RM_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_opc83_word_RM_IMM(u8 _) {
     int mod, rl, rh;
     uint destoffset;
 
@@ -1492,7 +1492,7 @@ static void x86emuOp_opc83_word_RM_IMM(u8 X86EMU_UNUSED(op1)) {
      */
     START_OF_INSTR();
     FETCH_DECODE_MODRM(mod, rh, rl);
-#ifdef DEBUG
+
     if (DEBUG_DECODE()) {
         /* XXX DECODE_PRINTF may be changed to something more
            general, so that it is important to leave the strings
@@ -1525,7 +1525,7 @@ static void x86emuOp_opc83_word_RM_IMM(u8 X86EMU_UNUSED(op1)) {
             break;
         }
     }
-#endif
+
     /* know operation, decode the mod byte to find the addressing
        mode. */
     if (mod < 3) {
@@ -1553,7 +1553,7 @@ static void x86emuOp_opc83_word_RM_IMM(u8 X86EMU_UNUSED(op1)) {
             if (rh != 7)
                 store_data_word(destoffset, destval);
         }
-    } else {                     /* register to register */
+    } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 *destreg, imm;
 
@@ -1580,7 +1580,7 @@ static void x86emuOp_opc83_word_RM_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x84
 ****************************************************************************/
-static void x86emuOp_test_byte_RM_R(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_test_byte_RM_R(u8 _) {
     int mod, rl, rh;
     u8 *destreg, *srcreg;
     uint destoffset;
@@ -1597,7 +1597,7 @@ static void x86emuOp_test_byte_RM_R(u8 X86EMU_UNUSED(op1)) {
         DECODE_PRINTF("\n");
         TRACE_AND_STEP();
         test_byte(destval, *srcreg);
-    } else {                     /* register to register */
+    } else { /* register to register */
         destreg = DECODE_RM_BYTE_REGISTER(rl);
         DECODE_PRINTF(",");
         srcreg = DECODE_RM_BYTE_REGISTER(rh);
@@ -1613,7 +1613,7 @@ static void x86emuOp_test_byte_RM_R(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x85
 ****************************************************************************/
-static void x86emuOp_test_word_RM_R(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_test_word_RM_R(u8 _) {
     int mod, rl, rh;
     uint destoffset;
 
@@ -1643,7 +1643,7 @@ static void x86emuOp_test_word_RM_R(u8 X86EMU_UNUSED(op1)) {
             TRACE_AND_STEP();
             test_word(destval, *srcreg);
         }
-    } else {                     /* register to register */
+    } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 *destreg,*srcreg;
 
@@ -1672,7 +1672,7 @@ static void x86emuOp_test_word_RM_R(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x86
 ****************************************************************************/
-static void x86emuOp_xchg_byte_RM_R(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_xchg_byte_RM_R(u8 _) {
     int mod, rl, rh;
     u8 *destreg, *srcreg;
     uint destoffset;
@@ -1693,7 +1693,7 @@ static void x86emuOp_xchg_byte_RM_R(u8 X86EMU_UNUSED(op1)) {
         *srcreg = destval;
         destval = tmp;
         store_data_byte(destoffset, destval);
-    } else {                     /* register to register */
+    } else { /* register to register */
         destreg = DECODE_RM_BYTE_REGISTER(rl);
         DECODE_PRINTF(",");
         srcreg = DECODE_RM_BYTE_REGISTER(rh);
@@ -1711,7 +1711,7 @@ static void x86emuOp_xchg_byte_RM_R(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x87
 ****************************************************************************/
-static void x86emuOp_xchg_word_RM_R(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_xchg_word_RM_R(u8 _) {
     int mod, rl, rh;
     uint destoffset;
 
@@ -1746,7 +1746,7 @@ static void x86emuOp_xchg_word_RM_R(u8 X86EMU_UNUSED(op1)) {
             destval = tmp;
             store_data_word(destoffset, destval);
         }
-    } else {                     /* register to register */
+    } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 *destreg,*srcreg;
             u32 tmp;
@@ -1781,7 +1781,7 @@ static void x86emuOp_xchg_word_RM_R(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x88
 ****************************************************************************/
-static void x86emuOp_mov_byte_RM_R(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_mov_byte_RM_R(u8 _) {
     int mod, rl, rh;
     u8 *destreg, *srcreg;
     uint destoffset;
@@ -1796,7 +1796,7 @@ static void x86emuOp_mov_byte_RM_R(u8 X86EMU_UNUSED(op1)) {
         DECODE_PRINTF("\n");
         TRACE_AND_STEP();
         store_data_byte(destoffset, *srcreg);
-    } else {                     /* register to register */
+    } else { /* register to register */
         destreg = DECODE_RM_BYTE_REGISTER(rl);
         DECODE_PRINTF(",");
         srcreg = DECODE_RM_BYTE_REGISTER(rh);
@@ -1812,7 +1812,7 @@ static void x86emuOp_mov_byte_RM_R(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x89
 ****************************************************************************/
-static void x86emuOp_mov_word_RM_R(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_mov_word_RM_R(u8 _) {
     int mod, rl, rh;
     uint destoffset;
 
@@ -1838,7 +1838,7 @@ static void x86emuOp_mov_word_RM_R(u8 X86EMU_UNUSED(op1)) {
             TRACE_AND_STEP();
             store_data_word(destoffset, *srcreg);
         }
-    } else {                     /* register to register */
+    } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 *destreg,*srcreg;
 
@@ -1867,7 +1867,7 @@ static void x86emuOp_mov_word_RM_R(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x8a
 ****************************************************************************/
-static void x86emuOp_mov_byte_R_RM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_mov_byte_R_RM(u8 _) {
     int mod, rl, rh;
     u8 *destreg, *srcreg;
     uint srcoffset;
@@ -1884,7 +1884,7 @@ static void x86emuOp_mov_byte_R_RM(u8 X86EMU_UNUSED(op1)) {
         DECODE_PRINTF("\n");
         TRACE_AND_STEP();
         *destreg = srcval;
-    } else {                     /* register to register */
+    } else { /* register to register */
         destreg = DECODE_RM_BYTE_REGISTER(rh);
         DECODE_PRINTF(",");
         srcreg = DECODE_RM_BYTE_REGISTER(rl);
@@ -1900,7 +1900,7 @@ static void x86emuOp_mov_byte_R_RM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x8b
 ****************************************************************************/
-static void x86emuOp_mov_word_R_RM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_mov_word_R_RM(u8 _) {
     int mod, rl, rh;
     uint srcoffset;
 
@@ -1931,7 +1931,7 @@ static void x86emuOp_mov_word_R_RM(u8 X86EMU_UNUSED(op1)) {
             TRACE_AND_STEP();
             *destreg = srcval;
         }
-    } else {                     /* register to register */
+    } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 *destreg, *srcreg;
 
@@ -1960,7 +1960,7 @@ static void x86emuOp_mov_word_R_RM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x8c
 ****************************************************************************/
-static void x86emuOp_mov_word_RM_SR(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_mov_word_RM_SR(u8 _) {
     int mod, rl, rh;
     u16 *destreg, *srcreg;
     uint destoffset;
@@ -1977,7 +1977,7 @@ static void x86emuOp_mov_word_RM_SR(u8 X86EMU_UNUSED(op1)) {
         TRACE_AND_STEP();
         destval = *srcreg;
         store_data_word(destoffset, destval);
-    } else {                     /* register to register */
+    } else { /* register to register */
         destreg = DECODE_RM_WORD_REGISTER(rl);
         DECODE_PRINTF(",");
         srcreg = decode_rm_seg_register(rh);
@@ -1993,7 +1993,7 @@ static void x86emuOp_mov_word_RM_SR(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x8d
 ****************************************************************************/
-static void x86emuOp_lea_word_R_M(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_lea_word_R_M(u8 _) {
     int mod, rl, rh;
     uint destoffset;
 
@@ -2008,7 +2008,7 @@ static void x86emuOp_lea_word_R_M(u8 X86EMU_UNUSED(op1)) {
             DECODE_PRINTF("\n");
             TRACE_AND_STEP();
             *srcreg = (u32)destoffset;
-	} else {
+ } else {
             u16 *srcreg = DECODE_RM_WORD_REGISTER(rh);
             DECODE_PRINTF(",");
             destoffset = decode_rmXX_address(mod, rl);
@@ -2026,7 +2026,7 @@ static void x86emuOp_lea_word_R_M(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x8e
 ****************************************************************************/
-static void x86emuOp_mov_word_SR_RM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_mov_word_SR_RM(u8 _) {
     int mod, rl, rh;
     u16 *destreg, *srcreg;
     uint srcoffset;
@@ -2043,7 +2043,7 @@ static void x86emuOp_mov_word_SR_RM(u8 X86EMU_UNUSED(op1)) {
         DECODE_PRINTF("\n");
         TRACE_AND_STEP();
         *destreg = srcval;
-    } else {                     /* register to register */
+    } else { /* register to register */
         destreg = decode_rm_seg_register(rh);
         DECODE_PRINTF(",");
         srcreg = DECODE_RM_WORD_REGISTER(rl);
@@ -2065,7 +2065,7 @@ static void x86emuOp_mov_word_SR_RM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x8f
 ****************************************************************************/
-static void x86emuOp_pop_RM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_pop_RM(u8 _) {
     int mod, rl, rh;
     uint destoffset;
 
@@ -2093,7 +2093,7 @@ static void x86emuOp_pop_RM(u8 X86EMU_UNUSED(op1)) {
             destval = pop_word();
             store_data_word(destoffset, destval);
         }
-    } else {                    /* register to register */
+    } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 *destreg;
 
@@ -2118,7 +2118,7 @@ static void x86emuOp_pop_RM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x90
 ****************************************************************************/
-static void x86emuOp_nop(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_nop(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("NOP\n");
     TRACE_AND_STEP();
@@ -2130,7 +2130,7 @@ static void x86emuOp_nop(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x91-0x97
 ****************************************************************************/
-static void x86emuOp_xchg_word_AX_register(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_xchg_word_AX_register(u8 _) {
     u32 tmp;
 
     op1 &= 0x7;
@@ -2164,7 +2164,7 @@ static void x86emuOp_xchg_word_AX_register(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x98
 ****************************************************************************/
-static void x86emuOp_cbw(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_cbw(u8 _) {
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF("CWDE\n");
@@ -2193,7 +2193,7 @@ static void x86emuOp_cbw(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x99
 ****************************************************************************/
-static void x86emuOp_cwd(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_cwd(u8 _) {
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF("CDQ\n");
@@ -2223,7 +2223,7 @@ static void x86emuOp_cwd(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x9a
 ****************************************************************************/
-static void x86emuOp_call_far_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_call_far_IMM(u8 _) {
     u32 farseg, faroff;
 
     START_OF_INSTR();
@@ -2262,7 +2262,7 @@ static void x86emuOp_call_far_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x9b
 ****************************************************************************/
-static void x86emuOp_wait(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_wait(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("WAIT");
     TRACE_AND_STEP();
@@ -2275,7 +2275,7 @@ static void x86emuOp_wait(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x9c
 ****************************************************************************/
-static void x86emuOp_pushf_word(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_pushf_word(u8 _) {
     u32 flags;
 
     START_OF_INSTR();
@@ -2301,7 +2301,7 @@ static void x86emuOp_pushf_word(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x9d
 ****************************************************************************/
-static void x86emuOp_popf_word(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_popf_word(u8 _) {
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF("POPFD\n");
@@ -2322,7 +2322,7 @@ static void x86emuOp_popf_word(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x9e
 ****************************************************************************/
-static void x86emuOp_sahf(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_sahf(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("SAHF\n");
     TRACE_AND_STEP();
@@ -2338,11 +2338,11 @@ static void x86emuOp_sahf(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0x9f
 ****************************************************************************/
-static void x86emuOp_lahf(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_lahf(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("LAHF\n");
     TRACE_AND_STEP();
-	M.x86.R_AH = (u8)(M.x86.R_FLG & 0xff);
+ M.x86.R_AH = (u8)(M.x86.R_FLG & 0xff);
     /*undocumented TC++ behavior??? Nope.  It's documented, but
        you have too look real hard to notice it. */
     M.x86.R_AH |= 0x2;
@@ -2354,7 +2354,7 @@ static void x86emuOp_lahf(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xa0
 ****************************************************************************/
-static void x86emuOp_mov_AL_M_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_mov_AL_M_IMM(u8 _) {
     u16 offset;
 
     START_OF_INSTR();
@@ -2371,7 +2371,7 @@ static void x86emuOp_mov_AL_M_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xa1
 ****************************************************************************/
-static void x86emuOp_mov_AX_M_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_mov_AX_M_IMM(u8 _) {
     u16 offset;
 
     START_OF_INSTR();
@@ -2395,7 +2395,7 @@ static void x86emuOp_mov_AX_M_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xa2
 ****************************************************************************/
-static void x86emuOp_mov_M_AL_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_mov_M_AL_IMM(u8 _) {
     u16 offset;
 
     START_OF_INSTR();
@@ -2412,7 +2412,7 @@ static void x86emuOp_mov_M_AL_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xa3
 ****************************************************************************/
-static void x86emuOp_mov_M_AX_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_mov_M_AX_IMM(u8 _) {
     u16 offset;
 
     START_OF_INSTR();
@@ -2436,14 +2436,14 @@ static void x86emuOp_mov_M_AX_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xa4
 ****************************************************************************/
-static void x86emuOp_movs_byte(u8 X86EMU_UNUSED(op1)) {
-    u8  val;
+static void x86emuOp_movs_byte(u8 _) {
+    u8 val;
     u32 count;
     int inc;
 
     START_OF_INSTR();
     DECODE_PRINTF("MOVS\tBYTE\n");
-    if (ACCESS_FLAG(F_DF))   /* down */
+    if (ACCESS_FLAG(F_DF)) /* down */
         inc = -1;
     else
         inc = 1;
@@ -2454,7 +2454,7 @@ static void x86emuOp_movs_byte(u8 X86EMU_UNUSED(op1)) {
         /* move them until (E)CX is ZERO. */
         count = (M.x86.mode & SYSMODE_32BIT_REP) ? M.x86.R_ECX : M.x86.R_CX;
         M.x86.R_CX = 0;
-	if (M.x86.mode & SYSMODE_32BIT_REP)
+ if (M.x86.mode & SYSMODE_32BIT_REP)
             M.x86.R_ECX = 0;
         M.x86.mode &= ~(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
     }
@@ -2474,7 +2474,7 @@ static void x86emuOp_movs_byte(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xa5
 ****************************************************************************/
-static void x86emuOp_movs_word(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_movs_word(u8 _) {
     u32 val;
     int inc;
     u32 count;
@@ -2482,13 +2482,13 @@ static void x86emuOp_movs_word(u8 X86EMU_UNUSED(op1)) {
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF("MOVS\tDWORD\n");
-        if (ACCESS_FLAG(F_DF))      /* down */
+        if (ACCESS_FLAG(F_DF)) /* down */
             inc = -4;
         else
             inc = 4;
     } else {
         DECODE_PRINTF("MOVS\tWORD\n");
-        if (ACCESS_FLAG(F_DF))      /* down */
+        if (ACCESS_FLAG(F_DF)) /* down */
             inc = -2;
         else
             inc = 2;
@@ -2500,7 +2500,7 @@ static void x86emuOp_movs_word(u8 X86EMU_UNUSED(op1)) {
         /* move them until (E)CX is ZERO. */
         count = (M.x86.mode & SYSMODE_32BIT_REP) ? M.x86.R_ECX : M.x86.R_CX;
         M.x86.R_CX = 0;
-	if (M.x86.mode & SYSMODE_32BIT_REP)
+ if (M.x86.mode & SYSMODE_32BIT_REP)
             M.x86.R_ECX = 0;
         M.x86.mode &= ~(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
     }
@@ -2525,14 +2525,14 @@ static void x86emuOp_movs_word(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xa6
 ****************************************************************************/
-static void x86emuOp_cmps_byte(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_cmps_byte(u8 _) {
     s8 val1, val2;
     int inc;
 
     START_OF_INSTR();
     DECODE_PRINTF("CMPS\tBYTE\n");
     TRACE_AND_STEP();
-    if (ACCESS_FLAG(F_DF))   /* down */
+    if (ACCESS_FLAG(F_DF)) /* down */
         inc = -1;
     else
         inc = 1;
@@ -2571,7 +2571,7 @@ static void x86emuOp_cmps_byte(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xa7
 ****************************************************************************/
-static void x86emuOp_cmps_word(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_cmps_word(u8 _) {
     u32 val1,val2;
     int inc;
 
@@ -2583,7 +2583,7 @@ static void x86emuOp_cmps_word(u8 X86EMU_UNUSED(op1)) {
         DECODE_PRINTF("CMPS\tWORD\n");
         inc = 2;
     }
-    if (ACCESS_FLAG(F_DF))   /* down */
+    if (ACCESS_FLAG(F_DF)) /* down */
         inc = -inc;
 
     TRACE_AND_STEP();
@@ -2633,7 +2633,7 @@ static void x86emuOp_cmps_word(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xa8
 ****************************************************************************/
-static void x86emuOp_test_AL_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_test_AL_IMM(u8 _) {
     int imm;
 
     START_OF_INSTR();
@@ -2641,7 +2641,7 @@ static void x86emuOp_test_AL_IMM(u8 X86EMU_UNUSED(op1)) {
     imm = fetch_byte_imm();
     DECODE_PRINTF2("%04x\n", imm);
     TRACE_AND_STEP();
-	test_byte(M.x86.R_AL, (u8)imm);
+ test_byte(M.x86.R_AL, (u8)imm);
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -2650,7 +2650,7 @@ static void x86emuOp_test_AL_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xa9
 ****************************************************************************/
-static void x86emuOp_test_AX_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_test_AX_IMM(u8 _) {
     u32 srcval;
 
     START_OF_INSTR();
@@ -2676,12 +2676,12 @@ static void x86emuOp_test_AX_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xaa
 ****************************************************************************/
-static void x86emuOp_stos_byte(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_stos_byte(u8 _) {
     int inc;
 
     START_OF_INSTR();
     DECODE_PRINTF("STOS\tBYTE\n");
-    if (ACCESS_FLAG(F_DF))   /* down */
+    if (ACCESS_FLAG(F_DF)) /* down */
         inc = -1;
     else
         inc = 1;
@@ -2712,20 +2712,20 @@ static void x86emuOp_stos_byte(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xab
 ****************************************************************************/
-static void x86emuOp_stos_word(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_stos_word(u8 _) {
     int inc;
     u32 count;
 
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF("STOS\tDWORD\n");
-        if (ACCESS_FLAG(F_DF))   /* down */
+        if (ACCESS_FLAG(F_DF)) /* down */
             inc = -4;
         else
             inc = 4;
     } else {
         DECODE_PRINTF("STOS\tWORD\n");
-        if (ACCESS_FLAG(F_DF))   /* down */
+        if (ACCESS_FLAG(F_DF)) /* down */
             inc = -2;
         else
             inc = 2;
@@ -2737,7 +2737,7 @@ static void x86emuOp_stos_word(u8 X86EMU_UNUSED(op1)) {
         /* move them until (E)CX is ZERO. */
         count = (M.x86.mode & SYSMODE_32BIT_REP) ? M.x86.R_ECX : M.x86.R_CX;
         M.x86.R_CX = 0;
-	if (M.x86.mode & SYSMODE_32BIT_REP)
+ if (M.x86.mode & SYSMODE_32BIT_REP)
             M.x86.R_ECX = 0;
         M.x86.mode &= ~(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
     }
@@ -2759,13 +2759,13 @@ static void x86emuOp_stos_word(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xac
 ****************************************************************************/
-static void x86emuOp_lods_byte(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_lods_byte(u8 _) {
     int inc;
 
     START_OF_INSTR();
     DECODE_PRINTF("LODS\tBYTE\n");
     TRACE_AND_STEP();
-    if (ACCESS_FLAG(F_DF))   /* down */
+    if (ACCESS_FLAG(F_DF)) /* down */
         inc = -1;
     else
         inc = 1;
@@ -2795,20 +2795,20 @@ static void x86emuOp_lods_byte(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xad
 ****************************************************************************/
-static void x86emuOp_lods_word(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_lods_word(u8 _) {
     int inc;
     u32 count;
 
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF("LODS\tDWORD\n");
-        if (ACCESS_FLAG(F_DF))   /* down */
+        if (ACCESS_FLAG(F_DF)) /* down */
             inc = -4;
         else
             inc = 4;
     } else {
         DECODE_PRINTF("LODS\tWORD\n");
-        if (ACCESS_FLAG(F_DF))   /* down */
+        if (ACCESS_FLAG(F_DF)) /* down */
             inc = -2;
         else
             inc = 2;
@@ -2820,7 +2820,7 @@ static void x86emuOp_lods_word(u8 X86EMU_UNUSED(op1)) {
         /* move them until (E)CX is ZERO. */
         count = (M.x86.mode & SYSMODE_32BIT_REP) ? M.x86.R_ECX : M.x86.R_CX;
         M.x86.R_CX = 0;
-	if (M.x86.mode & SYSMODE_32BIT_REP)
+ if (M.x86.mode & SYSMODE_32BIT_REP)
             M.x86.R_ECX = 0;
         M.x86.mode &= ~(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
     }
@@ -2842,14 +2842,14 @@ static void x86emuOp_lods_word(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xae
 ****************************************************************************/
-static void x86emuOp_scas_byte(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_scas_byte(u8 _) {
     s8 val2;
     int inc;
 
     START_OF_INSTR();
     DECODE_PRINTF("SCAS\tBYTE\n");
     TRACE_AND_STEP();
-    if (ACCESS_FLAG(F_DF))   /* down */
+    if (ACCESS_FLAG(F_DF)) /* down */
         inc = -1;
     else
         inc = 1;
@@ -2882,7 +2882,7 @@ static void x86emuOp_scas_byte(u8 X86EMU_UNUSED(op1)) {
                 M.x86.R_CX -= 1;
             M.x86.R_DI += inc;
             if (ACCESS_FLAG(F_ZF))
-                break;          /* zero flag set means equal */
+                break; /* zero flag set means equal */
             if (M.x86.intr & INTR_HALTED)
                 break;
         }
@@ -2900,20 +2900,20 @@ static void x86emuOp_scas_byte(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xaf
 ****************************************************************************/
-static void x86emuOp_scas_word(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_scas_word(u8 _) {
     int inc;
     u32 val;
 
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF("SCAS\tDWORD\n");
-        if (ACCESS_FLAG(F_DF))   /* down */
+        if (ACCESS_FLAG(F_DF)) /* down */
             inc = -4;
         else
             inc = 4;
     } else {
         DECODE_PRINTF("SCAS\tWORD\n");
-        if (ACCESS_FLAG(F_DF))   /* down */
+        if (ACCESS_FLAG(F_DF)) /* down */
             inc = -2;
         else
             inc = 2;
@@ -2958,7 +2958,7 @@ static void x86emuOp_scas_word(u8 X86EMU_UNUSED(op1)) {
                 M.x86.R_CX -= 1;
             M.x86.R_DI += inc;
             if (ACCESS_FLAG(F_ZF))
-                break;          /* zero flag set means equal */
+                break; /* zero flag set means equal */
             if (M.x86.intr & INTR_HALTED)
                 break;
         }
@@ -3000,7 +3000,7 @@ static void x86emuOp_mov_byte_register_IMM(u8 op1) {
 REMARKS:
 Handles opcode 0xb8 - 0xbf
 ****************************************************************************/
-static void x86emuOp_mov_word_register_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_mov_word_register_IMM(u8 _) {
     u32 srcval;
 
     op1 &= 0x7;
@@ -3030,7 +3030,7 @@ static void x86emuOp_mov_word_register_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xc0
 ****************************************************************************/
-static void x86emuOp_opcC0_byte_RM_MEM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_opcC0_byte_RM_MEM(u8 _) {
     int mod, rl, rh;
     u8 *destreg;
     uint destoffset;
@@ -3044,7 +3044,7 @@ static void x86emuOp_opcC0_byte_RM_MEM(u8 X86EMU_UNUSED(op1)) {
      */
     START_OF_INSTR();
     FETCH_DECODE_MODRM(mod, rh, rl);
-#ifdef DEBUG
+
     if (DEBUG_DECODE()) {
         /* XXX DECODE_PRINTF may be changed to something more
            general, so that it is important to leave the strings
@@ -3078,7 +3078,7 @@ static void x86emuOp_opcC0_byte_RM_MEM(u8 X86EMU_UNUSED(op1)) {
             break;
         }
     }
-#endif
+
     /* know operation, decode the mod byte to find the addressing
        mode. */
     if (mod < 3) {
@@ -3090,7 +3090,7 @@ static void x86emuOp_opcC0_byte_RM_MEM(u8 X86EMU_UNUSED(op1)) {
         TRACE_AND_STEP();
         destval = (*opcD0_byte_operation[rh]) (destval, amt);
         store_data_byte(destoffset, destval);
-    } else {                     /* register to register */
+    } else { /* register to register */
         destreg = DECODE_RM_BYTE_REGISTER(rl);
         amt = fetch_byte_imm();
         DECODE_PRINTF2(",%x\n", amt);
@@ -3106,7 +3106,7 @@ static void x86emuOp_opcC0_byte_RM_MEM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xc1
 ****************************************************************************/
-static void x86emuOp_opcC1_word_RM_MEM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_opcC1_word_RM_MEM(u8 _) {
     int mod, rl, rh;
     uint destoffset;
     u8 amt;
@@ -3118,7 +3118,7 @@ static void x86emuOp_opcC1_word_RM_MEM(u8 X86EMU_UNUSED(op1)) {
      */
     START_OF_INSTR();
     FETCH_DECODE_MODRM(mod, rh, rl);
-#ifdef DEBUG
+
     if (DEBUG_DECODE()) {
         /* XXX DECODE_PRINTF may be changed to something more
            general, so that it is important to leave the strings
@@ -3152,7 +3152,7 @@ static void x86emuOp_opcC1_word_RM_MEM(u8 X86EMU_UNUSED(op1)) {
             break;
         }
     }
-#endif
+
     /* know operation, decode the mod byte to find the addressing
        mode. */
     if (mod < 3) {
@@ -3179,7 +3179,7 @@ static void x86emuOp_opcC1_word_RM_MEM(u8 X86EMU_UNUSED(op1)) {
             destval = (*opcD1_word_operation[rh]) (destval, amt);
             store_data_word(destoffset, destval);
         }
-    } else {                     /* register to register */
+    } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 *destreg;
 
@@ -3206,16 +3206,16 @@ static void x86emuOp_opcC1_word_RM_MEM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xc2
 ****************************************************************************/
-static void x86emuOp_ret_near_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_ret_near_IMM(u8 _) {
     u16 imm;
 
     START_OF_INSTR();
     DECODE_PRINTF("RET\t");
     imm = fetch_word_imm();
     DECODE_PRINTF2("%x\n", imm);
-	TRACE_AND_STEP();
+ TRACE_AND_STEP();
     M.x86.R_IP = pop_word();
-	RETURN_TRACE(M.x86.saved_cs,M.x86.saved_ip, M.x86.R_CS, M.x86.R_IP, "NEAR");
+ RETURN_TRACE(M.x86.saved_cs,M.x86.saved_ip, M.x86.R_CS, M.x86.R_IP, "NEAR");
     M.x86.R_SP += imm;
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -3225,12 +3225,12 @@ static void x86emuOp_ret_near_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xc3
 ****************************************************************************/
-static void x86emuOp_ret_near(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_ret_near(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("RET\n");
-	TRACE_AND_STEP();
+ TRACE_AND_STEP();
     M.x86.R_IP = pop_word();
-	RETURN_TRACE(M.x86.saved_cs,M.x86.saved_ip, M.x86.R_CS, M.x86.R_IP, "NEAR");
+ RETURN_TRACE(M.x86.saved_cs,M.x86.saved_ip, M.x86.R_CS, M.x86.R_IP, "NEAR");
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -3239,7 +3239,7 @@ static void x86emuOp_ret_near(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xc4
 ****************************************************************************/
-static void x86emuOp_les_R_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_les_R_IMM(u8 _) {
     int mod, rh, rl;
     u16 *dstreg;
     uint srcoffset;
@@ -3266,7 +3266,7 @@ static void x86emuOp_les_R_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xc5
 ****************************************************************************/
-static void x86emuOp_lds_R_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_lds_R_IMM(u8 _) {
     int mod, rh, rl;
     u16 *dstreg;
     uint srcoffset;
@@ -3292,7 +3292,7 @@ static void x86emuOp_lds_R_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xc6
 ****************************************************************************/
-static void x86emuOp_mov_byte_RM_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_mov_byte_RM_IMM(u8 _) {
     int mod, rl, rh;
     u8 *destreg;
     uint destoffset;
@@ -3312,7 +3312,7 @@ static void x86emuOp_mov_byte_RM_IMM(u8 X86EMU_UNUSED(op1)) {
         DECODE_PRINTF2(",%2x\n", imm);
         TRACE_AND_STEP();
         store_data_byte(destoffset, imm);
-    } else {                     /* register to register */
+    } else { /* register to register */
         destreg = DECODE_RM_BYTE_REGISTER(rl);
         imm = fetch_byte_imm();
         DECODE_PRINTF2(",%2x\n", imm);
@@ -3327,7 +3327,7 @@ static void x86emuOp_mov_byte_RM_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xc7
 ****************************************************************************/
-static void x86emuOp_mov_word_RM_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_mov_word_RM_IMM(u8 _) {
     int mod, rl, rh;
     uint destoffset;
 
@@ -3358,10 +3358,10 @@ static void x86emuOp_mov_word_RM_IMM(u8 X86EMU_UNUSED(op1)) {
             TRACE_AND_STEP();
             store_data_word(destoffset, imm);
         }
-    } else {                     /* register to register */
+    } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-			u32 *destreg;
-			u32 imm;
+   u32 *destreg;
+   u32 imm;
 
             destreg = DECODE_RM_LONG_REGISTER(rl);
             imm = fetch_long_imm();
@@ -3369,8 +3369,8 @@ static void x86emuOp_mov_word_RM_IMM(u8 X86EMU_UNUSED(op1)) {
             TRACE_AND_STEP();
             *destreg = imm;
         } else {
-			u16 *destreg;
-			u16 imm;
+   u16 *destreg;
+   u16 imm;
 
             destreg = DECODE_RM_WORD_REGISTER(rl);
             imm = fetch_word_imm();
@@ -3387,9 +3387,9 @@ static void x86emuOp_mov_word_RM_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xc8
 ****************************************************************************/
-static void x86emuOp_enter(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_enter(u8 _) {
     u16 local,frame_pointer;
-    u8  nesting;
+    u8 nesting;
     int i;
 
     START_OF_INSTR();
@@ -3417,7 +3417,7 @@ static void x86emuOp_enter(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xc9
 ****************************************************************************/
-static void x86emuOp_leave(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_leave(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("LEAVE\n");
     TRACE_AND_STEP();
@@ -3431,17 +3431,17 @@ static void x86emuOp_leave(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xca
 ****************************************************************************/
-static void x86emuOp_ret_far_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_ret_far_IMM(u8 _) {
     u16 imm;
 
     START_OF_INSTR();
     DECODE_PRINTF("RETF\t");
     imm = fetch_word_imm();
     DECODE_PRINTF2("%x\n", imm);
-	TRACE_AND_STEP();
+ TRACE_AND_STEP();
     M.x86.R_IP = pop_word();
     M.x86.R_CS = pop_word();
-	RETURN_TRACE(M.x86.saved_cs,M.x86.saved_ip, M.x86.R_CS, M.x86.R_IP, "FAR");
+ RETURN_TRACE(M.x86.saved_cs,M.x86.saved_ip, M.x86.R_CS, M.x86.R_IP, "FAR");
     M.x86.R_SP += imm;
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -3451,13 +3451,13 @@ static void x86emuOp_ret_far_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xcb
 ****************************************************************************/
-static void x86emuOp_ret_far(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_ret_far(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("RETF\n");
-	TRACE_AND_STEP();
+ TRACE_AND_STEP();
     M.x86.R_IP = pop_word();
     M.x86.R_CS = pop_word();
-	RETURN_TRACE(M.x86.saved_cs,M.x86.saved_ip, M.x86.R_CS, M.x86.R_IP, "FAR");
+ RETURN_TRACE(M.x86.saved_cs,M.x86.saved_ip, M.x86.R_CS, M.x86.R_IP, "FAR");
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -3466,16 +3466,16 @@ static void x86emuOp_ret_far(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xcc
 ****************************************************************************/
-static void x86emuOp_int3(u8 X86EMU_UNUSED(op1)) {
-    u16 X86EMU_UNUSED(tmp);
+static void x86emuOp_int3(u8 _) {
+    u16 _;
 
     START_OF_INSTR();
     DECODE_PRINTF("INT 3\n");
     tmp = (u16) mem_access_word(3 * 4 + 2);
     /* access the segment register */
     TRACE_AND_STEP();
-	if (_X86EMU_intrTab[3]) {
-		(*_X86EMU_intrTab[3])(3);
+ if (_X86EMU_intrTab[3]) {
+  (*_X86EMU_intrTab[3])(3);
     } else {
         push_word((u16)M.x86.R_FLG);
         CLEAR_FLAG(F_IF);
@@ -3493,8 +3493,8 @@ static void x86emuOp_int3(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xcd
 ****************************************************************************/
-static void x86emuOp_int_IMM(u8 X86EMU_UNUSED(op1)) {
-    u16 X86EMU_UNUSED(tmp);
+static void x86emuOp_int_IMM(u8 _) {
+    u16 _;
     u8 intnum;
 
     START_OF_INSTR();
@@ -3503,8 +3503,8 @@ static void x86emuOp_int_IMM(u8 X86EMU_UNUSED(op1)) {
     DECODE_PRINTF2("%x\n", intnum);
     tmp = mem_access_word(intnum * 4 + 2);
     TRACE_AND_STEP();
-	if (_X86EMU_intrTab[intnum]) {
-		(*_X86EMU_intrTab[intnum])(intnum);
+ if (_X86EMU_intrTab[intnum]) {
+  (*_X86EMU_intrTab[intnum])(intnum);
     } else {
         push_word((u16)M.x86.R_FLG);
         CLEAR_FLAG(F_IF);
@@ -3522,16 +3522,16 @@ static void x86emuOp_int_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xce
 ****************************************************************************/
-static void x86emuOp_into(u8 X86EMU_UNUSED(op1)) {
-    u16 X86EMU_UNUSED(tmp);
+static void x86emuOp_into(u8 _) {
+    u16 _;
 
     START_OF_INSTR();
     DECODE_PRINTF("INTO\n");
     TRACE_AND_STEP();
     if (ACCESS_FLAG(F_OF)) {
         tmp = mem_access_word(4 * 4 + 2);
-		if (_X86EMU_intrTab[4]) {
-			(*_X86EMU_intrTab[4])(4);
+  if (_X86EMU_intrTab[4]) {
+   (*_X86EMU_intrTab[4])(4);
         } else {
             push_word((u16)M.x86.R_FLG);
             CLEAR_FLAG(F_IF);
@@ -3550,7 +3550,7 @@ static void x86emuOp_into(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xcf
 ****************************************************************************/
-static void x86emuOp_iret(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_iret(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("IRET\n");
 
@@ -3567,7 +3567,7 @@ static void x86emuOp_iret(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xd0
 ****************************************************************************/
-static void x86emuOp_opcD0_byte_RM_1(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_opcD0_byte_RM_1(u8 _) {
     int mod, rl, rh;
     u8 *destreg;
     uint destoffset;
@@ -3580,7 +3580,7 @@ static void x86emuOp_opcD0_byte_RM_1(u8 X86EMU_UNUSED(op1)) {
      */
     START_OF_INSTR();
     FETCH_DECODE_MODRM(mod, rh, rl);
-#ifdef DEBUG
+
     if (DEBUG_DECODE()) {
         /* XXX DECODE_PRINTF may be changed to something more
            general, so that it is important to leave the strings
@@ -3613,7 +3613,7 @@ static void x86emuOp_opcD0_byte_RM_1(u8 X86EMU_UNUSED(op1)) {
             break;
         }
     }
-#endif
+
     /* know operation, decode the mod byte to find the addressing
        mode. */
     if (mod < 3) {
@@ -3624,7 +3624,7 @@ static void x86emuOp_opcD0_byte_RM_1(u8 X86EMU_UNUSED(op1)) {
         TRACE_AND_STEP();
         destval = (*opcD0_byte_operation[rh]) (destval, 1);
         store_data_byte(destoffset, destval);
-    } else {                     /* register to register */
+    } else { /* register to register */
         destreg = DECODE_RM_BYTE_REGISTER(rl);
         DECODE_PRINTF(",1\n");
         TRACE_AND_STEP();
@@ -3639,7 +3639,7 @@ static void x86emuOp_opcD0_byte_RM_1(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xd1
 ****************************************************************************/
-static void x86emuOp_opcD1_word_RM_1(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_opcD1_word_RM_1(u8 _) {
     int mod, rl, rh;
     uint destoffset;
 
@@ -3650,7 +3650,7 @@ static void x86emuOp_opcD1_word_RM_1(u8 X86EMU_UNUSED(op1)) {
      */
     START_OF_INSTR();
     FETCH_DECODE_MODRM(mod, rh, rl);
-#ifdef DEBUG
+
     if (DEBUG_DECODE()) {
         /* XXX DECODE_PRINTF may be changed to something more
            general, so that it is important to leave the strings
@@ -3683,7 +3683,7 @@ static void x86emuOp_opcD1_word_RM_1(u8 X86EMU_UNUSED(op1)) {
             break;
         }
     }
-#endif
+
     /* know operation, decode the mod byte to find the addressing
        mode. */
     if (mod < 3) {
@@ -3708,10 +3708,10 @@ static void x86emuOp_opcD1_word_RM_1(u8 X86EMU_UNUSED(op1)) {
             destval = (*opcD1_word_operation[rh]) (destval, 1);
             store_data_word(destoffset, destval);
         }
-    } else {                     /* register to register */
+    } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-			u32 destval;
-			u32 *destreg;
+   u32 destval;
+   u32 *destreg;
 
             destreg = DECODE_RM_LONG_REGISTER(rl);
             DECODE_PRINTF(",1\n");
@@ -3719,8 +3719,8 @@ static void x86emuOp_opcD1_word_RM_1(u8 X86EMU_UNUSED(op1)) {
             destval = (*opcD1_long_operation[rh]) (*destreg, 1);
             *destreg = destval;
         } else {
-			u16 destval;
-			u16 *destreg;
+   u16 destval;
+   u16 *destreg;
 
             destreg = DECODE_RM_WORD_REGISTER(rl);
             DECODE_PRINTF(",1\n");
@@ -3737,7 +3737,7 @@ static void x86emuOp_opcD1_word_RM_1(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xd2
 ****************************************************************************/
-static void x86emuOp_opcD2_byte_RM_CL(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_opcD2_byte_RM_CL(u8 _) {
     int mod, rl, rh;
     u8 *destreg;
     uint destoffset;
@@ -3751,7 +3751,7 @@ static void x86emuOp_opcD2_byte_RM_CL(u8 X86EMU_UNUSED(op1)) {
      */
     START_OF_INSTR();
     FETCH_DECODE_MODRM(mod, rh, rl);
-#ifdef DEBUG
+
     if (DEBUG_DECODE()) {
         /* XXX DECODE_PRINTF may be changed to something more
            general, so that it is important to leave the strings
@@ -3784,7 +3784,7 @@ static void x86emuOp_opcD2_byte_RM_CL(u8 X86EMU_UNUSED(op1)) {
             break;
         }
     }
-#endif
+
     /* know operation, decode the mod byte to find the addressing
        mode. */
     amt = M.x86.R_CL;
@@ -3796,7 +3796,7 @@ static void x86emuOp_opcD2_byte_RM_CL(u8 X86EMU_UNUSED(op1)) {
         TRACE_AND_STEP();
         destval = (*opcD0_byte_operation[rh]) (destval, amt);
         store_data_byte(destoffset, destval);
-    } else {                     /* register to register */
+    } else { /* register to register */
         destreg = DECODE_RM_BYTE_REGISTER(rl);
         DECODE_PRINTF(",CL\n");
         TRACE_AND_STEP();
@@ -3811,7 +3811,7 @@ static void x86emuOp_opcD2_byte_RM_CL(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xd3
 ****************************************************************************/
-static void x86emuOp_opcD3_word_RM_CL(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_opcD3_word_RM_CL(u8 _) {
     int mod, rl, rh;
     uint destoffset;
     u8 amt;
@@ -3823,7 +3823,7 @@ static void x86emuOp_opcD3_word_RM_CL(u8 X86EMU_UNUSED(op1)) {
      */
     START_OF_INSTR();
     FETCH_DECODE_MODRM(mod, rh, rl);
-#ifdef DEBUG
+
     if (DEBUG_DECODE()) {
         /* XXX DECODE_PRINTF may be changed to something more
            general, so that it is important to leave the strings
@@ -3856,7 +3856,7 @@ static void x86emuOp_opcD3_word_RM_CL(u8 X86EMU_UNUSED(op1)) {
             break;
         }
     }
-#endif
+
     /* know operation, decode the mod byte to find the addressing
        mode. */
     amt = M.x86.R_CL;
@@ -3882,7 +3882,7 @@ static void x86emuOp_opcD3_word_RM_CL(u8 X86EMU_UNUSED(op1)) {
             destval = (*opcD1_word_operation[rh]) (destval, amt);
             store_data_word(destoffset, destval);
         }
-    } else {                     /* register to register */
+    } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 *destreg;
 
@@ -3907,12 +3907,12 @@ static void x86emuOp_opcD3_word_RM_CL(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xd4
 ****************************************************************************/
-static void x86emuOp_aam(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_aam(u8 _) {
     u8 a;
 
     START_OF_INSTR();
     DECODE_PRINTF("AAM\n");
-    a = fetch_byte_imm();      /* this is a stupid encoding. */
+    a = fetch_byte_imm(); /* this is a stupid encoding. */
     if (a != 10) {
         DECODE_PRINTF("ERROR DECODING AAM\n");
         TRACE_REGS();
@@ -3929,8 +3929,8 @@ static void x86emuOp_aam(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xd5
 ****************************************************************************/
-static void x86emuOp_aad(u8 X86EMU_UNUSED(op1)) {
-    u8 X86EMU_UNUSED(a);
+static void x86emuOp_aad(u8 _) {
+    u8 _;
 
     START_OF_INSTR();
     DECODE_PRINTF("AAD\n");
@@ -3947,13 +3947,13 @@ static void x86emuOp_aad(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xd7
 ****************************************************************************/
-static void x86emuOp_xlat(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_xlat(u8 _) {
     u16 addr;
 
     START_OF_INSTR();
     DECODE_PRINTF("XLAT\n");
     TRACE_AND_STEP();
-	addr = (u16)(M.x86.R_BX + (u8)M.x86.R_AL);
+ addr = (u16)(M.x86.R_BX + (u8)M.x86.R_AL);
     M.x86.R_AL = fetch_data_byte(addr);
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -3965,7 +3965,7 @@ static void x86emuOp_xlat(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xe0
 ****************************************************************************/
-static void x86emuOp_loopne(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_loopne(u8 _) {
     s16 ip;
 
     START_OF_INSTR();
@@ -3978,7 +3978,7 @@ static void x86emuOp_loopne(u8 X86EMU_UNUSED(op1)) {
         M.x86.R_ECX -= 1;
     else
         M.x86.R_CX -= 1;
-    if (((M.x86.mode & SYSMODE_PREFIX_ADDR) ? M.x86.R_ECX : M.x86.R_CX) != 0 && !ACCESS_FLAG(F_ZF))      /* (E)CX != 0 and !ZF */
+    if (((M.x86.mode & SYSMODE_PREFIX_ADDR) ? M.x86.R_ECX : M.x86.R_CX) != 0 && !ACCESS_FLAG(F_ZF)) /* (E)CX != 0 and !ZF */
         M.x86.R_IP = ip;
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -3988,7 +3988,7 @@ static void x86emuOp_loopne(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xe1
 ****************************************************************************/
-static void x86emuOp_loope(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_loope(u8 _) {
     s16 ip;
 
     START_OF_INSTR();
@@ -4001,7 +4001,7 @@ static void x86emuOp_loope(u8 X86EMU_UNUSED(op1)) {
         M.x86.R_ECX -= 1;
     else
         M.x86.R_CX -= 1;
-    if (((M.x86.mode & SYSMODE_PREFIX_ADDR) ? M.x86.R_ECX : M.x86.R_CX) != 0 && ACCESS_FLAG(F_ZF))      /* (E)CX != 0 and ZF */
+    if (((M.x86.mode & SYSMODE_PREFIX_ADDR) ? M.x86.R_ECX : M.x86.R_CX) != 0 && ACCESS_FLAG(F_ZF)) /* (E)CX != 0 and ZF */
         M.x86.R_IP = ip;
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -4011,7 +4011,7 @@ static void x86emuOp_loope(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xe2
 ****************************************************************************/
-static void x86emuOp_loop(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_loop(u8 _) {
     s16 ip;
 
     START_OF_INSTR();
@@ -4024,7 +4024,7 @@ static void x86emuOp_loop(u8 X86EMU_UNUSED(op1)) {
         M.x86.R_ECX -= 1;
     else
         M.x86.R_CX -= 1;
-    if (((M.x86.mode & SYSMODE_PREFIX_ADDR) ? M.x86.R_ECX : M.x86.R_CX) != 0)      /* (E)CX != 0 */
+    if (((M.x86.mode & SYSMODE_PREFIX_ADDR) ? M.x86.R_ECX : M.x86.R_CX) != 0) /* (E)CX != 0 */
         M.x86.R_IP = ip;
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -4034,9 +4034,9 @@ static void x86emuOp_loop(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xe3
 ****************************************************************************/
-static void x86emuOp_jcxz(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_jcxz(u8 _) {
     u16 target;
-    s8  offset;
+    s8 offset;
 
     /* jump to byte offset if overflow flag is set */
     START_OF_INSTR();
@@ -4047,7 +4047,7 @@ static void x86emuOp_jcxz(u8 X86EMU_UNUSED(op1)) {
     TRACE_AND_STEP();
     if (M.x86.R_CX == 0) {
         M.x86.R_IP = target;
-	JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.R_CS, M.x86.R_IP, " CXZ ");
+ JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.R_CS, M.x86.R_IP, " CXZ ");
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -4057,12 +4057,12 @@ static void x86emuOp_jcxz(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xe4
 ****************************************************************************/
-static void x86emuOp_in_byte_AL_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_in_byte_AL_IMM(u8 _) {
     u8 port;
 
     START_OF_INSTR();
     DECODE_PRINTF("IN\t");
-	port = (u8) fetch_byte_imm();
+ port = (u8) fetch_byte_imm();
     DECODE_PRINTF2("%x,AL\n", port);
     TRACE_AND_STEP();
     M.x86.R_AL = (*sys_inb)(port);
@@ -4074,12 +4074,12 @@ static void x86emuOp_in_byte_AL_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xe5
 ****************************************************************************/
-static void x86emuOp_in_word_AX_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_in_word_AX_IMM(u8 _) {
     u8 port;
 
     START_OF_INSTR();
     DECODE_PRINTF("IN\t");
-	port = (u8) fetch_byte_imm();
+ port = (u8) fetch_byte_imm();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF2("EAX,%x\n", port);
     } else {
@@ -4099,12 +4099,12 @@ static void x86emuOp_in_word_AX_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xe6
 ****************************************************************************/
-static void x86emuOp_out_byte_IMM_AL(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_out_byte_IMM_AL(u8 _) {
     u8 port;
 
     START_OF_INSTR();
     DECODE_PRINTF("OUT\t");
-	port = (u8) fetch_byte_imm();
+ port = (u8) fetch_byte_imm();
     DECODE_PRINTF2("%x,AL\n", port);
     TRACE_AND_STEP();
     (*sys_outb)(port, M.x86.R_AL);
@@ -4116,12 +4116,12 @@ static void x86emuOp_out_byte_IMM_AL(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xe7
 ****************************************************************************/
-static void x86emuOp_out_word_IMM_AX(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_out_word_IMM_AX(u8 _) {
     u8 port;
 
     START_OF_INSTR();
     DECODE_PRINTF("OUT\t");
-	port = (u8) fetch_byte_imm();
+ port = (u8) fetch_byte_imm();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF2("%x,EAX\n", port);
     } else {
@@ -4141,7 +4141,7 @@ static void x86emuOp_out_word_IMM_AX(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xe8
 ****************************************************************************/
-static void x86emuOp_call_near_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_call_near_IMM(u8 _) {
     s16 ip16 = 0; /* Initialize to keep GCC silent */
     s32 ip32 = 0;
 
@@ -4149,12 +4149,12 @@ static void x86emuOp_call_near_IMM(u8 X86EMU_UNUSED(op1)) {
     DECODE_PRINTF("CALL\t");
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         ip32 = (s32) fetch_long_imm();
-        ip32 += (s16) M.x86.R_IP;    /* CHECK SIGN */
+        ip32 += (s16) M.x86.R_IP; /* CHECK SIGN */
         DECODE_PRINTF2("%04x\n", (u16)ip32);
         CALL_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.R_CS, ip32, "");
     } else {
         ip16 = (s16) fetch_word_imm();
-        ip16 += (s16) M.x86.R_IP;    /* CHECK SIGN */
+        ip16 += (s16) M.x86.R_IP; /* CHECK SIGN */
         DECODE_PRINTF2("%04x\n", ip16);
         CALL_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.R_CS, ip16, "");
     }
@@ -4174,18 +4174,18 @@ static void x86emuOp_call_near_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xe9
 ****************************************************************************/
-static void x86emuOp_jump_near_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_jump_near_IMM(u8 _) {
     u32 ip;
 
     START_OF_INSTR();
     DECODE_PRINTF("JMP\t");
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         ip = (u32)fetch_long_imm();
-	ip += (u32)M.x86.R_EIP;
-	DECODE_PRINTF2("%08x\n", (u32)ip);
+ ip += (u32)M.x86.R_EIP;
+ DECODE_PRINTF2("%08x\n", (u32)ip);
         JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.R_CS, ip, " NEAR ");
-	TRACE_AND_STEP();
-	M.x86.R_EIP = (u32)ip;
+ TRACE_AND_STEP();
+ M.x86.R_EIP = (u32)ip;
     } else {
         ip = (s16)fetch_word_imm();
         ip += (s16)M.x86.R_IP;
@@ -4202,7 +4202,7 @@ static void x86emuOp_jump_near_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xea
 ****************************************************************************/
-static void x86emuOp_jump_far_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_jump_far_IMM(u8 _) {
     u16 cs;
     u32 ip;
 
@@ -4228,7 +4228,7 @@ static void x86emuOp_jump_far_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xeb
 ****************************************************************************/
-static void x86emuOp_jump_byte_IMM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_jump_byte_IMM(u8 _) {
     u16 target;
     s8 offset;
 
@@ -4248,7 +4248,7 @@ static void x86emuOp_jump_byte_IMM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xec
 ****************************************************************************/
-static void x86emuOp_in_byte_AL_DX(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_in_byte_AL_DX(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("IN\tAL,DX\n");
     TRACE_AND_STEP();
@@ -4261,7 +4261,7 @@ static void x86emuOp_in_byte_AL_DX(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xed
 ****************************************************************************/
-static void x86emuOp_in_word_AX_DX(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_in_word_AX_DX(u8 _) {
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF("IN\tEAX,DX\n");
@@ -4282,7 +4282,7 @@ static void x86emuOp_in_word_AX_DX(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xee
 ****************************************************************************/
-static void x86emuOp_out_byte_DX_AL(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_out_byte_DX_AL(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("OUT\tDX,AL\n");
     TRACE_AND_STEP();
@@ -4295,7 +4295,7 @@ static void x86emuOp_out_byte_DX_AL(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xef
 ****************************************************************************/
-static void x86emuOp_out_word_DX_AX(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_out_word_DX_AX(u8 _) {
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF("OUT\tDX,EAX\n");
@@ -4316,7 +4316,7 @@ static void x86emuOp_out_word_DX_AX(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xf0
 ****************************************************************************/
-static void x86emuOp_lock(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_lock(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("LOCK:\n");
     TRACE_AND_STEP();
@@ -4330,7 +4330,7 @@ static void x86emuOp_lock(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xf2
 ****************************************************************************/
-static void x86emuOp_repne(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_repne(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("REPNE\n");
     TRACE_AND_STEP();
@@ -4345,7 +4345,7 @@ static void x86emuOp_repne(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xf3
 ****************************************************************************/
-static void x86emuOp_repe(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_repe(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("REPE\n");
     TRACE_AND_STEP();
@@ -4360,7 +4360,7 @@ static void x86emuOp_repe(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xf4
 ****************************************************************************/
-static void x86emuOp_halt(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_halt(u8 _) {
     START_OF_INSTR();
     DECODE_PRINTF("HALT\n");
     TRACE_AND_STEP();
@@ -4373,7 +4373,7 @@ static void x86emuOp_halt(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xf5
 ****************************************************************************/
-static void x86emuOp_cmc(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_cmc(u8 _) {
     /* complement the carry flag. */
     START_OF_INSTR();
     DECODE_PRINTF("CMC\n");
@@ -4387,7 +4387,7 @@ static void x86emuOp_cmc(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xf6
 ****************************************************************************/
-static void x86emuOp_opcF6_byte_RM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_opcF6_byte_RM(u8 _) {
     int mod, rl, rh;
     u8 *destreg;
     uint destoffset;
@@ -4404,7 +4404,7 @@ static void x86emuOp_opcF6_byte_RM(u8 X86EMU_UNUSED(op1)) {
         destval = fetch_data_byte(destoffset);
 
         switch (rh) {
-        case 0:         /* test byte imm */
+        case 0: /* test byte imm */
             DECODE_PRINTF(",");
             srcval = fetch_byte_imm();
             DECODE_PRINTF2("%02x\n", srcval);
@@ -4448,10 +4448,10 @@ static void x86emuOp_opcF6_byte_RM(u8 X86EMU_UNUSED(op1)) {
             idiv_byte(destval);
             break;
         }
-    } else {                     /* mod=11 */
+    } else { /* mod=11 */
         destreg = DECODE_RM_BYTE_REGISTER(rl);
         switch (rh) {
-        case 0:         /* test byte imm */
+        case 0: /* test byte imm */
             DECODE_PRINTF(",");
             srcval = fetch_byte_imm();
             DECODE_PRINTF2("%02x\n", srcval);
@@ -4475,7 +4475,7 @@ static void x86emuOp_opcF6_byte_RM(u8 X86EMU_UNUSED(op1)) {
         case 4:
             DECODE_PRINTF("\n");
             TRACE_AND_STEP();
-            mul_byte(*destreg);      /*!!!  */
+            mul_byte(*destreg); /*!!!  */
             break;
         case 5:
             DECODE_PRINTF("\n");
@@ -4502,7 +4502,7 @@ static void x86emuOp_opcF6_byte_RM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xf7
 ****************************************************************************/
-static void x86emuOp_opcF7_word_RM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_opcF7_word_RM(u8 _) {
     int mod, rl, rh;
     uint destoffset;
 
@@ -4571,7 +4571,7 @@ static void x86emuOp_opcF7_word_RM(u8 X86EMU_UNUSED(op1)) {
             destval = fetch_data_word(destoffset);
 
             switch (rh) {
-            case 0:         /* test word imm */
+            case 0: /* test word imm */
                 DECODE_PRINTF(",");
                 srcval = fetch_word_imm();
                 DECODE_PRINTF2("%x\n", srcval);
@@ -4617,7 +4617,7 @@ static void x86emuOp_opcF7_word_RM(u8 X86EMU_UNUSED(op1)) {
             }
         }
 
-    } else {                     /* mod=11 */
+    } else { /* mod=11 */
 
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 *destreg;
@@ -4626,7 +4626,7 @@ static void x86emuOp_opcF7_word_RM(u8 X86EMU_UNUSED(op1)) {
             destreg = DECODE_RM_LONG_REGISTER(rl);
 
             switch (rh) {
-            case 0:         /* test word imm */
+            case 0: /* test word imm */
                 DECODE_PRINTF(",");
                 srcval = fetch_long_imm();
                 DECODE_PRINTF2("%x\n", srcval);
@@ -4650,7 +4650,7 @@ static void x86emuOp_opcF7_word_RM(u8 X86EMU_UNUSED(op1)) {
             case 4:
                 DECODE_PRINTF("\n");
                 TRACE_AND_STEP();
-                mul_long(*destreg);      /*!!!  */
+                mul_long(*destreg); /*!!!  */
                 break;
             case 5:
                 DECODE_PRINTF("\n");
@@ -4675,7 +4675,7 @@ static void x86emuOp_opcF7_word_RM(u8 X86EMU_UNUSED(op1)) {
             destreg = DECODE_RM_WORD_REGISTER(rl);
 
             switch (rh) {
-            case 0:         /* test word imm */
+            case 0: /* test word imm */
                 DECODE_PRINTF(",");
                 srcval = fetch_word_imm();
                 DECODE_PRINTF2("%x\n", srcval);
@@ -4699,7 +4699,7 @@ static void x86emuOp_opcF7_word_RM(u8 X86EMU_UNUSED(op1)) {
             case 4:
                 DECODE_PRINTF("\n");
                 TRACE_AND_STEP();
-                mul_word(*destreg);      /*!!!  */
+                mul_word(*destreg); /*!!!  */
                 break;
             case 5:
                 DECODE_PRINTF("\n");
@@ -4727,7 +4727,7 @@ static void x86emuOp_opcF7_word_RM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xf8
 ****************************************************************************/
-static void x86emuOp_clc(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_clc(u8 _) {
     /* clear the carry flag. */
     START_OF_INSTR();
     DECODE_PRINTF("CLC\n");
@@ -4741,7 +4741,7 @@ static void x86emuOp_clc(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xf9
 ****************************************************************************/
-static void x86emuOp_stc(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_stc(u8 _) {
     /* set the carry flag. */
     START_OF_INSTR();
     DECODE_PRINTF("STC\n");
@@ -4755,7 +4755,7 @@ static void x86emuOp_stc(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xfa
 ****************************************************************************/
-static void x86emuOp_cli(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_cli(u8 _) {
     /* clear interrupts. */
     START_OF_INSTR();
     DECODE_PRINTF("CLI\n");
@@ -4769,7 +4769,7 @@ static void x86emuOp_cli(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xfb
 ****************************************************************************/
-static void x86emuOp_sti(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_sti(u8 _) {
     /* enable  interrupts. */
     START_OF_INSTR();
     DECODE_PRINTF("STI\n");
@@ -4783,7 +4783,7 @@ static void x86emuOp_sti(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xfc
 ****************************************************************************/
-static void x86emuOp_cld(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_cld(u8 _) {
     /* clear interrupts. */
     START_OF_INSTR();
     DECODE_PRINTF("CLD\n");
@@ -4797,7 +4797,7 @@ static void x86emuOp_cld(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xfd
 ****************************************************************************/
-static void x86emuOp_std(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_std(u8 _) {
     /* clear interrupts. */
     START_OF_INSTR();
     DECODE_PRINTF("STD\n");
@@ -4811,7 +4811,7 @@ static void x86emuOp_std(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xfe
 ****************************************************************************/
-static void x86emuOp_opcFE_byte_RM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_opcFE_byte_RM(u8 _) {
     int mod, rh, rl;
     u8 destval;
     uint destoffset;
@@ -4820,7 +4820,7 @@ static void x86emuOp_opcFE_byte_RM(u8 X86EMU_UNUSED(op1)) {
     /* Yet another special case instruction. */
     START_OF_INSTR();
     FETCH_DECODE_MODRM(mod, rh, rl);
-#ifdef DEBUG
+
     if (DEBUG_DECODE()) {
         /* XXX DECODE_PRINTF may be changed to something more
            general, so that it is important to leave the strings
@@ -4845,7 +4845,7 @@ static void x86emuOp_opcFE_byte_RM(u8 X86EMU_UNUSED(op1)) {
             break;
         }
     }
-#endif
+
     if (mod < 3) {
         DECODE_PRINTF("BYTE PTR ");
         destoffset = decode_rmXX_address(mod, rl);
@@ -4874,18 +4874,18 @@ static void x86emuOp_opcFE_byte_RM(u8 X86EMU_UNUSED(op1)) {
 REMARKS:
 Handles opcode 0xff
 ****************************************************************************/
-static void x86emuOp_opcFF_word_RM(u8 X86EMU_UNUSED(op1)) {
+static void x86emuOp_opcFF_word_RM(u8 _) {
     int mod, rh, rl;
     uint destoffset = 0;
-	u16 *destreg;
-	u32 *destreg32;
-	u16 destval,destval2;
-	u32 destval32;
+ u16 *destreg;
+ u32 *destreg32;
+ u16 destval,destval2;
+ u32 destval32;
 
     /* Yet another special case instruction. */
     START_OF_INSTR();
     FETCH_DECODE_MODRM(mod, rh, rl);
-#ifdef DEBUG
+
     if (DEBUG_DECODE()) {
         /* XXX DECODE_PRINTF may be changed to something more
            general, so that it is important to leave the strings
@@ -4928,12 +4928,12 @@ static void x86emuOp_opcFF_word_RM(u8 X86EMU_UNUSED(op1)) {
             break;
         }
     }
-#endif
+
     if (mod < 3) {
         destoffset = decode_rmXX_address(mod, rl);
         DECODE_PRINTF("\n");
         switch (rh) {
-        case 0:         /* inc word ptr ... */
+        case 0: /* inc word ptr ... */
             if (M.x86.mode & SYSMODE_PREFIX_DATA) {
                 destval32 = fetch_data_long(destoffset);
                 TRACE_AND_STEP();
@@ -4946,7 +4946,7 @@ static void x86emuOp_opcFF_word_RM(u8 X86EMU_UNUSED(op1)) {
                 store_data_word(destoffset, destval);
             }
             break;
-        case 1:         /* dec word ptr ... */
+        case 1: /* dec word ptr ... */
             if (M.x86.mode & SYSMODE_PREFIX_DATA) {
                 destval32 = fetch_data_long(destoffset);
                 TRACE_AND_STEP();
@@ -4959,13 +4959,13 @@ static void x86emuOp_opcFF_word_RM(u8 X86EMU_UNUSED(op1)) {
                 store_data_word(destoffset, destval);
             }
             break;
-        case 2:         /* call word ptr ... */
+        case 2: /* call word ptr ... */
             destval = fetch_data_word(destoffset);
             TRACE_AND_STEP();
             push_word(M.x86.R_IP);
             M.x86.R_IP = destval;
             break;
-        case 3:         /* call far ptr ... */
+        case 3: /* call far ptr ... */
             destval = fetch_data_word(destoffset);
             destval2 = fetch_data_word(destoffset + 2);
             TRACE_AND_STEP();
@@ -4974,13 +4974,13 @@ static void x86emuOp_opcFF_word_RM(u8 X86EMU_UNUSED(op1)) {
             push_word(M.x86.R_IP);
             M.x86.R_IP = destval;
             break;
-        case 4:         /* jmp word ptr ... */
+        case 4: /* jmp word ptr ... */
             destval = fetch_data_word(destoffset);
             JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.R_CS, destval, " WORD ");
             TRACE_AND_STEP();
             M.x86.R_IP = destval;
             break;
-        case 5:         /* jmp far ptr ... */
+        case 5: /* jmp far ptr ... */
             destval = fetch_data_word(destoffset);
             destval2 = fetch_data_word(destoffset + 2);
             JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, destval2, destval, " FAR ");
@@ -4988,7 +4988,7 @@ static void x86emuOp_opcFF_word_RM(u8 X86EMU_UNUSED(op1)) {
             M.x86.R_IP = destval;
             M.x86.R_CS = destval2;
             break;
-        case 6:         /*  push word ptr ... */
+        case 6: /*  push word ptr ... */
             if (M.x86.mode & SYSMODE_PREFIX_DATA) {
                 destval32 = fetch_data_long(destoffset);
                 TRACE_AND_STEP();
@@ -5028,26 +5028,26 @@ static void x86emuOp_opcFF_word_RM(u8 X86EMU_UNUSED(op1)) {
                 *destreg = dec_word(*destreg);
             }
             break;
-        case 2:         /* call word ptr ... */
+        case 2: /* call word ptr ... */
             destreg = DECODE_RM_WORD_REGISTER(rl);
             DECODE_PRINTF("\n");
             TRACE_AND_STEP();
             push_word(M.x86.R_IP);
             M.x86.R_IP = *destreg;
             break;
-        case 3:         /* jmp far ptr ... */
+        case 3: /* jmp far ptr ... */
             DECODE_PRINTF("OPERATION UNDEFINED 0XFF\n");
             TRACE_AND_STEP();
             HALT_SYS();
             break;
 
-        case 4:         /* jmp  ... */
+        case 4: /* jmp  ... */
             destreg = DECODE_RM_WORD_REGISTER(rl);
             DECODE_PRINTF("\n");
             TRACE_AND_STEP();
             M.x86.R_IP = (u16) (*destreg);
             break;
-        case 5:         /* jmp far ptr ... */
+        case 5: /* jmp far ptr ... */
             DECODE_PRINTF("OPERATION UNDEFINED 0XFF\n");
             TRACE_AND_STEP();
             HALT_SYS();
@@ -5186,8 +5186,8 @@ void (*x86emu_optab[256])(u8) =
 
 /*  0x60 */ x86emuOp_push_all,
 /*  0x61 */ x86emuOp_pop_all,
-/*  0x62 */ x86emuOp_illegal_op,   /* bound */
-/*  0x63 */ x86emuOp_illegal_op,   /* arpl */
+/*  0x62 */ x86emuOp_illegal_op, /* bound */
+/*  0x63 */ x86emuOp_illegal_op, /* arpl */
 /*  0x64 */ x86emuOp_segovr_FS,
 /*  0x65 */ x86emuOp_segovr_GS,
 /*  0x66 */ x86emuOp_prefix_data,
@@ -5314,7 +5314,7 @@ void (*x86emu_optab[256])(u8) =
 /*  0xd3 */ x86emuOp_opcD3_word_RM_CL,
 /*  0xd4 */ x86emuOp_aam,
 /*  0xd5 */ x86emuOp_aad,
-/*  0xd6 */ x86emuOp_illegal_op,   /* Undocumented SETALC instruction */
+/*  0xd6 */ x86emuOp_illegal_op, /* Undocumented SETALC instruction */
 /*  0xd7 */ x86emuOp_xlat,
 /*  0xd8 */ x86emuOp_esc_coprocess_d8,
 /*  0xd9 */ x86emuOp_esc_coprocess_d9,
