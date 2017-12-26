@@ -76,7 +76,7 @@
 /* constant arrays to do several instructions in just one function */
 
 
-static const char *x86emu_GenOpName[8] = {
+var 86emu_GenOpName = []string {
     "ADD", "OR", "ADC", "SBB", "AND", "SUB", "XOR", "CMP"};
 
 // :g/^var/s/\(u.[624]*\)\(.*\)=/\2 \1 = 
@@ -153,8 +153,8 @@ var opcD1_long_operation= []func(u32 s, u8 d) u32 {
 
 
 
-static const char *opF6_names[8] =
-  { "TEST\t", "", "NOT\t", "NEG\t", "MUL\t", "IMUL\t", "DIV\t", "IDIV\t" };
+var opF6_names = []string {
+   "TEST\t", "", "NOT\t", "NEG\t", "MUL\t", "IMUL\t", "DIV\t", "IDIV\t" };
 
 
 
