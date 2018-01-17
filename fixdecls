@@ -31,3 +31,5 @@ sed -i 's/^  *u8  *\(.*\);/var \1 uint8/' $1
 sed -i 's/^  *int  *\(.*\);/var \1 int32/' $1
 sed -i 's/^  *s\([361][624]\)  *\([A-Za-z][_A-Za-z\.0-9]*\);/var \2 int\1/' $1
 sed -i 's/^  *u\([361][624]\)  *\([A-Za-z][_A-Za-z\.0-9]*\);/var \2 uint\1/' $1
+sed -i 's/^  *u32  *\([A-Za-z][^;]*\);/var \1 uint32/' $1
+sed -i 's/^  *u16  *\([A-Za-z][^;]*\);/var \1 uint16/' $1
