@@ -1,8 +1,16 @@
 #!/bin/bash
+# very hacky, we don't care. It's easiest to do this incrementally, so what follows
+# is the stupid directions.
+# step 0: in vi
+# :g/^static.*)$/.,/{./j
+# 
+# step 1: remove cpp directives we don't want.
 set -e
 ls -l $1
 cpp -CC -nostdinc -include  erasedb.h $1 | grep -v '^#' > x
 cp x $1
+
+exit
 sed -i 's/^static  *const  *char  *\*\([a-z][0-9_A-Za-z]*\)\[.*\]/var \1 = []string {/g' $1
 sed -i 's/_INLINE  *//' $1
 sed -i 's/^unsigned\([^a-zA-Z][^a-zA-Z]*\)\(.*\){/func \2 uint\1{/' $1
@@ -16,6 +24,7 @@ sed -i 's/printf/fmt.Printf/g' $1
 # casts first
 sed -i 's/(u\([361][624]\))\([A-Za-z][_A-Za-z\.0-9]*\)/uint\1(\2)/g' $1
 
+exit
 # types
 
 sed -i 's/^  *u\([361][624]\)[^a-z][^a-z]*\([a-z][a-z]*\)/var \2 uint\1/g' $1
