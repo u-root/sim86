@@ -13,4 +13,13 @@ sed -i 's/u32 \*destreg32, srcval;/var destreg *u32; var srcreg u32/' $1
 sed -i 's/u16 \*destreg, \*srcreg;/var destreg, srcreg *u16/' $1
 sed -i 's/uint srcoffset;/var srcoffset uint/' $1
 sed -i 's/u8 srcval;/var srcval u8/' $1
+sed -i 's/u16 srcval;/var srcval u16/' $1
 sed -i 's/u32 srcval;/var srcval u32/' $1
+sed -i 's/u32 old_sp = M.x86.R_ESP;/old_sp := uint32(M.x86.R_ESP)/' $1
+sed -i 's/u16 old_sp = M.x86.R_SP;/old_sp := uint16(M.x86.R_ESP)/' $1
+sed -i 's/u32 imm;/var imm uint32/' $1
+sed -i 's/s32 imm;/var imm int32/' $1
+sed -i 's/s16 imm;/var imm int16/' $1
+sed -i 's/u32 \*destreg;/var destreg *u32/' $1
+sed -i 's/u32 res_lo,res_hi;/var res_lo, res_hi u32/' $1
+sed -i 's/u32 res;/var res u32/' $1

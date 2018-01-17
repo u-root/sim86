@@ -428,7 +428,7 @@ func x86emuOp_genop_word_AX_IMM(u8 op1) {
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         M.x86.R_EAX = genop_long_operation[op1](M.x86.R_EAX, srcval);
     } else {
-        M.x86.R_AX = genop_word_operation[op1](M.x86.R_AX, (u16)srcval);
+        M.x86.R_AX = genop_word_operation[op1](M.x86.R_AX, uint16(srcval));
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -478,7 +478,7 @@ REMARKS:
 Handles opcode 0x0f. Escape for two-byte opcode (286 or better)
 ****************************************************************************/
 func x86emuOp_two_byte(_ u8) {
-    u8 op2 = sys_rdb(((u32)M.x86.R_CS << 4) + (M.x86.R_IP++));
+	op2 := sys_rdb((uint32(M.x86.R_CS) << 4) + (M.x86.R_IP++));
     INC_DECODED_INST_LEN(1);
     (*x86emu_optab2[op2])(op2);
 }
@@ -755,7 +755,7 @@ func x86emuOp_push_all(_ u8) {
     }
     TRACE_AND_STEP();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-        u32 old_sp = M.x86.R_ESP;
+        old_sp := uint32(M.x86.R_ESP)
 
         push_long(M.x86.R_EAX);
         push_long(M.x86.R_ECX);
@@ -766,7 +766,7 @@ func x86emuOp_push_all(_ u8) {
         push_long(M.x86.R_ESI);
         push_long(M.x86.R_EDI);
     } else {
-        u16 old_sp = M.x86.R_SP;
+        old_sp := uint16(M.x86.R_ESP)
 
         push_word(M.x86.R_AX);
         push_word(M.x86.R_CX);
@@ -882,7 +882,7 @@ REMARKS:
 Handles opcode 0x68
 ****************************************************************************/
 func x86emuOp_push_word_IMM(_ u8) {
-    u32 imm;
+    var imm uint32
 
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
@@ -895,7 +895,7 @@ func x86emuOp_push_word_IMM(_ u8) {
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         push_long(imm);
     } else {
-        push_word((u16)imm);
+        push_word(uint16(imm));
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -915,18 +915,18 @@ func x86emuOp_imul_word_IMM(_ u8) {
     if (mod < 3) {
         srcoffset = decode_rmXX_address(mod, rl);
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *destreg;
+            var destreg *u32
             var srcval u32
-            u32 res_lo,res_hi;
-            s32 imm;
+            var res_lo, res_hi u32
+            var imm int32
 
             destreg = DECODE_RM_LONG_REGISTER(rh);
             DECODE_PRINTF(",");
             srcval = fetch_data_long(srcoffset);
             imm = fetch_long_imm();
-            DECODE_PRINTF2(",%d\n", (s32)imm);
+            DECODE_PRINTF2(",%d\n", int32(imm));
             TRACE_AND_STEP();
-            imul_long_direct(&res_lo,&res_hi,(s32)srcval,(s32)imm);
+            imul_long_direct(&res_lo,&res_hi,int32(srcval),int32(imm));
             if ((((res_lo & 0x80000000) == 0) && (res_hi == 0x00000000)) ||
                 (((res_lo & 0x80000000) != 0) && (res_hi == 0xFFFFFFFF))) {
                 CLEAR_FLAG(F_CF);
@@ -935,20 +935,20 @@ func x86emuOp_imul_word_IMM(_ u8) {
                 SET_FLAG(F_CF);
                 SET_FLAG(F_OF);
             }
-            *destreg = (u32)res_lo;
+            *destreg = uint32(res_lo);
         } else {
             var destreg *u16
-            u16 srcval;
-            u32 res;
-            s16 imm;
+            var srcval u16
+            var res u32
+            var imm int16
 
             destreg = DECODE_RM_WORD_REGISTER(rh);
             DECODE_PRINTF(",");
             srcval = fetch_data_word(srcoffset);
             imm = fetch_word_imm();
-            DECODE_PRINTF2(",%d\n", (s32)imm);
+            DECODE_PRINTF2(",%d\n", int32(imm));
             TRACE_AND_STEP();
-            res = (s16)srcval * (s16)imm;
+            res = int16(srcval) * int16(imm);
             if ((((res & 0x8000) == 0) && ((res >> 16) == 0x0000)) ||
                 (((res & 0x8000) != 0) && ((res >> 16) == 0xFFFF))) {
                 CLEAR_FLAG(F_CF);
@@ -957,21 +957,21 @@ func x86emuOp_imul_word_IMM(_ u8) {
                 SET_FLAG(F_CF);
                 SET_FLAG(F_OF);
             }
-            *destreg = (u16)res;
+            *destreg = uint16(res);
         }
     } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 *destreg,*srcreg;
-            u32 res_lo,res_hi;
-            s32 imm;
+            var res_lo, res_hi u32
+            var imm int32
 
             destreg = DECODE_RM_LONG_REGISTER(rh);
             DECODE_PRINTF(",");
             srcreg = DECODE_RM_LONG_REGISTER(rl);
             imm = fetch_long_imm();
-            DECODE_PRINTF2(",%d\n", (s32)imm);
+            DECODE_PRINTF2(",%d\n", int32(imm));
             TRACE_AND_STEP();
-            imul_long_direct(&res_lo,&res_hi,(s32)*srcreg,(s32)imm);
+            imul_long_direct(&res_lo,&res_hi,(s32)*srcreg,int32(imm));
             if ((((res_lo & 0x80000000) == 0) && (res_hi == 0x00000000)) ||
                 (((res_lo & 0x80000000) != 0) && (res_hi == 0xFFFFFFFF))) {
                 CLEAR_FLAG(F_CF);
@@ -980,18 +980,18 @@ func x86emuOp_imul_word_IMM(_ u8) {
                 SET_FLAG(F_CF);
                 SET_FLAG(F_OF);
             }
-            *destreg = (u32)res_lo;
+            *destreg = uint32(res_lo);
         } else {
             u16 *destreg,*srcreg;
-            u32 res;
-            s16 imm;
+            var res u32
+            var imm int16
 
             destreg = DECODE_RM_WORD_REGISTER(rh);
             DECODE_PRINTF(",");
             srcreg = DECODE_RM_WORD_REGISTER(rl);
             imm = fetch_word_imm();
-            DECODE_PRINTF2(",%d\n", (s32)imm);
-            res = (s16)*srcreg * (s16)imm;
+            DECODE_PRINTF2(",%d\n", int32(imm));
+            res = (s16)*srcreg * int16(imm);
             if ((((res & 0x8000) == 0) && ((res >> 16) == 0x0000)) ||
                 (((res & 0x8000) != 0) && ((res >> 16) == 0xFFFF))) {
                 CLEAR_FLAG(F_CF);
@@ -1000,7 +1000,7 @@ func x86emuOp_imul_word_IMM(_ u8) {
                 SET_FLAG(F_CF);
                 SET_FLAG(F_OF);
             }
-            *destreg = (u16)res;
+            *destreg = uint16(res);
         }
     }
     DECODE_CLEAR_SEGOVR();
@@ -1012,7 +1012,7 @@ REMARKS:
 Handles opcode 0x6a
 ****************************************************************************/
 func x86emuOp_push_byte_IMM(_ u8) {
-    s16 imm;
+    var imm int16
 
     START_OF_INSTR();
     imm = (s8)fetch_byte_imm();
@@ -1042,17 +1042,17 @@ func x86emuOp_imul_byte_IMM(_ u8) {
     if (mod < 3) {
         srcoffset = decode_rmXX_address(mod, rl);
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *destreg;
+            var destreg *u32
             var srcval u32
-            u32 res_lo,res_hi;
+            var res_lo, res_hi u32
 
             destreg = DECODE_RM_LONG_REGISTER(rh);
             DECODE_PRINTF(",");
             srcval = fetch_data_long(srcoffset);
             imm = fetch_byte_imm();
-            DECODE_PRINTF2(",%d\n", (s32)imm);
+            DECODE_PRINTF2(",%d\n", int32(imm));
             TRACE_AND_STEP();
-            imul_long_direct(&res_lo,&res_hi,(s32)srcval,(s32)imm);
+            imul_long_direct(&res_lo,&res_hi,int32(srcval),int32(imm));
             if ((((res_lo & 0x80000000) == 0) && (res_hi == 0x00000000)) ||
                 (((res_lo & 0x80000000) != 0) && (res_hi == 0xFFFFFFFF))) {
                 CLEAR_FLAG(F_CF);
@@ -1061,19 +1061,19 @@ func x86emuOp_imul_byte_IMM(_ u8) {
                 SET_FLAG(F_CF);
                 SET_FLAG(F_OF);
             }
-            *destreg = (u32)res_lo;
+            *destreg = uint32(res_lo);
         } else {
             var destreg *u16
-            u16 srcval;
-            u32 res;
+            var srcval u16
+            var res u32
 
             destreg = DECODE_RM_WORD_REGISTER(rh);
             DECODE_PRINTF(",");
             srcval = fetch_data_word(srcoffset);
             imm = fetch_byte_imm();
-            DECODE_PRINTF2(",%d\n", (s32)imm);
+            DECODE_PRINTF2(",%d\n", int32(imm));
             TRACE_AND_STEP();
-            res = (s16)srcval * (s16)imm;
+            res = int16(srcval) * int16(imm);
             if ((((res & 0x8000) == 0) && ((res >> 16) == 0x0000)) ||
                 (((res & 0x8000) != 0) && ((res >> 16) == 0xFFFF))) {
                 CLEAR_FLAG(F_CF);
@@ -1082,20 +1082,20 @@ func x86emuOp_imul_byte_IMM(_ u8) {
                 SET_FLAG(F_CF);
                 SET_FLAG(F_OF);
             }
-            *destreg = (u16)res;
+            *destreg = uint16(res);
         }
     } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 *destreg,*srcreg;
-            u32 res_lo,res_hi;
+            var res_lo, res_hi u32
 
             destreg = DECODE_RM_LONG_REGISTER(rh);
             DECODE_PRINTF(",");
             srcreg = DECODE_RM_LONG_REGISTER(rl);
             imm = fetch_byte_imm();
-            DECODE_PRINTF2(",%d\n", (s32)imm);
+            DECODE_PRINTF2(",%d\n", int32(imm));
             TRACE_AND_STEP();
-            imul_long_direct(&res_lo,&res_hi,(s32)*srcreg,(s32)imm);
+            imul_long_direct(&res_lo,&res_hi,(s32)*srcreg,int32(imm));
             if ((((res_lo & 0x80000000) == 0) && (res_hi == 0x00000000)) ||
                 (((res_lo & 0x80000000) != 0) && (res_hi == 0xFFFFFFFF))) {
                 CLEAR_FLAG(F_CF);
@@ -1104,18 +1104,18 @@ func x86emuOp_imul_byte_IMM(_ u8) {
                 SET_FLAG(F_CF);
                 SET_FLAG(F_OF);
             }
-            *destreg = (u32)res_lo;
+            *destreg = uint32(res_lo);
         } else {
             u16 *destreg,*srcreg;
-            u32 res;
+            var res u32
 
             destreg = DECODE_RM_WORD_REGISTER(rh);
             DECODE_PRINTF(",");
             srcreg = DECODE_RM_WORD_REGISTER(rl);
             imm = fetch_byte_imm();
-            DECODE_PRINTF2(",%d\n", (s32)imm);
+            DECODE_PRINTF2(",%d\n", int32(imm));
             TRACE_AND_STEP();
-            res = (s16)*srcreg * (s16)imm;
+            res = (s16)*srcreg * int16(imm);
             if ((((res & 0x8000) == 0) && ((res >> 16) == 0x0000)) ||
                 (((res & 0x8000) != 0) && ((res >> 16) == 0xFFFF))) {
                 CLEAR_FLAG(F_CF);
@@ -1124,7 +1124,7 @@ func x86emuOp_imul_byte_IMM(_ u8) {
                 SET_FLAG(F_CF);
                 SET_FLAG(F_OF);
             }
-            *destreg = (u16)res;
+            *destreg = uint16(res);
         }
     }
     DECODE_CLEAR_SEGOVR();
@@ -1206,7 +1206,7 @@ func x86emuOp_jump_near_cond(u8 op1) {
     START_OF_INSTR();
     cond = x86emu_check_jump_condition(op1 & 0xF);
     offset = (s8)fetch_byte_imm();
-    target = (u16)(M.x86.R_IP + (s16)offset);
+    target = (u16)(M.x86.R_IP + int16(offset));
     DECODE_PRINTF2("%x\n", target);
     TRACE_AND_STEP();
     if (cond) {
@@ -1909,7 +1909,7 @@ func x86emuOp_mov_word_R_RM(_ u8) {
     FETCH_DECODE_MODRM(mod, rh, rl);
     if (mod < 3) {
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *destreg;
+            var destreg *u32
             var srcval u32
 
             destreg = DECODE_RM_LONG_REGISTER(rh);
@@ -1921,7 +1921,7 @@ func x86emuOp_mov_word_R_RM(_ u8) {
             *destreg = srcval;
         } else {
             var destreg *u16
-            u16 srcval;
+            var srcval u16
 
             destreg = DECODE_RM_WORD_REGISTER(rh);
             DECODE_PRINTF(",");
@@ -2007,14 +2007,14 @@ func x86emuOp_lea_word_R_M(_ u8) {
             destoffset = decode_rmXX_address(mod, rl);
             DECODE_PRINTF("\n");
             TRACE_AND_STEP();
-            *srcreg = (u32)destoffset;
+            *srcreg = uint32(destoffset);
  } else {
             u16 *srcreg = DECODE_RM_WORD_REGISTER(rh);
             DECODE_PRINTF(",");
             destoffset = decode_rmXX_address(mod, rl);
             DECODE_PRINTF("\n");
             TRACE_AND_STEP();
-            *srcreg = (u16)destoffset;
+            *srcreg = uint16(destoffset);
         }
     }
     /* else { undefined.  Do nothing. } */
@@ -2030,7 +2030,7 @@ func x86emuOp_mov_word_SR_RM(_ u8) {
     var mod, rl, rh int
     var destreg, srcreg *u16
     var srcoffset uint
-    u16 srcval;
+    var srcval u16
 
     START_OF_INSTR();
     DECODE_PRINTF("MOV\t");
@@ -2095,7 +2095,7 @@ func x86emuOp_pop_RM(_ u8) {
         }
     } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *destreg;
+            var destreg *u32
 
             destreg = DECODE_RM_LONG_REGISTER(rl);
             DECODE_PRINTF("\n");
@@ -2154,7 +2154,7 @@ func x86emuOp_xchg_word_AX_register(_ u8) {
         TRACE_AND_STEP();
         tmp = M.x86.R_AX;
         M.x86.R_AX = *reg16;
-        *reg16 = (u16)tmp;
+        *reg16 = uint16(tmp);
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -2291,7 +2291,7 @@ func x86emuOp_pushf_word(_ u8) {
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         push_long(flags);
     } else {
-        push_word((u16)flags);
+        push_word(uint16(flags));
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -2510,7 +2510,7 @@ func x86emuOp_movs_word(_ u8) {
             store_data_long_abs(M.x86.R_ES, M.x86.R_DI, val);
         } else {
             val = fetch_data_word(M.x86.R_SI);
-            store_data_word_abs(M.x86.R_ES, M.x86.R_DI, (u16)val);
+            store_data_word_abs(M.x86.R_ES, M.x86.R_DI, uint16(val));
         }
         M.x86.R_SI += inc;
         M.x86.R_DI += inc;
@@ -2598,7 +2598,7 @@ func x86emuOp_cmps_word(_ u8) {
             } else {
                 val1 = fetch_data_word(M.x86.R_SI);
                 val2 = fetch_data_word_abs(M.x86.R_ES, M.x86.R_DI);
-                cmp_word((u16)val1, (u16)val2);
+                cmp_word(uint16(val1), uint16(val2));
             }
             if (M.x86.mode & SYSMODE_32BIT_REP)
                 M.x86.R_ECX -= 1;
@@ -2620,7 +2620,7 @@ func x86emuOp_cmps_word(_ u8) {
         } else {
             val1 = fetch_data_word(M.x86.R_SI);
             val2 = fetch_data_word_abs(M.x86.R_ES, M.x86.R_DI);
-            cmp_word((u16)val1, (u16)val2);
+            cmp_word(uint16(val1), uint16(val2));
         }
         M.x86.R_SI += inc;
         M.x86.R_DI += inc;
@@ -2666,7 +2666,7 @@ func x86emuOp_test_AX_IMM(_ u8) {
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         test_long(M.x86.R_EAX, srcval);
     } else {
-        test_word(M.x86.R_AX, (u16)srcval);
+        test_word(M.x86.R_AX, uint16(srcval));
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -2928,7 +2928,7 @@ func x86emuOp_scas_word(_ u8) {
                 cmp_long(M.x86.R_EAX, val);
             } else {
                 val = fetch_data_word_abs(M.x86.R_ES, M.x86.R_DI);
-                cmp_word(M.x86.R_AX, (u16)val);
+                cmp_word(M.x86.R_AX, uint16(val));
             }
             if (M.x86.mode & SYSMODE_32BIT_REP)
                 M.x86.R_ECX -= 1;
@@ -2950,7 +2950,7 @@ func x86emuOp_scas_word(_ u8) {
                 cmp_long(M.x86.R_EAX, val);
             } else {
                 val = fetch_data_word_abs(M.x86.R_ES, M.x86.R_DI);
-                cmp_word(M.x86.R_AX, (u16)val);
+                cmp_word(M.x86.R_AX, uint16(val));
             }
             if (M.x86.mode & SYSMODE_32BIT_REP)
                 M.x86.R_ECX -= 1;
@@ -2969,7 +2969,7 @@ func x86emuOp_scas_word(_ u8) {
             cmp_long(M.x86.R_EAX, val);
         } else {
             val = fetch_data_word_abs(M.x86.R_ES, M.x86.R_DI);
-            cmp_word(M.x86.R_AX, (u16)val);
+            cmp_word(M.x86.R_AX, uint16(val));
         }
         M.x86.R_DI += inc;
     }
@@ -3020,7 +3020,7 @@ func x86emuOp_mov_word_register_IMM(_ u8) {
         srcval = fetch_word_imm();
         DECODE_PRINTF2(",%x\n", srcval);
         TRACE_AND_STEP();
-        *reg16 = (u16)srcval;
+        *reg16 = uint16(srcval);
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -3181,7 +3181,7 @@ func x86emuOp_opcC1_word_RM_MEM(_ u8) {
         }
     } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *destreg;
+            var destreg *u32
 
             destreg = DECODE_RM_LONG_REGISTER(rl);
             amt = fetch_byte_imm();
@@ -3340,7 +3340,7 @@ func x86emuOp_mov_word_RM_IMM(_ u8) {
     }
     if (mod < 3) {
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 imm;
+            var imm uint32
 
             DECODE_PRINTF("DWORD PTR ");
             destoffset = decode_rmXX_address(mod, rl);
@@ -3360,8 +3360,8 @@ func x86emuOp_mov_word_RM_IMM(_ u8) {
         }
     } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-   u32 *destreg;
-   u32 imm;
+   var destreg *u32
+   var imm uint32
 
             destreg = DECODE_RM_LONG_REGISTER(rl);
             imm = fetch_long_imm();
@@ -3477,7 +3477,7 @@ func x86emuOp_int3(_ u8) {
  if (_X86EMU_intrTab[3]) {
   (*_X86EMU_intrTab[3])(3);
     } else {
-        push_word((u16)M.x86.R_FLG);
+        push_word(uint16(M.x86.R_FLG));
         CLEAR_FLAG(F_IF);
         CLEAR_FLAG(F_TF);
         push_word(M.x86.R_CS);
@@ -3506,7 +3506,7 @@ func x86emuOp_int_IMM(_ u8) {
  if (_X86EMU_intrTab[intnum]) {
   (*_X86EMU_intrTab[intnum])(intnum);
     } else {
-        push_word((u16)M.x86.R_FLG);
+        push_word(uint16(M.x86.R_FLG));
         CLEAR_FLAG(F_IF);
         CLEAR_FLAG(F_TF);
         push_word(M.x86.R_CS);
@@ -3533,7 +3533,7 @@ func x86emuOp_into(_ u8) {
   if (_X86EMU_intrTab[4]) {
    (*_X86EMU_intrTab[4])(4);
         } else {
-            push_word((u16)M.x86.R_FLG);
+            push_word(uint16(M.x86.R_FLG));
             CLEAR_FLAG(F_IF);
             CLEAR_FLAG(F_TF);
             push_word(M.x86.R_CS);
@@ -3711,7 +3711,7 @@ func x86emuOp_opcD1_word_RM_1(_ u8) {
     } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
    var destval u32
-   u32 *destreg;
+   var destreg *u32
 
             destreg = DECODE_RM_LONG_REGISTER(rl);
             DECODE_PRINTF(",1\n");
@@ -3884,7 +3884,7 @@ func x86emuOp_opcD3_word_RM_CL(_ u8) {
         }
     } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *destreg;
+            var destreg *u32
 
             destreg = DECODE_RM_LONG_REGISTER(rl);
             DECODE_PRINTF(",CL\n");
@@ -4150,7 +4150,7 @@ func x86emuOp_call_near_IMM(_ u8) {
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         ip32 = (s32) fetch_long_imm();
         ip32 += (s16) M.x86.R_IP; /* CHECK SIGN */
-        DECODE_PRINTF2("%04x\n", (u16)ip32);
+        DECODE_PRINTF2("%04x\n", uint16(ip32));
         CALL_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.R_CS, ip32, "");
     } else {
         ip16 = (s16) fetch_word_imm();
@@ -4180,19 +4180,19 @@ func x86emuOp_jump_near_IMM(_ u8) {
     START_OF_INSTR();
     DECODE_PRINTF("JMP\t");
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-        ip = (u32)fetch_long_imm();
- ip += (u32)M.x86.R_EIP;
- DECODE_PRINTF2("%08x\n", (u32)ip);
+        ip = uint32(fetch_long_imm)();
+ ip += uint32(M.x86.R_EIP);
+ DECODE_PRINTF2("%08x\n", uint32(ip));
         JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.R_CS, ip, " NEAR ");
  TRACE_AND_STEP();
- M.x86.R_EIP = (u32)ip;
+ M.x86.R_EIP = uint32(ip);
     } else {
-        ip = (s16)fetch_word_imm();
-        ip += (s16)M.x86.R_IP;
-        DECODE_PRINTF2("%04x\n", (u16)ip);
+        ip = int16(fetch_word_imm)();
+        ip += int16(M.x86.R_IP);
+        DECODE_PRINTF2("%04x\n", uint16(ip));
         JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.R_CS, ip, " NEAR ");
         TRACE_AND_STEP();
-        M.x86.R_IP = (u16)ip;
+        M.x86.R_IP = uint16(ip);
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -4620,7 +4620,7 @@ func x86emuOp_opcF7_word_RM(_ u8) {
     } else { /* mod=11 */
 
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *destreg;
+            var destreg *u32
             var srcval u32
 
             destreg = DECODE_RM_LONG_REGISTER(rl);
@@ -4670,7 +4670,7 @@ func x86emuOp_opcF7_word_RM(_ u8) {
             }
         } else {
             var destreg *u16
-            u16 srcval;
+            var srcval u16
 
             destreg = DECODE_RM_WORD_REGISTER(rl);
 

@@ -10,3 +10,5 @@ run u8param
 run fixdecls
 run sys_
 run casts
+u8 op2 = sys_rdb.*
+just fix by hand to op2 := ...
