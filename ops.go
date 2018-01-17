@@ -1463,8 +1463,9 @@ var imm uint8
         DECODE_PRINTF2(",%x\n", imm);
         TRACE_AND_STEP();
         destval = (*genop_byte_operation[rh]) (destval, imm);
-        if (rh != 7)
-            store_data_byte(destoffset, destval);
+        if (rh != 7) {
+		store_data_byte(destoffset, destval)
+	}
     } else { /* register to register */
         destreg := DECODE_RM_BYTE_REGISTER(rl);
         imm := fetch_byte_imm();
@@ -1536,37 +1537,36 @@ func x86emuOp_opc83_word_RM_IMM(_ u8) {
 var destval,imm uint32
 
             destval = fetch_data_long(destoffset);
-            imm = (s8) fetch_byte_imm();
+            imm = int8(fetch_byte_imm);
             DECODE_PRINTF2(",%x\n", imm);
             TRACE_AND_STEP();
             destval = (*genop_long_operation[rh]) (destval, imm);
-            if (rh != 7)
-                store_data_long(destoffset, destval);
+            if (rh != 7){
+		    store_data_long(destoffset, destval);
+	    }
         } else {
 var destval,imm uint16
 
             destval = fetch_data_word(destoffset);
-            imm = (s8) fetch_byte_imm();
+            imm = int8(fetch_byte_imm);
             DECODE_PRINTF2(",%x\n", imm);
             TRACE_AND_STEP();
             destval = (*genop_word_operation[rh]) (destval, imm);
-            if (rh != 7)
-                store_data_word(destoffset, destval);
+            if (rh != 7){
+		    store_data_word(destoffset, destval);
+	    }
         }
     } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *destreg, imm;
-
             destreg := DECODE_RM_LONG_REGISTER(rl);
-            imm = (s8) fetch_byte_imm();
+            imm := int8(fetch_byte_imm);
             DECODE_PRINTF2(",%x\n", imm);
             TRACE_AND_STEP();
             *destreg = (*genop_long_operation[rh]) (*destreg, imm);
         } else {
-            u16 *destreg, imm;
 
             destreg := DECODE_RM_WORD_REGISTER(rl);
-            imm = (s8) fetch_byte_imm();
+            imm := int8(fetch_byte_imm);
             DECODE_PRINTF2(",%x\n", imm);
             TRACE_AND_STEP();
             *destreg = (*genop_word_operation[rh]) (*destreg, imm);
@@ -2439,14 +2439,14 @@ Handles opcode 0xa4
 func x86emuOp_movs_byte(_ u8) {
 var val uint8
 var count uint32
-var inc int32
+	var inc = int32(1)
 
     START_OF_INSTR();
     DECODE_PRINTF("MOVS\tBYTE\n");
-    if (ACCESS_FLAG(F_DF)) /* down */
-        inc = -1;
-    else
-        inc = 1;
+    if (ACCESS_FLAG(F_DF)){ /* down */
+	    inc = -1;
+    }
+
     TRACE_AND_STEP();
     count = 1;
     if (M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)) {
@@ -2454,9 +2454,10 @@ var inc int32
         /* move them until (E)CX is ZERO. */
         count = (M.x86.mode & SYSMODE_32BIT_REP) ? M.x86.R_ECX : M.x86.R_CX;
         M.x86.R_CX = 0;
- if (M.x86.mode & SYSMODE_32BIT_REP)
-            M.x86.R_ECX = 0;
-        M.x86.mode &= ~(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
+ if (M.x86.mode & SYSMODE_32BIT_REP){
+	 M.x86.R_ECX = 0;
+ }
+        M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
     }
     while (count--) {
         val = fetch_data_byte(M.x86.R_SI);
@@ -2641,7 +2642,7 @@ var imm int32
     imm := fetch_byte_imm();
     DECODE_PRINTF2("%04x\n", imm);
     TRACE_AND_STEP();
- test_byte(M.x86.R_AL, (u8)imm);
+ test_byte(M.x86.R_AL, uint8(imm));
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -3953,7 +3954,7 @@ var addr uint16
     START_OF_INSTR();
     DECODE_PRINTF("XLAT\n");
     TRACE_AND_STEP();
- addr = (u16)(M.x86.R_BX + (u8)M.x86.R_AL);
+ addr = (u16)(M.x86.R_BX + uint8(M.x86.R_AL));
     M.x86.R_AL = fetch_data_byte(addr);
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -3970,7 +3971,7 @@ var ip int16
 
     START_OF_INSTR();
     DECODE_PRINTF("LOOPNE\t");
-    ip = (s8) fetch_byte_imm();
+    ip = int8(fetch_byte_imm);
     ip += (s16) M.x86.R_IP;
     DECODE_PRINTF2("%04x\n", ip);
     TRACE_AND_STEP();
@@ -3993,7 +3994,7 @@ var ip int16
 
     START_OF_INSTR();
     DECODE_PRINTF("LOOPE\t");
-    ip = (s8) fetch_byte_imm();
+    ip = int8(fetch_byte_imm);
     ip += (s16) M.x86.R_IP;
     DECODE_PRINTF2("%04x\n", ip);
     TRACE_AND_STEP();
@@ -4016,7 +4017,7 @@ var ip int16
 
     START_OF_INSTR();
     DECODE_PRINTF("LOOP\t");
-    ip = (s8) fetch_byte_imm();
+    ip = int8(fetch_byte_imm);
     ip += (s16) M.x86.R_IP;
     DECODE_PRINTF2("%04x\n", ip);
     TRACE_AND_STEP();
@@ -4062,7 +4063,7 @@ var port uint8
 
     START_OF_INSTR();
     DECODE_PRINTF("IN\t");
- port = (u8) fetch_byte_imm();
+ port = uint8(fetch_byte_imm);
     DECODE_PRINTF2("%x,AL\n", port);
     TRACE_AND_STEP();
     M.x86.R_AL = sys_inb(port);
@@ -4079,7 +4080,7 @@ var port uint8
 
     START_OF_INSTR();
     DECODE_PRINTF("IN\t");
- port = (u8) fetch_byte_imm();
+ port = uint8(fetch_byte_imm);
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF2("EAX,%x\n", port);
     } else {
@@ -4104,7 +4105,7 @@ var port uint8
 
     START_OF_INSTR();
     DECODE_PRINTF("OUT\t");
- port = (u8) fetch_byte_imm();
+ port = uint8(fetch_byte_imm);
     DECODE_PRINTF2("%x,AL\n", port);
     TRACE_AND_STEP();
     sys_outb(port, M.x86.R_AL);
@@ -4121,7 +4122,7 @@ var port uint8
 
     START_OF_INSTR();
     DECODE_PRINTF("OUT\t");
- port = (u8) fetch_byte_imm();
+ port = uint8(fetch_byte_imm);
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF2("%x,EAX\n", port);
     } else {
