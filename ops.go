@@ -478,7 +478,7 @@ REMARKS:
 Handles opcode 0x0f. Escape for two-byte opcode (286 or better)
 ****************************************************************************/
 func x86emuOp_two_byte(_ u8) {
-    u8 op2 = (*sys_rdb)(((u32)M.x86.R_CS << 4) + (M.x86.R_IP++));
+    u8 op2 = sys_rdb(((u32)M.x86.R_CS << 4) + (M.x86.R_IP++));
     INC_DECODED_INST_LEN(1);
     (*x86emu_optab2[op2])(op2);
 }
@@ -4065,7 +4065,7 @@ func x86emuOp_in_byte_AL_IMM(_ u8) {
  port = (u8) fetch_byte_imm();
     DECODE_PRINTF2("%x,AL\n", port);
     TRACE_AND_STEP();
-    M.x86.R_AL = (*sys_inb)(port);
+    M.x86.R_AL = sys_inb(port);
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -4087,9 +4087,9 @@ func x86emuOp_in_word_AX_IMM(_ u8) {
     }
     TRACE_AND_STEP();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-        M.x86.R_EAX = (*sys_inl)(port);
+        M.x86.R_EAX = sys_inl(port);
     } else {
-        M.x86.R_AX = (*sys_inw)(port);
+        M.x86.R_AX = sys_inw(port);
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -4107,7 +4107,7 @@ func x86emuOp_out_byte_IMM_AL(_ u8) {
  port = (u8) fetch_byte_imm();
     DECODE_PRINTF2("%x,AL\n", port);
     TRACE_AND_STEP();
-    (*sys_outb)(port, M.x86.R_AL);
+    sys_outb(port, M.x86.R_AL);
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -4129,9 +4129,9 @@ func x86emuOp_out_word_IMM_AX(_ u8) {
     }
     TRACE_AND_STEP();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-        (*sys_outl)(port, M.x86.R_EAX);
+        sys_outl(port, M.x86.R_EAX);
     } else {
-        (*sys_outw)(port, M.x86.R_AX);
+        sys_outw(port, M.x86.R_AX);
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -4252,7 +4252,7 @@ func x86emuOp_in_byte_AL_DX(_ u8) {
     START_OF_INSTR();
     DECODE_PRINTF("IN\tAL,DX\n");
     TRACE_AND_STEP();
-    M.x86.R_AL = (*sys_inb)(M.x86.R_DX);
+    M.x86.R_AL = sys_inb(M.x86.R_DX);
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -4270,9 +4270,9 @@ func x86emuOp_in_word_AX_DX(_ u8) {
     }
     TRACE_AND_STEP();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-        M.x86.R_EAX = (*sys_inl)(M.x86.R_DX);
+        M.x86.R_EAX = sys_inl(M.x86.R_DX);
     } else {
-        M.x86.R_AX = (*sys_inw)(M.x86.R_DX);
+        M.x86.R_AX = sys_inw(M.x86.R_DX);
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -4286,7 +4286,7 @@ func x86emuOp_out_byte_DX_AL(_ u8) {
     START_OF_INSTR();
     DECODE_PRINTF("OUT\tDX,AL\n");
     TRACE_AND_STEP();
-    (*sys_outb)(M.x86.R_DX, M.x86.R_AL);
+    sys_outb(M.x86.R_DX, M.x86.R_AL);
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -4304,9 +4304,9 @@ func x86emuOp_out_word_DX_AX(_ u8) {
     }
     TRACE_AND_STEP();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-        (*sys_outl)(M.x86.R_DX, M.x86.R_EAX);
+        sys_outl(M.x86.R_DX, M.x86.R_EAX);
     } else {
-        (*sys_outw)(M.x86.R_DX, M.x86.R_AX);
+        sys_outw(M.x86.R_DX, M.x86.R_AX);
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
