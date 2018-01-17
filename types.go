@@ -4,6 +4,8 @@
 
 package main
 
+import "log"
+
 type register interface {
 	Set32(uint32)
 	Get32() uint32
@@ -13,6 +15,7 @@ type register interface {
 	Geth8() uint8
 	Setl8(uint8)
 	Getl8() uint8
+	Get(v interface{})
 }
 
 type register16 interface {
@@ -53,6 +56,14 @@ func (r reg) Setl8(i uint8) {
 }
 func (r reg) Getl8() uint8 {
 	return uint8(r.reg >> 8)
+}
+func (r reg) Set(v interface{}) {
+	switch i := v.(type) {
+	case uint32: r.Set32(i)
+	case uint16: r.Set16(i)
+	case uint8: r.Setl8(i)
+	default: log.Fatalf("Can't set register with %v", v)
+	}
 }
 
 func (r reg16) Set(i uint16) {
