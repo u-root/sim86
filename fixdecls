@@ -1,0 +1,16 @@
+sed -i 's/int mod, rl, rh;/var mod, rl, rh int/' $1
+sed -i 's/uint destoffset;/var destoffset uint/' $1
+sed -i 's/u8 \*destreg, \*srcreg;/var destreg, srcreg *u8/' $1
+sed -i 's/u8 destval;/var destval u8/' $1
+sed -i 's/u16 destval;/var destval u16/' $1
+sed -i 's/u16 *srcreg;/var srcreg u16*/' $1
+sed -i 's/u32 destval;/var destval u32/' $1
+sed -i 's/u32 \*srcreg;/var srcreg *u32/' $1
+sed -i 's/u16 \*srcreg;/var srcreg *u16/' $1
+sed -i 's/u16 \*destreg;/var destreg *u16/' $1
+sed -i 's/u32 \*destreg, \*srcreg;/var destreg, srcreg *u32/' $1
+sed -i 's/u32 \*destreg32, srcval;/var destreg *u32; var srcreg u32/' $1
+sed -i 's/u16 \*destreg, \*srcreg;/var destreg, srcreg *u16/' $1
+sed -i 's/uint srcoffset;/var srcoffset uint/' $1
+sed -i 's/u8 srcval;/var srcval u8/' $1
+sed -i 's/u32 srcval;/var srcval u32/' $1

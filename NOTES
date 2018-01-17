@@ -5,3 +5,7 @@ we're on ops.go
 going to go with a operation-per-script model, the other paths are just too hard.
 
 First step is fix the static void mess.
+run fixstaticvoid
+run u8param
+run fixdecls
+
