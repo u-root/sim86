@@ -478,7 +478,8 @@ REMARKS:
 Handles opcode 0x0f. Escape for two-byte opcode (286 or better)
 ****************************************************************************/
 func x86emuOp_two_byte(_ u8) {
-	op2 := sys_rdb((uint32(M.x86.R_CS) << 4) + (M.x86.R_IP++));
+	op2 := sys_rdb((uint32(M.x86.R_CS) << 4) + (M.x86.R_IP))
+	M.x86.R_IP++
     INC_DECODED_INST_LEN(1);
     (*x86emu_optab2[op2])(op2);
 }
@@ -961,7 +962,7 @@ func x86emuOp_imul_word_IMM(_ u8) {
         }
     } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *destreg,*srcreg;
+            var destreg, srcreg *u32
             var res_lo, res_hi u32
             var imm int32
 
@@ -982,7 +983,7 @@ func x86emuOp_imul_word_IMM(_ u8) {
             }
             *destreg = uint32(res_lo);
         } else {
-            u16 *destreg,*srcreg;
+            var destreg, srcreg *u16
             var res u32
             var imm int16
 
@@ -1086,7 +1087,7 @@ func x86emuOp_imul_byte_IMM(_ u8) {
         }
     } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *destreg,*srcreg;
+            var destreg, srcreg *u32
             var res_lo, res_hi u32
 
             destreg = DECODE_RM_LONG_REGISTER(rh);
@@ -1106,7 +1107,7 @@ func x86emuOp_imul_byte_IMM(_ u8) {
             }
             *destreg = uint32(res_lo);
         } else {
-            u16 *destreg,*srcreg;
+            var destreg, srcreg *u16
             var res u32
 
             destreg = DECODE_RM_WORD_REGISTER(rh);
@@ -1645,7 +1646,7 @@ func x86emuOp_test_word_RM_R(_ u8) {
         }
     } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *destreg,*srcreg;
+            var destreg, srcreg *u32
 
             destreg = DECODE_RM_LONG_REGISTER(rl);
             DECODE_PRINTF(",");
@@ -1654,7 +1655,7 @@ func x86emuOp_test_word_RM_R(_ u8) {
             TRACE_AND_STEP();
             test_long(*destreg, *srcreg);
         } else {
-            u16 *destreg,*srcreg;
+            var destreg, srcreg *u16
 
             destreg = DECODE_RM_WORD_REGISTER(rl);
             DECODE_PRINTF(",");
@@ -1748,7 +1749,7 @@ func x86emuOp_xchg_word_RM_R(_ u8) {
         }
     } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *destreg,*srcreg;
+            var destreg, srcreg *u32
             u32 tmp;
 
             destreg = DECODE_RM_LONG_REGISTER(rl);
@@ -1760,7 +1761,7 @@ func x86emuOp_xchg_word_RM_R(_ u8) {
             *srcreg = *destreg;
             *destreg = tmp;
         } else {
-            u16 *destreg,*srcreg;
+            var destreg, srcreg *u16
             u16 tmp;
 
             destreg = DECODE_RM_WORD_REGISTER(rl);
@@ -1840,7 +1841,7 @@ func x86emuOp_mov_word_RM_R(_ u8) {
         }
     } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *destreg,*srcreg;
+            var destreg, srcreg *u32
 
             destreg = DECODE_RM_LONG_REGISTER(rl);
             DECODE_PRINTF(",");
@@ -1849,7 +1850,7 @@ func x86emuOp_mov_word_RM_R(_ u8) {
             TRACE_AND_STEP();
             *destreg = *srcreg;
         } else {
-            u16 *destreg,*srcreg;
+            var destreg, srcreg *u16
 
             destreg = DECODE_RM_WORD_REGISTER(rl);
             DECODE_PRINTF(",");

@@ -10,7 +10,7 @@ sed -i 's/u16 \*srcreg;/var srcreg *u16/' $1
 sed -i 's/u16 \*destreg;/var destreg *u16/' $1
 sed -i 's/u32 \*destreg, \*srcreg;/var destreg, srcreg *u32/' $1
 sed -i 's/u32 \*destreg32, srcval;/var destreg *u32; var srcreg u32/' $1
-sed -i 's/u16 \*destreg, \*srcreg;/var destreg, srcreg *u16/' $1
+sed -i 's/u16 \*destreg, *\*srcreg;/var destreg, srcreg *u16/' $1
 sed -i 's/uint srcoffset;/var srcoffset uint/' $1
 sed -i 's/u8 srcval;/var srcval u8/' $1
 sed -i 's/u16 srcval;/var srcval u16/' $1
@@ -23,3 +23,4 @@ sed -i 's/s16 imm;/var imm int16/' $1
 sed -i 's/u32 \*destreg;/var destreg *u32/' $1
 sed -i 's/u32 res_lo,res_hi;/var res_lo, res_hi u32/' $1
 sed -i 's/u32 res;/var res u32/' $1
+sed -i 's/u32 \*destreg,\*srcreg;/var destreg, srcreg *u32/' $1
