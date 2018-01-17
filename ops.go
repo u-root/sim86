@@ -1016,7 +1016,7 @@ func x86emuOp_push_byte_IMM(_ u8) {
     var imm int16
 
     START_OF_INSTR();
-    imm = (s8)fetch_byte_imm();
+    imm = int8(fetch_byte_imm);
     DECODE_PRINTF2("PUSH\t%d\n", imm);
     TRACE_AND_STEP();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
@@ -1206,7 +1206,7 @@ func x86emuOp_jump_near_cond(u8 op1) {
     /* jump to byte offset if overflow flag is set */
     START_OF_INSTR();
     cond = x86emu_check_jump_condition(op1 & 0xF);
-    offset = (s8)fetch_byte_imm();
+    offset = int8(fetch_byte_imm);
     target = (u16)(M.x86.R_IP + int16(offset));
     DECODE_PRINTF2("%x\n", target);
     TRACE_AND_STEP();
@@ -4042,7 +4042,7 @@ func x86emuOp_jcxz(_ u8) {
     /* jump to byte offset if overflow flag is set */
     START_OF_INSTR();
     DECODE_PRINTF("JCXZ\t");
-    offset = (s8)fetch_byte_imm();
+    offset = int8(fetch_byte_imm);
     target = (u16)(M.x86.R_IP + offset);
     DECODE_PRINTF2("%x\n", target);
     TRACE_AND_STEP();
@@ -4235,7 +4235,7 @@ func x86emuOp_jump_byte_IMM(_ u8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("JMP\t");
-    offset = (s8)fetch_byte_imm();
+    offset = int8(fetch_byte_imm);
     target = (u16)(M.x86.R_IP + offset);
     DECODE_PRINTF2("%x\n", target);
     JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.R_CS, target, " BYTE ");
