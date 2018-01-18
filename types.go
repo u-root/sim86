@@ -66,6 +66,22 @@ func (r reg) Set(v interface{}) {
 	}
 }
 
+func (r reg) Change(i int) {
+	if M.x86.mode & SYSMODE_32BIT_REP != 0 {
+		r.Set32(r.Get32() + i)
+	} else {
+		r.Set16(r.Get16() + i)
+	}
+}
+
+func (r reg) Dec() {
+	r.Change(-1)
+}
+
+func (r reg) Inc() {
+	r.Change(1)
+}
+
 func (r reg16) Set(i uint16) {
 	r.reg = i
 }
