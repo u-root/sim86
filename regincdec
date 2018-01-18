@@ -1,0 +1,1 @@
+sed -i 's/M.x86.R_\(.\)I += inc;/M.x86.\1I.Change(inc)/' $1
