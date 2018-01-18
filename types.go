@@ -15,7 +15,8 @@ type register interface {
 	Geth8() uint8
 	Setl8(uint8)
 	Getl8() uint8
-	Get(v interface{})
+	Set(v interface{})
+	Get() uint32
 }
 
 type register16 interface {
@@ -57,6 +58,7 @@ func (r reg) Setl8(i uint8) {
 func (r reg) Getl8() uint8 {
 	return uint8(r.reg >> 8)
 }
+
 func (r reg) Set(v interface{}) {
 	switch i := v.(type) {
 	case uint32: r.Set32(i)
@@ -64,6 +66,14 @@ func (r reg) Set(v interface{}) {
 	case uint8: r.Setl8(i)
 	default: log.Fatalf("Can't set register with %v", v)
 	}
+}
+
+// Get gets the register as uint32. The amount of data depends on the SYSMODE.
+func (r reg) Get() uint32 {
+	if M.x86.mode & SYSMODE_32BIT_REP != 0 {
+		return r.Get32()
+	}
+	return r.Get16()
 }
 
 func (r reg) Change(i int) {

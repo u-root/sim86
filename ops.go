@@ -2449,7 +2449,7 @@ var count uint32
 
     TRACE_AND_STEP();
     count = 1;
-    if (M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)) {
+    if (M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)) != 0 {
         /* don't care whether REPE or REPNE */
 	    /* move them until (E)CX is ZERO. */
 	    if M.x86.mode & SYSMODE_32BIT_REP != 0 {
@@ -2733,37 +2733,28 @@ var count uint32
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF("STOS\tDWORD\n");
-        if (ACCESS_FLAG(F_DF)) /* down */
-            inc = -4;
-        else
-            inc = 4;
+inc = incamount(4)
     } else {
         DECODE_PRINTF("STOS\tWORD\n");
-        if (ACCESS_FLAG(F_DF)) /* down */
-            inc = -2;
-        else
-            inc = 2;
+inc = incamount(2)
     }
     TRACE_AND_STEP();
     count = 1;
     if (M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)) {
         /* don't care whether REPE or REPNE */
-        /* move them until (E)CX is ZERO. */
-        count = (M.x86.mode & SYSMODE_32BIT_REP) ? M.x86.R_ECX : M.x86.R_CX;
-        M.x86.R_CX = 0;
- if (M.x86.mode & SYSMODE_32BIT_REP)
-            M.x86.R_ECX = 0;
-        M.x86.mode &= ~(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
+	    /* move them until (E)CX is ZERO. */
+	    count = GetClrCount()
     }
-    while (count--) {
+	for count > 0 {
+		count--
+
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             store_data_long_abs(M.x86.R_ES, M.x86.R_DI, M.x86.R_EAX);
         } else {
             store_data_word_abs(M.x86.R_ES, M.x86.R_DI, M.x86.R_AX);
         }
         M.x86.DI.Change(inc)
-        if (M.x86.intr & INTR_HALTED)
-            break;
+if Halted() {break;}
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -2779,10 +2770,7 @@ var inc int32
     START_OF_INSTR();
     DECODE_PRINTF("LODS\tBYTE\n");
     TRACE_AND_STEP();
-    if (ACCESS_FLAG(F_DF)) /* down */
-        inc = -1;
-    else
-        inc = 1;
+inc = incamount(1)
     if (M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)) {
         /* don't care whether REPE or REPNE */
         /* move them until (E)CX is ZERO. */
@@ -2790,10 +2778,9 @@ var inc int32
             M.x86.R_AL = fetch_data_byte(M.x86.R_SI);
 M.X86.C.Dec()
             M.x86.SI.Change(inc)
-            if (M.x86.intr & INTR_HALTED)
-                { break;}
+		if Halted()                { break;}
         }
-        M.x86.mode &= ~(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
+        M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
     } else {
         M.x86.R_AL = fetch_data_byte(M.x86.R_SI);
         M.x86.SI.Change(inc)
@@ -2813,37 +2800,27 @@ var count uint32
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF("LODS\tDWORD\n");
-        if (ACCESS_FLAG(F_DF)) /* down */
-            inc = -4;
-        else
-            inc = 4;
+inc = incamount(4)
     } else {
         DECODE_PRINTF("LODS\tWORD\n");
-        if (ACCESS_FLAG(F_DF)) /* down */
-            inc = -2;
-        else
-            inc = 2;
+inc = incamount(2)
     }
     TRACE_AND_STEP();
     count = 1;
     if (M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)) {
         /* don't care whether REPE or REPNE */
-        /* move them until (E)CX is ZERO. */
-        count = (M.x86.mode & SYSMODE_32BIT_REP) ? M.x86.R_ECX : M.x86.R_CX;
-        M.x86.R_CX = 0;
- if (M.x86.mode & SYSMODE_32BIT_REP)
-            M.x86.R_ECX = 0;
-        M.x86.mode &= ~(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
+	    /* move them until (E)CX is ZERO. */
+	    count = GetClrCount()
     }
-    while (count--) {
+	for count > 0 {
+		count--
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             M.x86.R_EAX = fetch_data_long(M.x86.R_SI);
         } else {
             M.x86.R_AX = fetch_data_word(M.x86.R_SI);
         }
         M.x86.SI.Change(inc)
-        if (M.x86.intr & INTR_HALTED)
-            break;
+if Halted() {break;}
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -2860,10 +2837,7 @@ var inc int32
     START_OF_INSTR();
     DECODE_PRINTF("SCAS\tBYTE\n");
     TRACE_AND_STEP();
-    if (ACCESS_FLAG(F_DF)) /* down */
-        inc = -1;
-    else
-        inc = 1;
+inc = incamount(1)
     if (M.x86.mode & SYSMODE_PREFIX_REPE) {
         /* REPE  */
         /* move them until (E)CX is ZERO. */
@@ -2872,12 +2846,11 @@ var inc int32
             cmp_byte(M.x86.R_AL, val2);
 M.X86.C.Dec()
             M.x86.DI.Change(inc)
-            if (ACCESS_FLAG(F_ZF) == 0)
-                break;
-            if (M.x86.intr & INTR_HALTED)
-                { break;}
+            if (ACCESS_FLAG(F_ZF) == 0){ break;}
+
+		if Halted() { break;}
         }
-        M.x86.mode &= ~SYSMODE_PREFIX_REPE;
+        M.x86.mode &= ^SYSMODE_PREFIX_REPE;
     } else if (M.x86.mode & SYSMODE_PREFIX_REPNE) {
         /* REPNE  */
         /* move them until (E)CX is ZERO. */
@@ -2886,12 +2859,10 @@ M.X86.C.Dec()
             cmp_byte(M.x86.R_AL, val2);
 M.X86.C.Dec()
             M.x86.DI.Change(inc)
-            if (ACCESS_FLAG(F_ZF))
-                break; /* zero flag set means equal */
-            if (M.x86.intr & INTR_HALTED)
-                { break;}
+            if (ACCESS_FLAG(F_ZF)) {break;} /* zero flag set means equal */
+            if (M.x86.intr & INTR_HALTED){ break;}
         }
-        M.x86.mode &= ~SYSMODE_PREFIX_REPNE;
+        M.x86.mode &= ^SYSMODE_PREFIX_REPNE;
     } else {
         val2 = fetch_data_byte_abs(M.x86.R_ES, M.x86.R_DI);
         cmp_byte(M.x86.R_AL, val2);
@@ -2912,16 +2883,10 @@ var val uint32
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF("SCAS\tDWORD\n");
-        if (ACCESS_FLAG(F_DF)) /* down */
-            inc = -4;
-        else
-            inc = 4;
+inc = incamount(4)
     } else {
         DECODE_PRINTF("SCAS\tWORD\n");
-        if (ACCESS_FLAG(F_DF)) /* down */
-            inc = -2;
-        else
-            inc = 2;
+inc = incamount(2)
     }
     TRACE_AND_STEP();
     if (M.x86.mode & SYSMODE_PREFIX_REPE) {
@@ -2939,10 +2904,9 @@ M.X86.C.Dec()
             M.x86.DI.Change(inc)
             if (ACCESS_FLAG(F_ZF) == 0)
                 break;
-            if (M.x86.intr & INTR_HALTED)
-                { break;}
+            if (M.x86.intr & INTR_HALTED){ break;}
         }
-        M.x86.mode &= ~SYSMODE_PREFIX_REPE;
+        M.x86.mode &= ^SYSMODE_PREFIX_REPE;
     } else if (M.x86.mode & SYSMODE_PREFIX_REPNE) {
         /* REPNE  */
         /* move them until (E)CX is ZERO. */
@@ -2956,12 +2920,10 @@ M.X86.C.Dec()
             }
 M.X86.C.Dec()
             M.x86.DI.Change(inc)
-            if (ACCESS_FLAG(F_ZF))
-                break; /* zero flag set means equal */
-            if (M.x86.intr & INTR_HALTED)
-                { break;}
+            if (ACCESS_FLAG(F_ZF)) {break;} /* zero flag set means equal */
+            if (M.x86.intr & INTR_HALTED){ break;}
         }
-        M.x86.mode &= ~SYSMODE_PREFIX_REPNE;
+        M.x86.mode &= ^SYSMODE_PREFIX_REPNE;
     } else {
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             val = fetch_data_long_abs(M.x86.R_ES, M.x86.R_DI);
