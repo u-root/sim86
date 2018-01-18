@@ -2466,8 +2466,8 @@ var count uint32
 		cont--
         val = fetch_data_byte(M.x86.R_SI);
         store_data_byte_abs(M.x86.R_ES, M.x86.R_DI, val);
-        M.x86.R_SI += inc;
-        M.x86.R_DI += inc;
+        M.x86.SI.Change(inc)
+        M.x86.DI.Change(inc)
         if (M.x86.intr & INTR_HALTED) {
 		break;
 	}
@@ -2532,8 +2532,8 @@ var count uint32
             val := fetch_data_word(M.x86.R_SI);
             store_data_word_abs(M.x86.R_ES, M.x86.R_DI, uint16(val));
         }
-        M.x86.R_SI += inc;
-        M.x86.R_DI += inc;
+        M.x86.SI.Change(inc)
+        M.x86.DI.Change(inc)
         if (M.x86.intr & INTR_HALTED) {
 		break;
 	}
@@ -2565,25 +2565,25 @@ var inc int32
         for cxCount != 0 {
             val1 = fetch_data_byte(M.x86.R_SI);
             val2 = fetch_data_byte_abs(M.x86.R_ES, M.x86.R_DI);
-                     cmp_byte(val1, val2);
-            if (M.x86.mode & SYSMODE_32BIT_REP)
-                M.x86.R_ECX -= 1;
-            else
-                M.x86.R_CX -= 1;
-            M.x86.R_SI += inc;
-            M.x86.R_DI += inc;
-            if ( (M.x86.mode & SYSMODE_PREFIX_REPE) && (ACCESS_FLAG(F_ZF) == 0) ) break;
-            if ( (M.x86.mode & SYSMODE_PREFIX_REPNE) && ACCESS_FLAG(F_ZF) ) break;
-            if (M.x86.intr & INTR_HALTED)
-                break;
-        }
-        M.x86.mode &= ~(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
+		cmp_byte(val1, val2);
+		M.x86.C.Dec()
+            M.x86.SI.Change(inc)
+            M.x86.DI.Change(inc)
+            if ( (M.x86.mode & SYSMODE_PREFIX_REPE != 0 ) && (ACCESS_FLAG(F_ZF) == 0) ) || 
+		    ( (M.x86.mode & SYSMODE_PREFIX_REPNE != 0) && ACCESS_FLAG(F_ZF) ) ||
+		    ( (M.x86.intr & INTR_HALTED) != 0) {
+
+		    break
+	    }
+	}
+
+        M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
     } else {
         val1 = fetch_data_byte(M.x86.R_SI);
         val2 = fetch_data_byte_abs(M.x86.R_ES, M.x86.R_DI);
         cmp_byte(val1, val2);
-        M.x86.R_SI += inc;
-        M.x86.R_DI += inc;
+        M.x86.SI.Change(inc)
+        M.x86.DI.Change(inc)
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -2605,8 +2605,9 @@ var inc int32
         DECODE_PRINTF("CMPS\tWORD\n");
         inc = 2;
     }
-    if (ACCESS_FLAG(F_DF)) /* down */
-        inc = -inc;
+    if (ACCESS_FLAG(F_DF)) {/* down */
+	    inc = -inc
+    }
 
     TRACE_AND_STEP();
     if (M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)) {
@@ -2622,18 +2623,18 @@ var inc int32
                 val2 = fetch_data_word_abs(M.x86.R_ES, M.x86.R_DI);
                 cmp_word(uint16(val1), uint16(val2));
             }
-            if (M.x86.mode & SYSMODE_32BIT_REP)
-                M.x86.R_ECX -= 1;
-            else
-                M.x86.R_CX -= 1;
-            M.x86.R_SI += inc;
-            M.x86.R_DI += inc;
-            if ( (M.x86.mode & SYSMODE_PREFIX_REPE) && ACCESS_FLAG(F_ZF) == 0 ) break;
-            if ( (M.x86.mode & SYSMODE_PREFIX_REPNE) && ACCESS_FLAG(F_ZF) ) break;
-            if (M.x86.intr & INTR_HALTED)
-                break;
+		M.X86.C.Dec()
+		M.x86.SI.Change(inc)
+		M.x86.DI.Change(inc)
+		if ( (M.x86.mode & SYSMODE_PREFIX_REPE != 0 ) && (ACCESS_FLAG(F_ZF) == 0) ) || 
+			( (M.x86.mode & SYSMODE_PREFIX_REPNE != 0) && ACCESS_FLAG(F_ZF) ) ||
+			( (M.x86.intr & INTR_HALTED) != 0) {
+			
+			break
+		}
+		
         }
-        M.x86.mode &= ~(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
+        M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
     } else {
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             val1 = fetch_data_long(M.x86.R_SI);
@@ -2644,8 +2645,8 @@ var inc int32
             val2 = fetch_data_word_abs(M.x86.R_ES, M.x86.R_DI);
             cmp_word(uint16(val1), uint16(val2));
         }
-        M.x86.R_SI += inc;
-        M.x86.R_DI += inc;
+        M.x86.SI.Change(inc)
+        M.x86.DI.Change(inc)
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -2699,32 +2700,23 @@ REMARKS:
 Handles opcode 0xaa
 ****************************************************************************/
 func x86emuOp_stos_byte(_ u8) {
-var inc int32
-
     START_OF_INSTR();
-    DECODE_PRINTF("STOS\tBYTE\n");
-    if (ACCESS_FLAG(F_DF)) /* down */
-        inc = -1;
-    else
-        inc = 1;
+	DECODE_PRINTF("STOS\tBYTE\n");
+	inc := incamount(1)
     TRACE_AND_STEP();
     if (M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)) {
         /* don't care whether REPE or REPNE */
         /* move them until (E)CX is ZERO. */
         for cxCount != 0 {
             store_data_byte_abs(M.x86.R_ES, M.x86.R_DI, M.x86.R_AL);
-            if (M.x86.mode & SYSMODE_32BIT_REP)
-                M.x86.R_ECX -= 1;
-            else
-                M.x86.R_CX -= 1;
-            M.x86.R_DI += inc;
-            if (M.x86.intr & INTR_HALTED)
-                break;
+M.X86.C.Dec()
+            M.x86.DI.Change(inc)
+            if (M.x86.intr & INTR_HALTED)                { break;}
         }
-        M.x86.mode &= ~(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
+        M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
     } else {
         store_data_byte_abs(M.x86.R_ES, M.x86.R_DI, M.x86.R_AL);
-        M.x86.R_DI += inc;
+        M.x86.DI.Change(inc)
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -2769,7 +2761,7 @@ var count uint32
         } else {
             store_data_word_abs(M.x86.R_ES, M.x86.R_DI, M.x86.R_AX);
         }
-        M.x86.R_DI += inc;
+        M.x86.DI.Change(inc)
         if (M.x86.intr & INTR_HALTED)
             break;
     }
@@ -2796,18 +2788,15 @@ var inc int32
         /* move them until (E)CX is ZERO. */
         for cxCount != 0 {
             M.x86.R_AL = fetch_data_byte(M.x86.R_SI);
-            if (M.x86.mode & SYSMODE_32BIT_REP)
-                M.x86.R_ECX -= 1;
-            else
-                M.x86.R_CX -= 1;
-            M.x86.R_SI += inc;
+M.X86.C.Dec()
+            M.x86.SI.Change(inc)
             if (M.x86.intr & INTR_HALTED)
-                break;
+                { break;}
         }
         M.x86.mode &= ~(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
     } else {
         M.x86.R_AL = fetch_data_byte(M.x86.R_SI);
-        M.x86.R_SI += inc;
+        M.x86.SI.Change(inc)
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -2852,7 +2841,7 @@ var count uint32
         } else {
             M.x86.R_AX = fetch_data_word(M.x86.R_SI);
         }
-        M.x86.R_SI += inc;
+        M.x86.SI.Change(inc)
         if (M.x86.intr & INTR_HALTED)
             break;
     }
@@ -2881,15 +2870,12 @@ var inc int32
         for cxCount != 0 {
             val2 = fetch_data_byte_abs(M.x86.R_ES, M.x86.R_DI);
             cmp_byte(M.x86.R_AL, val2);
-            if (M.x86.mode & SYSMODE_32BIT_REP)
-                M.x86.R_ECX -= 1;
-            else
-                M.x86.R_CX -= 1;
-            M.x86.R_DI += inc;
+M.X86.C.Dec()
+            M.x86.DI.Change(inc)
             if (ACCESS_FLAG(F_ZF) == 0)
                 break;
             if (M.x86.intr & INTR_HALTED)
-                break;
+                { break;}
         }
         M.x86.mode &= ~SYSMODE_PREFIX_REPE;
     } else if (M.x86.mode & SYSMODE_PREFIX_REPNE) {
@@ -2898,21 +2884,18 @@ var inc int32
         for cxCount != 0 {
             val2 = fetch_data_byte_abs(M.x86.R_ES, M.x86.R_DI);
             cmp_byte(M.x86.R_AL, val2);
-            if (M.x86.mode & SYSMODE_32BIT_REP)
-                M.x86.R_ECX -= 1;
-            else
-                M.x86.R_CX -= 1;
-            M.x86.R_DI += inc;
+M.X86.C.Dec()
+            M.x86.DI.Change(inc)
             if (ACCESS_FLAG(F_ZF))
                 break; /* zero flag set means equal */
             if (M.x86.intr & INTR_HALTED)
-                break;
+                { break;}
         }
         M.x86.mode &= ~SYSMODE_PREFIX_REPNE;
     } else {
         val2 = fetch_data_byte_abs(M.x86.R_ES, M.x86.R_DI);
         cmp_byte(M.x86.R_AL, val2);
-        M.x86.R_DI += inc;
+        M.x86.DI.Change(inc)
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -2952,15 +2935,12 @@ var val uint32
                 val = fetch_data_word_abs(M.x86.R_ES, M.x86.R_DI);
                 cmp_word(M.x86.R_AX, uint16(val));
             }
-            if (M.x86.mode & SYSMODE_32BIT_REP)
-                M.x86.R_ECX -= 1;
-            else
-                M.x86.R_CX -= 1;
-            M.x86.R_DI += inc;
+M.X86.C.Dec()
+            M.x86.DI.Change(inc)
             if (ACCESS_FLAG(F_ZF) == 0)
                 break;
             if (M.x86.intr & INTR_HALTED)
-                break;
+                { break;}
         }
         M.x86.mode &= ~SYSMODE_PREFIX_REPE;
     } else if (M.x86.mode & SYSMODE_PREFIX_REPNE) {
@@ -2974,15 +2954,12 @@ var val uint32
                 val = fetch_data_word_abs(M.x86.R_ES, M.x86.R_DI);
                 cmp_word(M.x86.R_AX, uint16(val));
             }
-            if (M.x86.mode & SYSMODE_32BIT_REP)
-                M.x86.R_ECX -= 1;
-            else
-                M.x86.R_CX -= 1;
-            M.x86.R_DI += inc;
+M.X86.C.Dec()
+            M.x86.DI.Change(inc)
             if (ACCESS_FLAG(F_ZF))
                 break; /* zero flag set means equal */
             if (M.x86.intr & INTR_HALTED)
-                break;
+                { break;}
         }
         M.x86.mode &= ~SYSMODE_PREFIX_REPNE;
     } else {
@@ -2993,7 +2970,7 @@ var val uint32
             val = fetch_data_word_abs(M.x86.R_ES, M.x86.R_DI);
             cmp_word(M.x86.R_AX, uint16(val));
         }
-        M.x86.R_DI += inc;
+        M.x86.DI.Change(inc)
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();

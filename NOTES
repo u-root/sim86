@@ -16,3 +16,6 @@ just fix by hand to op2 := ...
 fixed more casts
 
 Now on to eliminating all the : ? stuff. 
+
+added a simple set of functions: inc, dec, change
+Fixed some repne stuff by hand
