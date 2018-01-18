@@ -59,11 +59,11 @@ func (r reg) Getl8() uint8 {
 	return uint8(r.reg >> 8)
 }
 
-func (r reg) Set(v interface{}) {
+func (r reg) Add(v interface{}) {
 	switch i := v.(type) {
-	case uint32: r.Set32(i)
-	case uint16: r.Set16(i)
-	case uint8: r.Setl8(i)
+	case uint32: r.Set32(r.Get32() + i)
+	case uint16: r.Set16(r.Get16() + i)
+	case uint8: r.Setl8(r.Getl8() + i)
 	default: log.Fatalf("Can't set register with %v", v)
 	}
 }

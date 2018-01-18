@@ -3941,20 +3941,17 @@ REMARKS:
 Handles opcode 0xe1
 ****************************************************************************/
 func x86emuOp_loope(_ u8) {
-var ip int16
+
 
     START_OF_INSTR();
-    DECODE_PRINTF("LOOPE\t");
-    ip = int8(fetch_byte_imm);
-    ip += (s16) M.x86.R_IP;
+	DECODE_PRINTF("LOOPE\t");
+	ip := M.x86.IP.Get16() + int16(fetch_byte_imm)
     DECODE_PRINTF2("%04x\n", ip);
-    TRACE_AND_STEP();
-    if (M.x86.mode & SYSMODE_PREFIX_ADDR)
-        M.x86.R_ECX -= 1;
-    else
-        M.x86.R_CX -= 1;
-    if (((M.x86.mode & SYSMODE_PREFIX_ADDR) ? M.x86.R_ECX : M.x86.R_CX) != 0 && ACCESS_FLAG(F_ZF)) /* (E)CX != 0 and ZF */
-        M.x86.R_IP = ip;
+	TRACE_AND_STEP();
+    DecCount()
+    if ((Count(SYSMODE_PREFIX_ADDR)) != 0 && ACCESS_FLAG(F_ZF)){ /* (E)CX != 0 and ZF */
+	    M.x86.IP.Set(ip)
+    }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -3964,20 +3961,16 @@ REMARKS:
 Handles opcode 0xe2
 ****************************************************************************/
 func x86emuOp_loop(_ u8) {
-var ip int16
 
     START_OF_INSTR();
     DECODE_PRINTF("LOOP\t");
-    ip = int8(fetch_byte_imm);
-    ip += (s16) M.x86.R_IP;
+	ip := M.x86.IP.Get16() + int16(fetch_byte_imm);
     DECODE_PRINTF2("%04x\n", ip);
     TRACE_AND_STEP();
-    if (M.x86.mode & SYSMODE_PREFIX_ADDR)
-        M.x86.R_ECX -= 1;
-    else
-        M.x86.R_CX -= 1;
-    if (((M.x86.mode & SYSMODE_PREFIX_ADDR) ? M.x86.R_ECX : M.x86.R_CX) != 0) /* (E)CX != 0 */
-        M.x86.R_IP = ip;
+    DecCount()
+    if ((Count(SYSMODE_PREFIX_ADDR)) != 0) {/* (E)CX != 0 */
+	    M.x86.IP.Set(ip)
+    }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -4094,9 +4087,8 @@ REMARKS:
 Handles opcode 0xe8
 ****************************************************************************/
 func x86emuOp_call_near_IMM(_ u8) {
-    s16 ip16 = 0; /* Initialize to keep GCC silent */
-    s32 ip32 = 0;
-
+	var ip32 uint32
+	var ip16 uint16
     START_OF_INSTR();
     DECODE_PRINTF("CALL\t");
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
