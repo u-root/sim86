@@ -19,3 +19,4 @@ Now on to eliminating all the : ? stuff.
 
 added a simple set of functions: inc, dec, change
 Fixed some repne stuff by hand
+Multi line is a tad easier in emacs

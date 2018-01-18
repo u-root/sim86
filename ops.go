@@ -2902,9 +2902,8 @@ inc = incamount(2)
             }
 M.X86.C.Dec()
             M.x86.DI.Change(inc)
-            if (ACCESS_FLAG(F_ZF) == 0)
-                break;
-            if (M.x86.intr & INTR_HALTED){ break;}
+            if (ACCESS_FLAG(F_ZF) == 0) {break;}
+		if (Halted()){ break;}
         }
         M.x86.mode &= ^SYSMODE_PREFIX_REPE;
     } else if (M.x86.mode & SYSMODE_PREFIX_REPNE) {
@@ -2943,16 +2942,14 @@ REMARKS:
 Handles opcode 0xb0 - 0xb7
 ****************************************************************************/
 func x86emuOp_mov_byte_register_IMM(u8 op1) {
-var imm, *ptr uint8
-
     START_OF_INSTR();
     DECODE_PRINTF("MOV\t");
-    ptr = DECODE_RM_BYTE_REGISTER(op1 & 0x7);
+    ptr := DECODE_RM_BYTE_REGISTER(op1 & 0x7);
     DECODE_PRINTF(",");
     imm := fetch_byte_imm();
     DECODE_PRINTF2("%x\n", imm);
     TRACE_AND_STEP();
-    *ptr = imm;
+	ptr.Set(imm)
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -3362,14 +3359,14 @@ var i int32
     push_word(M.x86.R_BP);
     frame_pointer = M.x86.R_SP;
     if (nesting > 0) {
-        for (i = 1; i < nesting; i++) {
-            M.x86.R_BP -= 2;
+        for i := 1; i < nesting; i++ {
+		M.x86.BP.Change(-2)
             push_word(fetch_data_word_abs(M.x86.R_SS, M.x86.R_BP));
             }
         push_word(frame_pointer);
         }
-    M.x86.R_BP = frame_pointer;
-    M.x86.R_SP = (u16)(M.x86.R_SP - local);
+	M.x86.BP.Set(frame_pointer)
+	M.x86.SP.Set(uint16((M.x86.R_SP - local)))
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -3428,11 +3425,9 @@ REMARKS:
 Handles opcode 0xcc
 ****************************************************************************/
 func x86emuOp_int3(_ u8) {
-    u16 _;
-
     START_OF_INSTR();
     DECODE_PRINTF("INT 3\n");
-    tmp = (u16) mem_access_word(3 * 4 + 2);
+    tmp := mem_access_word(3 * 4 + 2);
     /* access the segment register */
     TRACE_AND_STEP();
  if (_X86EMU_intrTab[3]) {
@@ -3455,7 +3450,6 @@ REMARKS:
 Handles opcode 0xcd
 ****************************************************************************/
 func x86emuOp_int_IMM(_ u8) {
-    u16 _;
 var intnum uint8
 
     START_OF_INSTR();
@@ -3484,7 +3478,6 @@ REMARKS:
 Handles opcode 0xce
 ****************************************************************************/
 func x86emuOp_into(_ u8) {
-    u16 _;
 
     START_OF_INSTR();
     DECODE_PRINTF("INTO\n");
@@ -3932,15 +3925,13 @@ var ip int16
     START_OF_INSTR();
     DECODE_PRINTF("LOOPNE\t");
     ip = int8(fetch_byte_imm);
-    ip += (s16) M.x86.R_IP;
+	ip += M.x86.IP.Get16();
     DECODE_PRINTF2("%04x\n", ip);
-    TRACE_AND_STEP();
-    if (M.x86.mode & SYSMODE_PREFIX_ADDR)
-        M.x86.R_ECX -= 1;
-    else
-        M.x86.R_CX -= 1;
-    if (((M.x86.mode & SYSMODE_PREFIX_ADDR) ? M.x86.R_ECX : M.x86.R_CX) != 0 && !ACCESS_FLAG(F_ZF)) /* (E)CX != 0 and !ZF */
-        M.x86.R_IP = ip;
+	TRACE_AND_STEP();
+	DecCount()
+    if Count(SYSMODE_PREFIX_ADDR) != 0 && !ACCESS_FLAG(F_ZF) /* (E)CX != 0 and !ZF */ {
+	    M.x86.IP.Set(ip)
+    }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }

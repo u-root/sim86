@@ -7,6 +7,22 @@ func incamount(scale int) int {
 	return scale * 1
 }
 
+// Count returns cx/x depending on mode
+func Count(mode uint32) uint32 {
+	if M.x86.mode & mode {
+		return M.x86.C.Get32()
+	}
+	return uint32(M.x86.C.Get16())
+}
+// DecCount decrements count, depending on the mode.
+func DecCount() {
+	if M.x86.mode & SYSMODE_PREFIX_ADDR != 0 {
+		M.x86.C.Set16(M.x86.C.Get16()-1)
+	} else {
+		M.x86.C.Set32(M.x86.C.Get32()-1)
+	}
+}
+
 // GetClrCount gets the c/cx register and clears it, as well as
 // clearing the REPE/REPNE bits from mode.
 func GetClrCount() uint32 {
