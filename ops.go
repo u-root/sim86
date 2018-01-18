@@ -2562,7 +2562,7 @@ var inc int32
     if (M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)) {
         /* REPE  */
         /* move them until (E)CX is ZERO. */
-        while (((M.x86.mode & SYSMODE_32BIT_REP) ? M.x86.R_ECX : M.x86.R_CX) != 0) {
+        for cxCount != 0 {
             val1 = fetch_data_byte(M.x86.R_SI);
             val2 = fetch_data_byte_abs(M.x86.R_ES, M.x86.R_DI);
                      cmp_byte(val1, val2);
@@ -2612,7 +2612,7 @@ var inc int32
     if (M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)) {
         /* REPE  */
         /* move them until (E)CX is ZERO. */
-        while (((M.x86.mode & SYSMODE_32BIT_REP) ? M.x86.R_ECX : M.x86.R_CX) != 0) {
+        for cxCount != 0 {
             if (M.x86.mode & SYSMODE_PREFIX_DATA) {
                 val1 = fetch_data_long(M.x86.R_SI);
                 val2 = fetch_data_long_abs(M.x86.R_ES, M.x86.R_DI);
@@ -2711,7 +2711,7 @@ var inc int32
     if (M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)) {
         /* don't care whether REPE or REPNE */
         /* move them until (E)CX is ZERO. */
-        while (((M.x86.mode & SYSMODE_32BIT_REP) ? M.x86.R_ECX : M.x86.R_CX) != 0) {
+        for cxCount != 0 {
             store_data_byte_abs(M.x86.R_ES, M.x86.R_DI, M.x86.R_AL);
             if (M.x86.mode & SYSMODE_32BIT_REP)
                 M.x86.R_ECX -= 1;
@@ -2794,7 +2794,7 @@ var inc int32
     if (M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)) {
         /* don't care whether REPE or REPNE */
         /* move them until (E)CX is ZERO. */
-        while (((M.x86.mode & SYSMODE_32BIT_REP) ? M.x86.R_ECX : M.x86.R_CX) != 0) {
+        for cxCount != 0 {
             M.x86.R_AL = fetch_data_byte(M.x86.R_SI);
             if (M.x86.mode & SYSMODE_32BIT_REP)
                 M.x86.R_ECX -= 1;
@@ -2878,7 +2878,7 @@ var inc int32
     if (M.x86.mode & SYSMODE_PREFIX_REPE) {
         /* REPE  */
         /* move them until (E)CX is ZERO. */
-        while (((M.x86.mode & SYSMODE_32BIT_REP) ? M.x86.R_ECX : M.x86.R_CX) != 0) {
+        for cxCount != 0 {
             val2 = fetch_data_byte_abs(M.x86.R_ES, M.x86.R_DI);
             cmp_byte(M.x86.R_AL, val2);
             if (M.x86.mode & SYSMODE_32BIT_REP)
@@ -2895,7 +2895,7 @@ var inc int32
     } else if (M.x86.mode & SYSMODE_PREFIX_REPNE) {
         /* REPNE  */
         /* move them until (E)CX is ZERO. */
-        while (((M.x86.mode & SYSMODE_32BIT_REP) ? M.x86.R_ECX : M.x86.R_CX) != 0) {
+        for cxCount != 0 {
             val2 = fetch_data_byte_abs(M.x86.R_ES, M.x86.R_DI);
             cmp_byte(M.x86.R_AL, val2);
             if (M.x86.mode & SYSMODE_32BIT_REP)
@@ -2944,7 +2944,7 @@ var val uint32
     if (M.x86.mode & SYSMODE_PREFIX_REPE) {
         /* REPE  */
         /* move them until (E)CX is ZERO. */
-        while (((M.x86.mode & SYSMODE_32BIT_REP) ? M.x86.R_ECX : M.x86.R_CX) != 0) {
+        for cxCount != 0 {
             if (M.x86.mode & SYSMODE_PREFIX_DATA) {
                 val = fetch_data_long_abs(M.x86.R_ES, M.x86.R_DI);
                 cmp_long(M.x86.R_EAX, val);
@@ -2966,7 +2966,7 @@ var val uint32
     } else if (M.x86.mode & SYSMODE_PREFIX_REPNE) {
         /* REPNE  */
         /* move them until (E)CX is ZERO. */
-        while (((M.x86.mode & SYSMODE_32BIT_REP) ? M.x86.R_ECX : M.x86.R_CX) != 0) {
+        for cxCount != 0 {
             if (M.x86.mode & SYSMODE_PREFIX_DATA) {
                 val = fetch_data_long_abs(M.x86.R_ES, M.x86.R_DI);
                 cmp_long(M.x86.R_EAX, val);

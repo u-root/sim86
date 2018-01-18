@@ -1,0 +1,2 @@
+sed -i 's/while.*CX.*0)/for cxCount != 0/' $1
+
