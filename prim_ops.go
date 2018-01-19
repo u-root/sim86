@@ -287,7 +287,7 @@ u8 adc_byte(u8 d, u8 s)
     set_szp_flags_8(res);
     calc_carry_chain(8,s,d,res,1);
 
-    return (u8)res;
+    return uint8(res);
 }
 
 /****************************************************************************
@@ -302,10 +302,10 @@ u16 adc_word(u16 d, u16 s)
     if (ACCESS_FLAG(F_CF))
         res++;
 
-    set_szp_flags_16((u16)res);
+    set_szp_flags_16(uint16(res));
     calc_carry_chain(16,s,d,res,1);
 
-    return (u16)res;
+    return uint16(res);
 }
 
 /****************************************************************************
@@ -345,10 +345,10 @@ u8 add_byte(u8 d, u8 s)
     u32 res;   /* all operands in native machine order */
 
     res = d + s;
-    set_szp_flags_8((u8)res);
+    set_szp_flags_8(uint8(res));
     calc_carry_chain(8,s,d,res,1);
 
-    return (u8)res;
+    return uint8(res);
 }
 
 /****************************************************************************
@@ -360,10 +360,10 @@ u16 add_word(u16 d, u16 s)
     u32 res;   /* all operands in native machine order */
 
     res = d + s;
-    set_szp_flags_16((u16)res);
+    set_szp_flags_16(uint16(res));
     calc_carry_chain(16,s,d,res,1);
 
-    return (u16)res;
+    return uint16(res);
 }
 
 /****************************************************************************
@@ -433,7 +433,7 @@ u8 cmp_byte(u8 d, u8 s)
     u32 res;   /* all operands in native machine order */
 
     res = d - s;
-    set_szp_flags_8((u8)res);
+    set_szp_flags_8(uint8(res));
     calc_borrow_chain(8, d, s, res, 1);
 
     return d;
@@ -448,7 +448,7 @@ u16 cmp_word(u16 d, u16 s)
     u32 res;   /* all operands in native machine order */
 
     res = d - s;
-    set_szp_flags_16((u16)res);
+    set_szp_flags_16(uint16(res));
     calc_borrow_chain(16, d, s, res, 1);
 
     return d;
@@ -484,8 +484,8 @@ u8 daa_byte(u8 d)
         res += 0x60;
         SET_FLAG(F_CF);
     }
-    set_szp_flags_8((u8)res);
-    return (u8)res;
+    set_szp_flags_8(uint8(res));
+    return uint8(res);
 }
 
 /****************************************************************************
@@ -515,10 +515,10 @@ u8 dec_byte(u8 d)
     u32 res;   /* all operands in native machine order */
 
     res = d - 1;
-    set_szp_flags_8((u8)res);
+    set_szp_flags_8(uint8(res));
     calc_borrow_chain(8, d, 1, res, 0);
 
-    return (u8)res;
+    return uint8(res);
 }
 
 /****************************************************************************
@@ -530,10 +530,10 @@ u16 dec_word(u16 d)
     u32 res;   /* all operands in native machine order */
 
     res = d - 1;
-    set_szp_flags_16((u16)res);
+    set_szp_flags_16(uint16(res));
     calc_borrow_chain(16, d, 1, res, 0);
 
-    return (u16)res;
+    return uint16(res);
 }
 
 /****************************************************************************
@@ -561,10 +561,10 @@ u8 inc_byte(u8 d)
     u32 res;   /* all operands in native machine order */
 
     res = d + 1;
-    set_szp_flags_8((u8)res);
+    set_szp_flags_8(uint8(res));
     calc_carry_chain(8, d, 1, res, 0);
 
-    return (u8)res;
+    return uint8(res);
 }
 
 /****************************************************************************
@@ -576,10 +576,10 @@ u16 inc_word(u16 d)
     u32 res;   /* all operands in native machine order */
 
     res = d + 1;
-    set_szp_flags_16((u16)res);
+    set_szp_flags_16(uint16(res));
     calc_carry_chain(16, d, 1, res, 0);
 
-    return (u16)res;
+    return uint16(res);
 }
 
 /****************************************************************************
@@ -663,7 +663,7 @@ u16 neg_word(u16 s)
 
     CONDITIONAL_SET_FLAG(s != 0, F_CF);
     res = (u16)-s;
-    set_szp_flags_16((u16)res);
+    set_szp_flags_16(uint16(res));
     calc_borrow_chain(16, 0, s, res, 0);
 
     return res;
@@ -782,7 +782,7 @@ u8 rcl_byte(u8 d, u8 s)
                              F_OF);
 
     }
-    return (u8)res;
+    return uint8(res);
 }
 
 /****************************************************************************
@@ -806,7 +806,7 @@ u16 rcl_word(u16 d, u8 s)
         CONDITIONAL_SET_FLAG(cnt == 1 && XOR2(cf + ((res >> 14) & 0x2)),
                              F_OF);
     }
-    return (u16)res;
+    return uint16(res);
 }
 
 /****************************************************************************
@@ -914,7 +914,7 @@ u8 rcr_byte(u8 d, u8 s)
                                  F_OF);
         }
     }
-    return (u8)res;
+    return uint8(res);
 }
 
 /****************************************************************************
@@ -946,7 +946,7 @@ u16 rcr_word(u16 d, u8 s)
                                  F_OF);
         }
     }
-    return (u16)res;
+    return uint16(res);
 }
 
 /****************************************************************************
@@ -1028,7 +1028,7 @@ u8 rol_byte(u8 d, u8 s)
            bit of the result!!!                               */
         CONDITIONAL_SET_FLAG(res & 0x1, F_CF);
     }
-    return (u8)res;
+    return uint8(res);
 }
 
 /****************************************************************************
@@ -1053,7 +1053,7 @@ u16 rol_word(u16 d, u8 s)
            bit of the result!!!                               */
         CONDITIONAL_SET_FLAG(res & 0x1, F_CF);
     }
-    return (u16)res;
+    return uint16(res);
 }
 
 /****************************************************************************
@@ -1124,7 +1124,7 @@ u8 ror_byte(u8 d, u8 s)
            bit of the result!!!                               */
         CONDITIONAL_SET_FLAG(res & 0x80, F_CF);
     }
-    return (u8)res;
+    return uint8(res);
 }
 
 /****************************************************************************
@@ -1147,7 +1147,7 @@ u16 ror_word(u16 d, u8 s)
            bit of the result!!!                               */
         CONDITIONAL_SET_FLAG(res & 0x8000, F_CF);
     }
-    return (u16)res;
+    return uint16(res);
 }
 
 /****************************************************************************
@@ -1189,9 +1189,9 @@ u8 shl_byte(u8 d, u8 s)
             res = d << cnt;
             cf = d & (1 << (8 - cnt));
             CONDITIONAL_SET_FLAG(cf, F_CF);
-            set_szp_flags_8((u8)res);
+            set_szp_flags_8(uint8(res));
         } else {
-            res = (u8) d;
+            res = uint8(d);
         }
 
         if (cnt == 1) {
@@ -1212,7 +1212,7 @@ u8 shl_byte(u8 d, u8 s)
         SET_FLAG(F_PF);
         SET_FLAG(F_ZF);
     }
-    return (u8)res;
+    return uint8(res);
 }
 
 /****************************************************************************
@@ -1229,9 +1229,9 @@ u16 shl_word(u16 d, u8 s)
             res = d << cnt;
             cf = d & (1 << (16 - cnt));
             CONDITIONAL_SET_FLAG(cf, F_CF);
-            set_szp_flags_16((u16)res);
+            set_szp_flags_16(uint16(res));
         } else {
-            res = (u16) d;
+            res = uint16(d);
         }
 
         if (cnt == 1) {
@@ -1250,7 +1250,7 @@ u16 shl_word(u16 d, u8 s)
         SET_FLAG(F_PF);
         SET_FLAG(F_ZF);
     }
-    return (u16)res;
+    return uint16(res);
 }
 
 /****************************************************************************
@@ -1267,7 +1267,7 @@ u32 shl_long(u32 d, u8 s)
             res = d << cnt;
             cf = d & (1 << (32 - cnt));
             CONDITIONAL_SET_FLAG(cf, F_CF);
-            set_szp_flags_32((u32)res);
+            set_szp_flags_32(uint32(res));
         } else {
             res = d;
         }
@@ -1302,9 +1302,9 @@ u8 shr_byte(u8 d, u8 s)
             cf = d & (1 << (cnt - 1));
             res = d >> cnt;
             CONDITIONAL_SET_FLAG(cf, F_CF);
-            set_szp_flags_8((u8)res);
+            set_szp_flags_8(uint8(res));
         } else {
-            res = (u8) d;
+            res = uint8(d);
         }
 
         if (cnt == 1) {
@@ -1320,7 +1320,7 @@ u8 shr_byte(u8 d, u8 s)
         SET_FLAG(F_PF);
         SET_FLAG(F_ZF);
     }
-    return (u8)res;
+    return uint8(res);
 }
 
 /****************************************************************************
@@ -1337,7 +1337,7 @@ u16 shr_word(u16 d, u8 s)
             cf = d & (1 << (cnt - 1));
             res = d >> cnt;
             CONDITIONAL_SET_FLAG(cf, F_CF);
-            set_szp_flags_16((u16)res);
+            set_szp_flags_16(uint16(res));
         } else {
             res = d;
         }
@@ -1355,7 +1355,7 @@ u16 shr_word(u16 d, u8 s)
         CLEAR_FLAG(F_SF);
         CLEAR_FLAG(F_PF);
     }
-    return (u16)res;
+    return uint16(res);
 }
 
 /****************************************************************************
@@ -1372,7 +1372,7 @@ u32 shr_long(u32 d, u8 s)
             cf = d & (1 << (cnt - 1));
             res = d >> cnt;
             CONDITIONAL_SET_FLAG(cf, F_CF);
-            set_szp_flags_32((u32)res);
+            set_szp_flags_32(uint32(res));
         } else {
             res = d;
         }
@@ -1411,7 +1411,7 @@ u8 sar_byte(u8 d, u8 s)
         if (sf) {
             res |= ~mask;
         }
-        set_szp_flags_8((u8)res);
+        set_szp_flags_8(uint8(res));
     } else if (cnt >= 8) {
         if (sf) {
             res = 0xff;
@@ -1427,7 +1427,7 @@ u8 sar_byte(u8 d, u8 s)
             CLEAR_FLAG(F_PF);
         }
     }
-    return (u8)res;
+    return uint8(res);
 }
 
 /****************************************************************************
@@ -1449,7 +1449,7 @@ u16 sar_word(u16 d, u8 s)
         if (sf) {
             res |= ~mask;
         }
-        set_szp_flags_16((u16)res);
+        set_szp_flags_16(uint16(res));
     } else if (cnt >= 16) {
         if (sf) {
             res = 0xffff;
@@ -1465,7 +1465,7 @@ u16 sar_word(u16 d, u8 s)
             CLEAR_FLAG(F_PF);
         }
     }
-    return (u16)res;
+    return uint16(res);
 }
 
 /****************************************************************************
@@ -1520,7 +1520,7 @@ u16 shld_word (u16 d, u16 fill, u8 s)
             res = (d << cnt) | (fill >> (16-cnt));
             cf = d & (1 << (16 - cnt));
             CONDITIONAL_SET_FLAG(cf, F_CF);
-            set_szp_flags_16((u16)res);
+            set_szp_flags_16(uint16(res));
         } else {
             res = d;
         }
@@ -1538,7 +1538,7 @@ u16 shld_word (u16 d, u16 fill, u8 s)
         SET_FLAG(F_PF);
         SET_FLAG(F_ZF);
     }
-    return (u16)res;
+    return uint16(res);
 }
 
 /****************************************************************************
@@ -1555,7 +1555,7 @@ u32 shld_long (u32 d, u32 fill, u8 s)
             res = (d << cnt) | (fill >> (32-cnt));
             cf = d & (1 << (32 - cnt));
             CONDITIONAL_SET_FLAG(cf, F_CF);
-            set_szp_flags_32((u32)res);
+            set_szp_flags_32(uint32(res));
         } else {
             res = d;
         }
@@ -1590,7 +1590,7 @@ u16 shrd_word (u16 d, u16 fill, u8 s)
             cf = d & (1 << (cnt - 1));
             res = (d >> cnt) | (fill << (16 - cnt));
             CONDITIONAL_SET_FLAG(cf, F_CF);
-            set_szp_flags_16((u16)res);
+            set_szp_flags_16(uint16(res));
         } else {
             res = d;
         }
@@ -1608,7 +1608,7 @@ u16 shrd_word (u16 d, u16 fill, u8 s)
         CLEAR_FLAG(F_SF);
         CLEAR_FLAG(F_PF);
     }
-    return (u16)res;
+    return uint16(res);
 }
 
 /****************************************************************************
@@ -1625,7 +1625,7 @@ u32 shrd_long (u32 d, u32 fill, u8 s)
             cf = d & (1 << (cnt - 1));
             res = (d >> cnt) | (fill << (32 - cnt));
             CONDITIONAL_SET_FLAG(cf, F_CF);
-            set_szp_flags_32((u32)res);
+            set_szp_flags_32(uint32(res));
         } else {
             res = d;
         }
@@ -1658,14 +1658,14 @@ u8 sbb_byte(u8 d, u8 s)
         res = d - s - 1;
     else
         res = d - s;
-    set_szp_flags_8((u8)res);
+    set_szp_flags_8(uint8(res));
 
     /* calculate the borrow chain.  See note at top */
     bc = (res & (~d | s)) | (~d & s);
     CONDITIONAL_SET_FLAG(bc & 0x80, F_CF);
     CONDITIONAL_SET_FLAG(XOR2(bc >> 6), F_OF);
     CONDITIONAL_SET_FLAG(bc & 0x8, F_AF);
-    return (u8)res;
+    return uint8(res);
 }
 
 /****************************************************************************
@@ -1681,14 +1681,14 @@ u16 sbb_word(u16 d, u16 s)
         res = d - s - 1;
     else
         res = d - s;
-    set_szp_flags_16((u16)res);
+    set_szp_flags_16(uint16(res));
 
     /* calculate the borrow chain.  See note at top */
     bc = (res & (~d | s)) | (~d & s);
     CONDITIONAL_SET_FLAG(bc & 0x8000, F_CF);
     CONDITIONAL_SET_FLAG(XOR2(bc >> 14), F_OF);
     CONDITIONAL_SET_FLAG(bc & 0x8, F_AF);
-    return (u16)res;
+    return uint16(res);
 }
 
 /****************************************************************************
@@ -1725,14 +1725,14 @@ u8 sub_byte(u8 d, u8 s)
     u32 bc;
 
     res = d - s;
-    set_szp_flags_8((u8)res);
+    set_szp_flags_8(uint8(res));
 
     /* calculate the borrow chain.  See note at top */
     bc = (res & (~d | s)) | (~d & s);
     CONDITIONAL_SET_FLAG(bc & 0x80, F_CF);
     CONDITIONAL_SET_FLAG(XOR2(bc >> 6), F_OF);
     CONDITIONAL_SET_FLAG(bc & 0x8, F_AF);
-    return (u8)res;
+    return uint8(res);
 }
 
 /****************************************************************************
@@ -1745,14 +1745,14 @@ u16 sub_word(u16 d, u16 s)
     u32 bc;
 
     res = d - s;
-    set_szp_flags_16((u16)res);
+    set_szp_flags_16(uint16(res));
 
     /* calculate the borrow chain.  See note at top */
     bc = (res & (~d | s)) | (~d & s);
     CONDITIONAL_SET_FLAG(bc & 0x8000, F_CF);
     CONDITIONAL_SET_FLAG(XOR2(bc >> 14), F_OF);
     CONDITIONAL_SET_FLAG(bc & 0x8, F_AF);
-    return (u16)res;
+    return uint16(res);
 }
 
 /****************************************************************************
@@ -1786,7 +1786,7 @@ void test_byte(u8 d, u8 s)
     res = d & s;
 
     CLEAR_FLAG(F_OF);
-    set_szp_flags_8((u8)res);
+    set_szp_flags_8(uint8(res));
     /* AF == don't care */
     CLEAR_FLAG(F_CF);
 }
@@ -1802,7 +1802,7 @@ void test_word(u16 d, u16 s)
     res = d & s;
 
     CLEAR_FLAG(F_OF);
-    set_szp_flags_16((u16)res);
+    set_szp_flags_16(uint16(res));
     /* AF == don't care */
     CLEAR_FLAG(F_CF);
 }
@@ -1868,7 +1868,7 @@ Implements the IMUL instruction and side effects.
 ****************************************************************************/
 void imul_byte(u8 s)
 {
-    s16 res = (s16)((s8)M.x86.R_AL * (s8)s);
+    s16 res = (s16)(int8(M.x86.R_AL) * int8(s));
 
     M.x86.R_AX = res;
     if (((M.x86.R_AL & 0x80) == 0 && M.x86.R_AH == 0x00) ||
@@ -1887,9 +1887,9 @@ Implements the IMUL instruction and side effects.
 ****************************************************************************/
 void imul_word(u16 s)
 {
-    s32 res = (s16)M.x86.R_AX * (s16)s;
+    s32 res = int16(M.x86.R_AX) * int16(s);
 
-    M.x86.R_AX = (u16)res;
+    M.x86.R_AX = uint16(res);
     M.x86.R_DX = (u16)(res >> 16);
     if (((M.x86.R_AX & 0x8000) == 0 && M.x86.R_DX == 0x0000) ||
         ((M.x86.R_AX & 0x8000) != 0 && M.x86.R_DX == 0xFFFF)) {
@@ -1908,9 +1908,9 @@ Implements the IMUL instruction and side effects.
 void imul_long_direct(u32 *res_lo, u32* res_hi,u32 d, u32 s)
 {
 #ifdef  __HAS_LONG_LONG__
-    s64 res = (s64)(s32)d * (s64)(s32)s;
+    s64 res = (s64)int32(d) * (s64)int32(s);
 
-    *res_lo = (u32)res;
+    *res_lo = uint32(res);
     *res_hi = (u32)(res >> 32);
 #else
     u32 d_lo,d_hi,d_sign;
@@ -1982,7 +1982,7 @@ void mul_word(u16 s)
 {
     u32 res = M.x86.R_AX * s;
 
-    M.x86.R_AX = (u16)res;
+    M.x86.R_AX = uint16(res);
     M.x86.R_DX = (u16)(res >> 16);
     if (M.x86.R_DX == 0) {
         CLEAR_FLAG(F_CF);
@@ -2000,9 +2000,9 @@ Implements the MUL instruction and side effects.
 void mul_long(u32 s)
 {
 #ifdef  __HAS_LONG_LONG__
-    u64 res = (u64)M.x86.R_EAX * s;
+    u64 res = uint64(M.x86.R_EAX) * s;
 
-    M.x86.R_EAX = (u32)res;
+    M.x86.R_EAX = uint32(res);
     M.x86.R_EDX = (u32)(res >> 32);
 #else
     u32 a,a_lo,a_hi;
@@ -2037,19 +2037,19 @@ void idiv_byte(u8 s)
 {
     s32 dvd, div, mod;
 
-    dvd = (s16)M.x86.R_AX;
+    dvd = int16(M.x86.R_AX);
     if (s == 0) {
         x86emu_intr_raise(0);
         return;
     }
-    div = dvd / (s8)s;
-    mod = dvd % (s8)s;
+    div = dvd / int8(s);
+    mod = dvd % int8(s);
     if (abs(div) > 0x7f) {
         x86emu_intr_raise(0);
         return;
     }
-    M.x86.R_AL = (s8) div;
-    M.x86.R_AH = (s8) mod;
+    M.x86.R_AL = int8(div);
+    M.x86.R_AH = int8(mod);
 }
 
 /****************************************************************************
@@ -2060,13 +2060,13 @@ void idiv_word(u16 s)
 {
     s32 dvd, div, mod;
 
-    dvd = (((s32)M.x86.R_DX) << 16) | M.x86.R_AX;
+    dvd = ((int32(M.x86.R_DX)) << 16) | M.x86.R_AX;
     if (s == 0) {
         x86emu_intr_raise(0);
         return;
     }
-    div = dvd / (s16)s;
-    mod = dvd % (s16)s;
+    div = dvd / int16(s);
+    mod = dvd % int16(s);
     if (abs(div) > 0x7fff) {
         x86emu_intr_raise(0);
         return;
@@ -2076,8 +2076,8 @@ void idiv_word(u16 s)
     CONDITIONAL_SET_FLAG(div == 0, F_ZF);
     set_parity_flag(mod);
 
-    M.x86.R_AX = (u16)div;
-    M.x86.R_DX = (u16)mod;
+    M.x86.R_AX = uint16(div);
+    M.x86.R_DX = uint16(mod);
 }
 
 /****************************************************************************
@@ -2089,13 +2089,13 @@ void idiv_long(u32 s)
 #ifdef  __HAS_LONG_LONG__
     s64 dvd, div, mod;
 
-    dvd = (((s64)M.x86.R_EDX) << 32) | M.x86.R_EAX;
+    dvd = ((int64(M.x86.R_EDX)) << 32) | M.x86.R_EAX;
     if (s == 0) {
         x86emu_intr_raise(0);
         return;
     }
-    div = dvd / (s32)s;
-    mod = dvd % (s32)s;
+    div = dvd / int32(s);
+    mod = dvd % int32(s);
     if (abs(div) > 0x7fffffff) {
         x86emu_intr_raise(0);
         return;
@@ -2150,8 +2150,8 @@ void idiv_long(u32 s)
     SET_FLAG(F_ZF);
     set_parity_flag(mod);
 
-    M.x86.R_EAX = (u32)div;
-    M.x86.R_EDX = (u32)mod;
+    M.x86.R_EAX = uint32(div);
+    M.x86.R_EDX = uint32(mod);
 }
 
 /****************************************************************************
@@ -2167,14 +2167,14 @@ void div_byte(u8 s)
         x86emu_intr_raise(0);
         return;
     }
-    div = dvd / (u8)s;
-    mod = dvd % (u8)s;
+    div = dvd / uint8(s);
+    mod = dvd % uint8(s);
     if (abs(div) > 0xff) {
         x86emu_intr_raise(0);
         return;
     }
-    M.x86.R_AL = (u8)div;
-    M.x86.R_AH = (u8)mod;
+    M.x86.R_AL = uint8(div);
+    M.x86.R_AH = uint8(mod);
 }
 
 /****************************************************************************
@@ -2185,13 +2185,13 @@ void div_word(u16 s)
 {
     u32 dvd, div, mod;
 
-    dvd = (((u32)M.x86.R_DX) << 16) | M.x86.R_AX;
+    dvd = ((uint32(M.x86.R_DX)) << 16) | M.x86.R_AX;
     if (s == 0) {
         x86emu_intr_raise(0);
         return;
     }
-    div = dvd / (u16)s;
-    mod = dvd % (u16)s;
+    div = dvd / uint16(s);
+    mod = dvd % uint16(s);
     if (abs(div) > 0xffff) {
         x86emu_intr_raise(0);
         return;
@@ -2201,8 +2201,8 @@ void div_word(u16 s)
     CONDITIONAL_SET_FLAG(div == 0, F_ZF);
     set_parity_flag(mod);
 
-    M.x86.R_AX = (u16)div;
-    M.x86.R_DX = (u16)mod;
+    M.x86.R_AX = uint16(div);
+    M.x86.R_DX = uint16(mod);
 }
 
 /****************************************************************************
@@ -2214,13 +2214,13 @@ void div_long(u32 s)
 #ifdef  __HAS_LONG_LONG__
     u64 dvd, div, mod;
 
-    dvd = (((u64)M.x86.R_EDX) << 32) | M.x86.R_EAX;
+    dvd = ((uint64(M.x86.R_EDX)) << 32) | M.x86.R_EAX;
     if (s == 0) {
         x86emu_intr_raise(0);
         return;
     }
-    div = dvd / (u32)s;
-    mod = dvd % (u32)s;
+    div = dvd / uint32(s);
+    mod = dvd % uint32(s);
     if (abs(div) > 0xffffffff) {
         x86emu_intr_raise(0);
         return;
@@ -2271,8 +2271,8 @@ void div_long(u32 s)
     SET_FLAG(F_ZF);
     set_parity_flag(mod);
 
-    M.x86.R_EAX = (u32)div;
-    M.x86.R_EDX = (u32)mod;
+    M.x86.R_EAX = uint32(div);
+    M.x86.R_EDX = uint32(mod);
 }
 
 /****************************************************************************
@@ -2384,7 +2384,7 @@ void push_word(u16 w)
 DB( if (CHECK_SP_ACCESS())
       x86emu_check_sp_access();)
     M.x86.R_SP -= 2;
-    (*sys_wrw)(((u32)M.x86.R_SS << 4)  + M.x86.R_SP, w);
+    (*sys_wrw)((uint32(M.x86.R_SS) << 4)  + M.x86.R_SP, w);
 }
 
 /****************************************************************************
@@ -2398,7 +2398,7 @@ void push_long(u32 w)
 DB( if (CHECK_SP_ACCESS())
       x86emu_check_sp_access();)
     M.x86.R_SP -= 4;
-    (*sys_wrl)(((u32)M.x86.R_SS << 4)  + M.x86.R_SP, w);
+    (*sys_wrl)((uint32(M.x86.R_SS) << 4)  + M.x86.R_SP, w);
 }
 
 /****************************************************************************
@@ -2413,7 +2413,7 @@ u16 pop_word(void)
 
 DB( if (CHECK_SP_ACCESS())
       x86emu_check_sp_access();)
-    res = (*sys_rdw)(((u32)M.x86.R_SS << 4)  + M.x86.R_SP);
+    res = (*sys_rdw)((uint32(M.x86.R_SS) << 4)  + M.x86.R_SP);
     M.x86.R_SP += 2;
     return res;
 }
@@ -2430,7 +2430,7 @@ u32 pop_long(void)
 
 DB( if (CHECK_SP_ACCESS())
       x86emu_check_sp_access();)
-    res = (*sys_rdl)(((u32)M.x86.R_SS << 4)  + M.x86.R_SP);
+    res = (*sys_rdl)((uint32(M.x86.R_SS) << 4)  + M.x86.R_SP);
     M.x86.R_SP += 4;
     return res;
 }
