@@ -98,9 +98,9 @@
 ****************************************************************************/
 
 /*------------------------- Global Variables ------------------------------*/
+package main
 
-var x86emu_parity_tab[8]  uint32 =
-{
+var x86emu_parity_tab = [8]uint32 {
     0x96696996,
     0x69969669,
     0x69969669,
@@ -111,8 +111,13 @@ var x86emu_parity_tab[8]  uint32 =
     0x69969669,
 };
 
-#define PARITY(x)   (((x86emu_parity_tab[(x) / 32] >> ((x) % 32)) & 1) == 0)
-#define XOR2(x)     (((x) ^ ((x)>>1)) & 0x1)
+func PARITY(x uint32) bool {
+	return ((x86emu_parity_tab[x / 32] >> (x % 32)) & 1 == 0)
+}
+
+func XOR2(uint32) uint32 {
+	return (((x) ^ ((x)>>1)) & 0x1)
+}
 
 /*----------------------------- Implementation ----------------------------*/
 
