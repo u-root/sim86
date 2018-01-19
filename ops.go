@@ -4092,13 +4092,13 @@ func x86emuOp_call_near_IMM(_ u8) {
     START_OF_INSTR();
     DECODE_PRINTF("CALL\t");
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-        ip32 = (s32) fetch_long_imm();
-        ip32 += (s16) M.x86.R_IP; /* CHECK SIGN */
+        ip32 = int32(fetch_long_imm());
+        ip32 += int16(M.x86.R_IP); /* CHECK SIGN */
         DECODE_PRINTF2("%04x\n", uint16(ip32));
         CALL_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.R_CS, ip32, "");
     } else {
-        ip16 = (s16) fetch_word_imm();
-        ip16 += (s16) M.x86.R_IP; /* CHECK SIGN */
+        ip16 = int16(fetch_word_imm());
+        ip16 += int16(M.x86.R_IP); /* CHECK SIGN */
         DECODE_PRINTF2("%04x\n", ip16);
         CALL_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.R_CS, ip16, "");
     }
