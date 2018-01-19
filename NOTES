@@ -20,3 +20,9 @@ Now on to eliminating all the : ? stuff.
 added a simple set of functions: inc, dec, change
 Fixed some repne stuff by hand
 Multi line is a tad easier in emacs
+
+ops.go is as far as I can get until I do prim_ops.go
+
+But the register model is kinda fucked. Time to stop and redo it so registers have types and I don't have to do this
+by hand any more. This was kinda stupid. Once you have a register you should only be able to do certain things
+on it. My stupid bad.
