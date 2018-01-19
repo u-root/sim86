@@ -167,7 +167,7 @@ func no_carry_long_side_eff(res uint32) {
     set_szp_flags_32(res);
 }
 
-func calc_carry_chain(int bits, d uint32, s uint32, res uint32, int set_carry) {
+func calc_carry_chain(bits int, d uint32, s uint32, res uint32, set_carry int) {
     u32 cc;
 
     cc = (s & d) | ((~res) & (s | d));
@@ -178,7 +178,7 @@ func calc_carry_chain(int bits, d uint32, s uint32, res uint32, int set_carry) {
     }
 }
 
-func calc_borrow_chain(int bits, d uint32, s uint32, res uint32, int set_carry) {
+func calc_borrow_chain(bits int, d uint32, s uint32, res uint32, set_carry int) {
     u32 bc;
 
     bc = (res & (~d | s)) | (~d & s);
@@ -709,7 +709,7 @@ Implements the RCL instruction and side effects.
 ****************************************************************************/
 u8 rcl_byte(d uint8, s uint8)
 {
-    unsigned int res, cnt, mask, cf;
+    unsigned res int, cnt, mask, cf;
 
     /* s is the rotate distance.  It varies from 0 - 8. */
     /* have
@@ -782,7 +782,7 @@ Implements the RCL instruction and side effects.
 ****************************************************************************/
 u16 rcl_word(d uint16, s uint8)
 {
-    unsigned int res, cnt, mask, cf;
+    unsigned res int, cnt, mask, cf;
 
     res = d;
     if ((cnt = s % 17) != 0) {
@@ -979,7 +979,7 @@ Implements the ROL instruction and side effects.
 ****************************************************************************/
 u8 rol_byte(d uint8, s uint8)
 {
-    unsigned int res, cnt, mask;
+    unsigned res int, cnt, mask;
 
     /* rotate left */
     /*
@@ -1028,7 +1028,7 @@ Implements the ROL instruction and side effects.
 ****************************************************************************/
 u16 rol_word(d uint16, s uint8)
 {
-    unsigned int res, cnt, mask;
+    unsigned res int, cnt, mask;
 
     res = d;
     if ((cnt = s % 16) != 0) {
@@ -1078,7 +1078,7 @@ Implements the ROR instruction and side effects.
 ****************************************************************************/
 u8 ror_byte(d uint8, s uint8)
 {
-    unsigned int res, cnt, mask;
+    unsigned res int, cnt, mask;
 
     /* rotate right */
     /*
@@ -1124,7 +1124,7 @@ Implements the ROR instruction and side effects.
 ****************************************************************************/
 u16 ror_word(d uint16, s uint8)
 {
-    unsigned int res, cnt, mask;
+    unsigned res int, cnt, mask;
 
     res = d;
     if ((cnt = s % 16) != 0) {
@@ -1170,7 +1170,7 @@ Implements the SHL instruction and side effects.
 ****************************************************************************/
 u8 shl_byte(d uint8, s uint8)
 {
-    unsigned int cnt, res, cf;
+    unsigned cnt int, res, cf;
 
     if (s < 8) {
         cnt = s % 8;
@@ -1212,7 +1212,7 @@ Implements the SHL instruction and side effects.
 ****************************************************************************/
 u16 shl_word(d uint16, s uint8)
 {
-    unsigned int cnt, res, cf;
+    unsigned cnt int, res, cf;
 
     if (s < 16) {
         cnt = s % 16;
@@ -1250,7 +1250,7 @@ Implements the SHL instruction and side effects.
 ****************************************************************************/
 u32 shl_long(d uint32, s uint8)
 {
-    unsigned int cnt, res, cf;
+    unsigned cnt int, res, cf;
 
     if (s < 32) {
         cnt = s % 32;
@@ -1285,7 +1285,7 @@ Implements the SHR instruction and side effects.
 ****************************************************************************/
 u8 shr_byte(d uint8, s uint8)
 {
-    unsigned int cnt, res, cf;
+    unsigned cnt int, res, cf;
 
     if (s < 8) {
         cnt = s % 8;
@@ -1320,7 +1320,7 @@ Implements the SHR instruction and side effects.
 ****************************************************************************/
 u16 shr_word(d uint16, s uint8)
 {
-    unsigned int cnt, res, cf;
+    unsigned cnt int, res, cf;
 
     if (s < 16) {
         cnt = s % 16;
@@ -1355,7 +1355,7 @@ Implements the SHR instruction and side effects.
 ****************************************************************************/
 u32 shr_long(d uint32, s uint8)
 {
-    unsigned int cnt, res, cf;
+    unsigned cnt int, res, cf;
 
     if (s < 32) {
         cnt = s % 32;
@@ -1389,7 +1389,7 @@ Implements the SAR instruction and side effects.
 ****************************************************************************/
 u8 sar_byte(d uint8, s uint8)
 {
-    unsigned int cnt, res, cf, mask, sf;
+    unsigned cnt int, res, cf, mask, sf;
 
     res = d;
     sf = d & 0x80;
@@ -1427,7 +1427,7 @@ Implements the SAR instruction and side effects.
 ****************************************************************************/
 u16 sar_word(d uint16, s uint8)
 {
-    unsigned int cnt, res, cf, mask, sf;
+    unsigned cnt int, res, cf, mask, sf;
 
     sf = d & 0x8000;
     cnt = s % 16;
@@ -1503,7 +1503,7 @@ Implements the SHLD instruction and side effects.
 ****************************************************************************/
 u16 shld_word (d uint16, fill uint16, s uint8)
 {
-    unsigned int cnt, res, cf;
+    unsigned cnt int, res, cf;
 
     if (s < 16) {
         cnt = s % 16;
@@ -1538,7 +1538,7 @@ Implements the SHLD instruction and side effects.
 ****************************************************************************/
 u32 shld_long (d uint32, fill uint32, s uint8)
 {
-    unsigned int cnt, res, cf;
+    unsigned cnt int, res, cf;
 
     if (s < 32) {
         cnt = s % 32;
@@ -1573,7 +1573,7 @@ Implements the SHRD instruction and side effects.
 ****************************************************************************/
 u16 shrd_word (d uint16, fill uint16, s uint8)
 {
-    unsigned int cnt, res, cf;
+    unsigned cnt int, res, cf;
 
     if (s < 16) {
         cnt = s % 16;
@@ -1608,7 +1608,7 @@ Implements the SHRD instruction and side effects.
 ****************************************************************************/
 u32 shrd_long (d uint32, fill uint32, s uint8)
 {
-    unsigned int cnt, res, cf;
+    unsigned cnt int, res, cf;
 
     if (s < 32) {
         cnt = s % 32;
@@ -2255,7 +2255,7 @@ REMARKS:
 Implements the IN string instruction and side effects.
 ****************************************************************************/
 
-func single_in(int size) {
+func single_in(size int) {
     if (size == 1)
         store_data_byte_abs(M.x86.R_ES, M.x86.R_DI,sys_inb(M.x86.R_DX));
     else if (size == 2)
@@ -2264,7 +2264,7 @@ func single_in(int size) {
         store_data_long_abs(M.x86.R_ES, M.x86.R_DI,sys_inl(M.x86.R_DX));
 }
 
-func ins(int size) {
+func ins(size int) {
     int inc = size;
 
     if (ACCESS_FLAG(F_DF)) {
@@ -2295,7 +2295,7 @@ REMARKS:
 Implements the OUT string instruction and side effects.
 ****************************************************************************/
 
-func single_out(int size) {
+func single_out(size int) {
      if (size == 1)
        sys_outb(M.x86.R_DX,fetch_data_byte_abs(M.x86.R_ES, M.x86.R_SI));
      else if (size == 2)
@@ -2304,7 +2304,7 @@ func single_out(int size) {
        sys_outl(M.x86.R_DX,fetch_data_long_abs(M.x86.R_ES, M.x86.R_SI));
 }
 
-func outs(int size) {
+func outs(size int) {
     int inc = size;
 
     if (ACCESS_FLAG(F_DF)) {
@@ -2337,7 +2337,7 @@ addr    - Address to fetch word from
 REMARKS:
 Fetches a word from emulator memory using an absolute address.
 ****************************************************************************/
-u16 mem_access_word(int addr)
+u16 mem_access_word(addr int)
 {
 DB( if (CHECK_MEM_ACCESS())
       x86emu_check_mem_access(addr);)
