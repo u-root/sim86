@@ -240,7 +240,7 @@ Implements the AAD instruction and side effects.
 ****************************************************************************/
 func  aad_word(d uint16)  uint16 {
 var l uint16
-    hb uint8, lb;
+	var lb, hb uint8
 
     hb = (u8)((d >> 8) & 0xff);
     lb = (u8)((d & 0xff));
@@ -255,7 +255,7 @@ REMARKS:
 Implements the AAM instruction and side effects.
 ****************************************************************************/
 func  aam_word(d uint8)  uint16 {
-    h uint16, l;
+	var l, h uint16
 
     h = (u16)(d / 10);
     l = (u16)(d % 10);
@@ -269,8 +269,7 @@ func  aam_word(d uint8)  uint16 {
 REMARKS:
 Implements the ADC instruction and side effects.
 ****************************************************************************/
-u8 adc_byte(d uint8, s uint8)
-{
+func  adc_byte(d uint8, s uint8)  uint8 {
     var res u32;   /* all operands in native machine order */
 
     res = d + s;
@@ -330,8 +329,7 @@ var hi uint32
 REMARKS:
 Implements the ADD instruction and side effects.
 ****************************************************************************/
-u8 add_byte(d uint8, s uint8)
-{
+func  add_byte(d uint8, s uint8)  uint8 {
     var res u32;   /* all operands in native machine order */
 
     res = d + s;
@@ -375,8 +373,7 @@ func add_long(d uint32, s uint32)  uint32 {
 REMARKS:
 Implements the AND instruction and side effects.
 ****************************************************************************/
-u8 and_byte(d uint8, s uint8)
-{
+func  and_byte(d uint8, s uint8)  uint8 {
 var res uint8    /* all operands in native machine order */
 
     res = d & s;
@@ -414,8 +411,7 @@ func and_long(d uint32, s uint32)  uint32 {
 REMARKS:
 Implements the CMP instruction and side effects.
 ****************************************************************************/
-u8 cmp_byte(d uint8, s uint8)
-{
+func  cmp_byte(d uint8, s uint8)  uint8 {
     var res u32;   /* all operands in native machine order */
 
     res = d - s;
@@ -457,8 +453,7 @@ func cmp_long(d uint32, s uint32)  uint32 {
 REMARKS:
 Implements the DAA instruction and side effects.
 ****************************************************************************/
-u8 daa_byte(d uint8)
-{
+func  daa_byte(d uint8)  uint8 {
     var res u32 = d;
     if ((d & 0xf) > 9 || ACCESS_FLAG(F_AF)) {
         res += 6;
@@ -476,8 +471,7 @@ u8 daa_byte(d uint8)
 REMARKS:
 Implements the DAS instruction and side effects.
 ****************************************************************************/
-u8 das_byte(d uint8)
-{
+func  das_byte(d uint8)  uint8 {
     if ((d & 0xf) > 9 || ACCESS_FLAG(F_AF)) {
         d -= 6;
         SET_FLAG(F_AF);
@@ -494,8 +488,7 @@ u8 das_byte(d uint8)
 REMARKS:
 Implements the DEC instruction and side effects.
 ****************************************************************************/
-u8 dec_byte(d uint8)
-{
+func  dec_byte(d uint8)  uint8 {
     var res u32;   /* all operands in native machine order */
 
     res = d - 1;
@@ -538,8 +531,7 @@ func dec_long(d uint32)  uint32 {
 REMARKS:
 Implements the INC instruction and side effects.
 ****************************************************************************/
-u8 inc_byte(d uint8)
-{
+func  inc_byte(d uint8)  uint8 {
     var res u32;   /* all operands in native machine order */
 
     res = d + 1;
@@ -581,8 +573,7 @@ func inc_long(d uint32)  uint32 {
 REMARKS:
 Implements the OR instruction and side effects.
 ****************************************************************************/
-u8 or_byte(d uint8, s uint8)
-{
+func  or_byte(d uint8, s uint8)  uint8 {
 var res uint8    /* all operands in native machine order */
 
     res = d | s;
@@ -619,8 +610,7 @@ func or_long(d uint32, s uint32)  uint32 {
 REMARKS:
 Implements the OR instruction and side effects.
 ****************************************************************************/
-u8 neg_byte(s uint8)
-{
+func  neg_byte(s uint8)  uint8 {
 var res uint8
 
     CONDITIONAL_SET_FLAG(s != 0, F_CF);
@@ -665,8 +655,7 @@ func neg_long(s uint32)  uint32 {
 REMARKS:
 Implements the NOT instruction and side effects.
 ****************************************************************************/
-u8 not_byte(s uint8)
-{
+func  not_byte(s uint8)  uint8 {
     return ^s;
 }
 
@@ -690,8 +679,7 @@ func not_long(s uint32)  uint32 {
 REMARKS:
 Implements the RCL instruction and side effects.
 ****************************************************************************/
-u8 rcl_byte(d uint8, s uint8)
-{
+func  rcl_byte(d uint8, s uint8)  uint8 {
     unsigned res int, cnt, mask, cf;
 
     /* s is the rotate distance.  It varies from 0 - 8. */
@@ -809,8 +797,7 @@ func rcl_long(d uint32, s uint8)  uint32 {
 REMARKS:
 Implements the RCR instruction and side effects.
 ****************************************************************************/
-u8 rcr_byte(d uint8, s uint8)
-{
+func  rcr_byte(d uint8, s uint8)  uint8 {
     var res u32, cnt;
     mask uint32, cf, ocf = 0;
 
@@ -956,8 +943,7 @@ func rcr_long(d uint32, s uint8)  uint32 {
 REMARKS:
 Implements the ROL instruction and side effects.
 ****************************************************************************/
-u8 rol_byte(d uint8, s uint8)
-{
+func  rol_byte(d uint8, s uint8)  uint8 {
     unsigned res int, cnt, mask;
 
     /* rotate left */
@@ -1053,8 +1039,7 @@ func rol_long(d uint32, s uint8)  uint32 {
 REMARKS:
 Implements the ROR instruction and side effects.
 ****************************************************************************/
-u8 ror_byte(d uint8, s uint8)
-{
+func  ror_byte(d uint8, s uint8)  uint8 {
     unsigned res int, cnt, mask;
 
     /* rotate right */
@@ -1143,8 +1128,7 @@ func ror_long(d uint32, s uint8)  uint32 {
 REMARKS:
 Implements the SHL instruction and side effects.
 ****************************************************************************/
-u8 shl_byte(d uint8, s uint8)
-{
+func  shl_byte(d uint8, s uint8)  uint8 {
     unsigned cnt int, res, cf;
 
     if (s < 8) {
@@ -1256,8 +1240,7 @@ func shl_long(d uint32, s uint8)  uint32 {
 REMARKS:
 Implements the SHR instruction and side effects.
 ****************************************************************************/
-u8 shr_byte(d uint8, s uint8)
-{
+func  shr_byte(d uint8, s uint8)  uint8 {
     unsigned cnt int, res, cf;
 
     if (s < 8) {
@@ -1358,8 +1341,7 @@ func shr_long(d uint32, s uint8)  uint32 {
 REMARKS:
 Implements the SAR instruction and side effects.
 ****************************************************************************/
-u8 sar_byte(d uint8, s uint8)
-{
+func  sar_byte(d uint8, s uint8)  uint8 {
     unsigned cnt int, res, cf, mask, sf;
 
     res = d;
@@ -1605,8 +1587,7 @@ func shrd_long (d uint32, fill uint32, s uint8)  uint32 {
 REMARKS:
 Implements the SBB instruction and side effects.
 ****************************************************************************/
-u8 sbb_byte(d uint8, s uint8)
-{
+func  sbb_byte(d uint8, s uint8)  uint8 {
     var res u32;   /* all operands in native machine order */
 var bc uint32
 
@@ -1673,8 +1654,7 @@ var bc uint32
 REMARKS:
 Implements the SUB instruction and side effects.
 ****************************************************************************/
-u8 sub_byte(d uint8, s uint8)
-{
+func  sub_byte(d uint8, s uint8)  uint8 {
     var res u32;   /* all operands in native machine order */
 var bc uint32
 
@@ -1776,8 +1756,7 @@ func test_long(d uint32, s uint32) {
 REMARKS:
 Implements the XOR instruction and side effects.
 ****************************************************************************/
-u8 xor_byte(d uint8, s uint8)
-{
+func  xor_byte(d uint8, s uint8)  uint8 {
 var res uint8    /* all operands in native machine order */
 
     res = d ^ s;

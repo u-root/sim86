@@ -31,3 +31,6 @@ prim_ops.go
 staticvoid
 sys_
 casts
+fixfuncdecls
+fixdecls
+some fixes by hand
