@@ -82,7 +82,7 @@ var x86emu_GenOpName = []string {
 // :g/^var/s/\(u.[624]*\)\(.*\)=/\2 \1 = 
 
 /* used by several opcodes  */
-var genop_byte_operation= []func(u8 d, u8 s) u8 {
+var genop_byte_operation= []func(d, s uint8) uint8 {
     add_byte, /* 00 */
     or_byte, /* 01 */
     adc_byte, /* 02 */
@@ -165,7 +165,7 @@ op1 - Instruction op code
 REMARKS:
 Handles illegal opcodes.
 ****************************************************************************/
-func x86emuOp_illegal_op( u8 op1) {
+func x86emuOp_illegal_op( op1 uint8) {
     START_OF_INSTR();
     if (M.x86.R_SP != 0) {
         DECODE_PRINTF("ILLEGAL X86 OPCODE\n");
@@ -189,7 +189,7 @@ func x86emuOp_illegal_op( u8 op1) {
 REMARKS:
 Handles opcodes 0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38
 ****************************************************************************/
-func x86emuOp_genop_byte_RM_R(u8 op1) {
+func x86emuOp_genop_byte_RM_R(op1 uint8) {
     var mod, rl, rh int
     var destoffset uint
     var destreg, srcreg *u8
@@ -228,7 +228,7 @@ func x86emuOp_genop_byte_RM_R(u8 op1) {
 REMARKS:
 Handles opcodes 0x01, 0x09, 0x11, 0x19, 0x21, 0x29, 0x31, 0x39
 ****************************************************************************/
-func x86emuOp_genop_word_RM_R(u8 op1) {
+func x86emuOp_genop_word_RM_R(op1 uint8) {
     var mod, rl, rh int
     var destoffset uint
 
@@ -288,7 +288,7 @@ func x86emuOp_genop_word_RM_R(u8 op1) {
 REMARKS:
 Handles opcodes 0x02, 0x0a, 0x12, 0x1a, 0x22, 0x2a, 0x32, 0x3a
 ****************************************************************************/
-func x86emuOp_genop_byte_R_RM(u8 op1) {
+func x86emuOp_genop_byte_R_RM(op1 uint8) {
     var mod, rl, rh int
     var destreg, srcreg *u8
     var srcoffset uint
@@ -323,7 +323,7 @@ func x86emuOp_genop_byte_R_RM(u8 op1) {
 REMARKS:
 Handles opcodes 0x03, 0x0b, 0x13, 0x1b, 0x23, 0x2b, 0x33, 0x3b
 ****************************************************************************/
-func x86emuOp_genop_word_R_RM(u8 op1) {
+func x86emuOp_genop_word_R_RM(op1 uint8) {
     var mod, rl, rh int
 
     op1 = (op1 >> 3) & 0x7;
@@ -374,7 +374,7 @@ func x86emuOp_genop_word_R_RM(u8 op1) {
 REMARKS:
 Handles opcodes 0x04, 0x0c, 0x14, 0x1c, 0x24, 0x2c, 0x34, 0x3c
 ****************************************************************************/
-func x86emuOp_genop_byte_AL_IMM( op1 u8) {
+func x86emuOp_genop_byte_AL_IMM( op1 uint8) {
 
     op1 = (op1 >> 3) & 0x7;
 
@@ -393,7 +393,7 @@ func x86emuOp_genop_byte_AL_IMM( op1 u8) {
 REMARKS:
 Handles opcodes 0x05, 0x0d, 0x15, 0x1d, 0x25, 0x2d, 0x35, 0x3d
 ****************************************************************************/
-func x86emuOp_genop_word_AX_IMM(u8 op1) {
+func x86emuOp_genop_word_AX_IMM(op1 uint8) {
     var srcval u32
 
     op1 = (op1 >> 3) & 0x7;
@@ -423,7 +423,7 @@ func x86emuOp_genop_word_AX_IMM(u8 op1) {
 REMARKS:
 Handles opcode 0x06
 ****************************************************************************/
-func x86emuOp_push_ES(_ u8) {
+func x86emuOp_push_ES(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("PUSH\tES\n");
     TRACE_AND_STEP();
@@ -436,7 +436,7 @@ func x86emuOp_push_ES(_ u8) {
 REMARKS:
 Handles opcode 0x07
 ****************************************************************************/
-func x86emuOp_pop_ES(_ u8) {
+func x86emuOp_pop_ES(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("POP\tES\n");
     TRACE_AND_STEP();
@@ -449,7 +449,7 @@ func x86emuOp_pop_ES(_ u8) {
 REMARKS:
 Handles opcode 0x0e
 ****************************************************************************/
-func x86emuOp_push_CS(_ u8) {
+func x86emuOp_push_CS(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("PUSH\tCS\n");
     TRACE_AND_STEP();
@@ -462,7 +462,7 @@ func x86emuOp_push_CS(_ u8) {
 REMARKS:
 Handles opcode 0x0f. Escape for two-byte opcode (286 or better)
 ****************************************************************************/
-func x86emuOp_two_byte(_ u8) {
+func x86emuOp_two_byte(_ uint8) {
 	op2 := sys_rdb((uint32(M.x86.R_CS) << 4) + (M.x86.R_IP))
 	M.x86.R_IP++
     INC_DECODED_INST_LEN(1);
@@ -473,7 +473,7 @@ func x86emuOp_two_byte(_ u8) {
 REMARKS:
 Handles opcode 0x16
 ****************************************************************************/
-func x86emuOp_push_SS(_ u8) {
+func x86emuOp_push_SS(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("PUSH\tSS\n");
     TRACE_AND_STEP();
@@ -486,7 +486,7 @@ func x86emuOp_push_SS(_ u8) {
 REMARKS:
 Handles opcode 0x17
 ****************************************************************************/
-func x86emuOp_pop_SS(_ u8) {
+func x86emuOp_pop_SS(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("POP\tSS\n");
     TRACE_AND_STEP();
@@ -499,7 +499,7 @@ func x86emuOp_pop_SS(_ u8) {
 REMARKS:
 Handles opcode 0x1e
 ****************************************************************************/
-func x86emuOp_push_DS(_ u8) {
+func x86emuOp_push_DS(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("PUSH\tDS\n");
     TRACE_AND_STEP();
@@ -512,7 +512,7 @@ func x86emuOp_push_DS(_ u8) {
 REMARKS:
 Handles opcode 0x1f
 ****************************************************************************/
-func x86emuOp_pop_DS(_ u8) {
+func x86emuOp_pop_DS(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("POP\tDS\n");
     TRACE_AND_STEP();
@@ -525,7 +525,7 @@ func x86emuOp_pop_DS(_ u8) {
 REMARKS:
 Handles opcode 0x26
 ****************************************************************************/
-func x86emuOp_segovr_ES(_ u8) {
+func x86emuOp_segovr_ES(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("ES:\n");
     TRACE_AND_STEP();
@@ -541,7 +541,7 @@ func x86emuOp_segovr_ES(_ u8) {
 REMARKS:
 Handles opcode 0x27
 ****************************************************************************/
-func x86emuOp_daa(_ u8) {
+func x86emuOp_daa(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("DAA\n");
     TRACE_AND_STEP();
@@ -554,7 +554,7 @@ func x86emuOp_daa(_ u8) {
 REMARKS:
 Handles opcode 0x2e
 ****************************************************************************/
-func x86emuOp_segovr_CS(_ u8) {
+func x86emuOp_segovr_CS(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("CS:\n");
     TRACE_AND_STEP();
@@ -567,7 +567,7 @@ func x86emuOp_segovr_CS(_ u8) {
 REMARKS:
 Handles opcode 0x2f
 ****************************************************************************/
-func x86emuOp_das(_ u8) {
+func x86emuOp_das(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("DAS\n");
     TRACE_AND_STEP();
@@ -580,7 +580,7 @@ func x86emuOp_das(_ u8) {
 REMARKS:
 Handles opcode 0x36
 ****************************************************************************/
-func x86emuOp_segovr_SS(_ u8) {
+func x86emuOp_segovr_SS(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("SS:\n");
     TRACE_AND_STEP();
@@ -593,7 +593,7 @@ func x86emuOp_segovr_SS(_ u8) {
 REMARKS:
 Handles opcode 0x37
 ****************************************************************************/
-func x86emuOp_aaa(_ u8) {
+func x86emuOp_aaa(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("AAA\n");
     TRACE_AND_STEP();
@@ -606,7 +606,7 @@ func x86emuOp_aaa(_ u8) {
 REMARKS:
 Handles opcode 0x3e
 ****************************************************************************/
-func x86emuOp_segovr_DS(_ u8) {
+func x86emuOp_segovr_DS(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("DS:\n");
     TRACE_AND_STEP();
@@ -619,7 +619,7 @@ func x86emuOp_segovr_DS(_ u8) {
 REMARKS:
 Handles opcode 0x3f
 ****************************************************************************/
-func x86emuOp_aas(_ u8) {
+func x86emuOp_aas(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("AAS\n");
     TRACE_AND_STEP();
@@ -632,7 +632,7 @@ func x86emuOp_aas(_ u8) {
 REMARKS:
 Handles opcode 0x40 - 0x47
 ****************************************************************************/
-func x86emuOp_inc_register(u8 op1) {
+func x86emuOp_inc_register(op1 uint8) {
     START_OF_INSTR();
     op1 &= 0x7;
     DECODE_PRINTF("INC\t");
@@ -657,7 +657,7 @@ func x86emuOp_inc_register(u8 op1) {
 REMARKS:
 Handles opcode 0x48 - 0x4F
 ****************************************************************************/
-func x86emuOp_dec_register(u8 op1) {
+func x86emuOp_dec_register(op1 uint8) {
     START_OF_INSTR();
     op1 &= 0x7;
     DECODE_PRINTF("DEC\t");
@@ -682,7 +682,7 @@ func x86emuOp_dec_register(u8 op1) {
 REMARKS:
 Handles opcode 0x50 - 0x57
 ****************************************************************************/
-func x86emuOp_push_register(u8 op1) {
+func x86emuOp_push_register(op1 uint8) {
     START_OF_INSTR();
     op1 &= 0x7;
     DECODE_PRINTF("PUSH\t");
@@ -707,7 +707,7 @@ func x86emuOp_push_register(u8 op1) {
 REMARKS:
 Handles opcode 0x58 - 0x5F
 ****************************************************************************/
-func x86emuOp_pop_register(u8 op1) {
+func x86emuOp_pop_register(op1 uint8) {
     START_OF_INSTR();
     op1 &= 0x7;
     DECODE_PRINTF("POP\t");
@@ -732,7 +732,7 @@ func x86emuOp_pop_register(u8 op1) {
 REMARKS:
 Handles opcode 0x60
 ****************************************************************************/
-func x86emuOp_push_all(_ u8) {
+func x86emuOp_push_all(_ uint8) {
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF("PUSHAD\n");
@@ -771,7 +771,7 @@ func x86emuOp_push_all(_ u8) {
 REMARKS:
 Handles opcode 0x61
 ****************************************************************************/
-func x86emuOp_pop_all(_ u8) {
+func x86emuOp_pop_all(_ uint8) {
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF("POPAD\n");
@@ -809,7 +809,7 @@ func x86emuOp_pop_all(_ u8) {
 REMARKS:
 Handles opcode 0x64
 ****************************************************************************/
-func x86emuOp_segovr_FS(_ u8) {
+func x86emuOp_segovr_FS(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("FS:\n");
     TRACE_AND_STEP();
@@ -825,7 +825,7 @@ func x86emuOp_segovr_FS(_ u8) {
 REMARKS:
 Handles opcode 0x65
 ****************************************************************************/
-func x86emuOp_segovr_GS(_ u8) {
+func x86emuOp_segovr_GS(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("GS:\n");
     TRACE_AND_STEP();
@@ -841,7 +841,7 @@ func x86emuOp_segovr_GS(_ u8) {
 REMARKS:
 Handles opcode 0x66 - prefix for 32-bit register
 ****************************************************************************/
-func x86emuOp_prefix_data(_ u8) {
+func x86emuOp_prefix_data(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("DATA:\n");
     TRACE_AND_STEP();
@@ -854,7 +854,7 @@ func x86emuOp_prefix_data(_ u8) {
 REMARKS:
 Handles opcode 0x67 - prefix for 32-bit address
 ****************************************************************************/
-func x86emuOp_prefix_addr(_ u8) {
+func x86emuOp_prefix_addr(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("ADDR:\n");
     TRACE_AND_STEP();
@@ -867,7 +867,7 @@ func x86emuOp_prefix_addr(_ u8) {
 REMARKS:
 Handles opcode 0x68
 ****************************************************************************/
-func x86emuOp_push_word_IMM(_ u8) {
+func x86emuOp_push_word_IMM(_ uint8) {
     var imm uint32
 
     START_OF_INSTR();
@@ -891,7 +891,7 @@ func x86emuOp_push_word_IMM(_ u8) {
 REMARKS:
 Handles opcode 0x69
 ****************************************************************************/
-func x86emuOp_imul_word_IMM(_ u8) {
+func x86emuOp_imul_word_IMM(_ uint8) {
     var mod, rl, rh int
     var srcoffset uint
 
@@ -987,7 +987,7 @@ func x86emuOp_imul_word_IMM(_ u8) {
 REMARKS:
 Handles opcode 0x6a
 ****************************************************************************/
-func x86emuOp_push_byte_IMM(_ u8) {
+func x86emuOp_push_byte_IMM(_ uint8) {
     var imm int16
 
     START_OF_INSTR();
@@ -1007,7 +1007,7 @@ func x86emuOp_push_byte_IMM(_ u8) {
 REMARKS:
 Handles opcode 0x6b
 ****************************************************************************/
-func x86emuOp_imul_byte_IMM(_ u8) {
+func x86emuOp_imul_byte_IMM(_ uint8) {
     var mod, rl, rh int
     var srcoffset uint
     var imm int8
@@ -1105,7 +1105,7 @@ func x86emuOp_imul_byte_IMM(_ u8) {
 REMARKS:
 Handles opcode 0x6c
 ****************************************************************************/
-func x86emuOp_ins_byte(_ u8) {
+func x86emuOp_ins_byte(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("INSB\n");
     ins(1);
@@ -1118,7 +1118,7 @@ func x86emuOp_ins_byte(_ u8) {
 REMARKS:
 Handles opcode 0x6d
 ****************************************************************************/
-func x86emuOp_ins_word(_ u8) {
+func x86emuOp_ins_word(_ uint8) {
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF("INSD\n");
@@ -1136,7 +1136,7 @@ func x86emuOp_ins_word(_ u8) {
 REMARKS:
 Handles opcode 0x6e
 ****************************************************************************/
-func x86emuOp_outs_byte(_ u8) {
+func x86emuOp_outs_byte(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("OUTSB\n");
     outs(1);
@@ -1149,7 +1149,7 @@ func x86emuOp_outs_byte(_ u8) {
 REMARKS:
 Handles opcode 0x6f
 ****************************************************************************/
-func x86emuOp_outs_word(_ u8) {
+func x86emuOp_outs_word(_ uint8) {
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF("OUTSD\n");
@@ -1167,7 +1167,7 @@ func x86emuOp_outs_word(_ u8) {
 REMARKS:
 Handles opcode 0x70 - 0x7F
 ****************************************************************************/
-func x86emuOp_jump_near_cond(u8 op1) {
+func x86emuOp_jump_near_cond(op1 uint8) {
 var offset int8
 var target uint16
 var cond int32
@@ -1191,7 +1191,7 @@ var cond int32
 REMARKS:
 Handles opcode 0x80
 ****************************************************************************/
-func x86emuOp_opc80_byte_RM_IMM(_ u8) {
+func x86emuOp_opc80_byte_RM_IMM(_ uint8) {
     var mod, rl, rh int
 var destreg *uint8
     var destoffset uint
@@ -1270,7 +1270,7 @@ var imm uint8
 REMARKS:
 Handles opcode 0x81
 ****************************************************************************/
-func x86emuOp_opc81_word_RM_IMM(_ u8) {
+func x86emuOp_opc81_word_RM_IMM(_ uint8) {
     var mod, rl, rh int
     var destoffset uint
 
@@ -1371,7 +1371,7 @@ func x86emuOp_opc81_word_RM_IMM(_ u8) {
 REMARKS:
 Handles opcode 0x82
 ****************************************************************************/
-func x86emuOp_opc82_byte_RM_IMM(_ u8) {
+func x86emuOp_opc82_byte_RM_IMM(_ uint8) {
     var mod, rl, rh int
 var destreg *uint8
     var destoffset uint
@@ -1448,7 +1448,7 @@ var imm uint8
 REMARKS:
 Handles opcode 0x83
 ****************************************************************************/
-func x86emuOp_opc83_word_RM_IMM(_ u8) {
+func x86emuOp_opc83_word_RM_IMM(_ uint8) {
     var mod, rl, rh int
     var destoffset uint
 
@@ -1547,7 +1547,7 @@ var destval,imm uint16
 REMARKS:
 Handles opcode 0x84
 ****************************************************************************/
-func x86emuOp_test_byte_RM_R(_ u8) {
+func x86emuOp_test_byte_RM_R(_ uint8) {
     var mod, rl, rh int
     var destreg, srcreg *u8
     var destoffset uint
@@ -1580,7 +1580,7 @@ func x86emuOp_test_byte_RM_R(_ u8) {
 REMARKS:
 Handles opcode 0x85
 ****************************************************************************/
-func x86emuOp_test_word_RM_R(_ u8) {
+func x86emuOp_test_word_RM_R(_ uint8) {
     var mod, rl, rh int
     var destoffset uint
 
@@ -1630,7 +1630,7 @@ func x86emuOp_test_word_RM_R(_ u8) {
 REMARKS:
 Handles opcode 0x86
 ****************************************************************************/
-func x86emuOp_xchg_byte_RM_R(_ u8) {
+func x86emuOp_xchg_byte_RM_R(_ uint8) {
     var mod, rl, rh int
     var destreg, srcreg *u8
     var destoffset uint
@@ -1669,7 +1669,7 @@ var tmp uint8
 REMARKS:
 Handles opcode 0x87
 ****************************************************************************/
-func x86emuOp_xchg_word_RM_R(_ u8) {
+func x86emuOp_xchg_word_RM_R(_ uint8) {
     var mod, rl, rh int
     var destoffset uint
 
@@ -1732,7 +1732,7 @@ var tmp uint16
 REMARKS:
 Handles opcode 0x88
 ****************************************************************************/
-func x86emuOp_mov_byte_RM_R(_ u8) {
+func x86emuOp_mov_byte_RM_R(_ uint8) {
     var mod, rl, rh int
     var destreg, srcreg *u8
     var destoffset uint
@@ -1763,7 +1763,7 @@ func x86emuOp_mov_byte_RM_R(_ u8) {
 REMARKS:
 Handles opcode 0x89
 ****************************************************************************/
-func x86emuOp_mov_word_RM_R(_ u8) {
+func x86emuOp_mov_word_RM_R(_ uint8) {
     var mod, rl, rh int
     var destoffset uint
 
@@ -1814,7 +1814,7 @@ func x86emuOp_mov_word_RM_R(_ u8) {
 REMARKS:
 Handles opcode 0x8a
 ****************************************************************************/
-func x86emuOp_mov_byte_R_RM(_ u8) {
+func x86emuOp_mov_byte_R_RM(_ uint8) {
     var mod, rl, rh int
     var destreg, srcreg *u8
     var srcoffset uint
@@ -1847,7 +1847,7 @@ func x86emuOp_mov_byte_R_RM(_ u8) {
 REMARKS:
 Handles opcode 0x8b
 ****************************************************************************/
-func x86emuOp_mov_word_R_RM(_ u8) {
+func x86emuOp_mov_word_R_RM(_ uint8) {
     var mod, rl, rh int
     var srcoffset uint
 
@@ -1901,7 +1901,7 @@ func x86emuOp_mov_word_R_RM(_ u8) {
 REMARKS:
 Handles opcode 0x8c
 ****************************************************************************/
-func x86emuOp_mov_word_RM_SR(_ u8) {
+func x86emuOp_mov_word_RM_SR(_ uint8) {
     var mod, rl, rh int
     var destreg, srcreg *u16
     var destoffset uint
@@ -1934,7 +1934,7 @@ func x86emuOp_mov_word_RM_SR(_ u8) {
 REMARKS:
 Handles opcode 0x8d
 ****************************************************************************/
-func x86emuOp_lea_word_R_M(_ u8) {
+func x86emuOp_lea_word_R_M(_ uint8) {
     var mod, rl, rh int
     var destoffset uint
 
@@ -1967,7 +1967,7 @@ func x86emuOp_lea_word_R_M(_ u8) {
 REMARKS:
 Handles opcode 0x8e
 ****************************************************************************/
-func x86emuOp_mov_word_SR_RM(_ u8) {
+func x86emuOp_mov_word_SR_RM(_ uint8) {
     var mod, rl, rh int
     var destreg, srcreg *u16
     var srcoffset uint
@@ -2006,7 +2006,7 @@ func x86emuOp_mov_word_SR_RM(_ u8) {
 REMARKS:
 Handles opcode 0x8f
 ****************************************************************************/
-func x86emuOp_pop_RM(_ u8) {
+func x86emuOp_pop_RM(_ uint8) {
     var mod, rl, rh int
     var destoffset uint
 
@@ -2056,7 +2056,7 @@ func x86emuOp_pop_RM(_ u8) {
 REMARKS:
 Handles opcode 0x90
 ****************************************************************************/
-func x86emuOp_nop(_ u8) {
+func x86emuOp_nop(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("NOP\n");
     TRACE_AND_STEP();
@@ -2068,7 +2068,7 @@ func x86emuOp_nop(_ u8) {
 REMARKS:
 Handles opcode 0x91-0x97
 ****************************************************************************/
-func x86emuOp_xchg_word_AX_register(_ u8) {
+func x86emuOp_xchg_word_AX_register(_ uint8) {
 var tmp uint32
 
     op1 &= 0x7;
@@ -2102,7 +2102,7 @@ var tmp uint32
 REMARKS:
 Handles opcode 0x98
 ****************************************************************************/
-func x86emuOp_cbw(_ u8) {
+func x86emuOp_cbw(_ uint8) {
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF("CWDE\n");
@@ -2131,7 +2131,7 @@ func x86emuOp_cbw(_ u8) {
 REMARKS:
 Handles opcode 0x99
 ****************************************************************************/
-func x86emuOp_cwd(_ u8) {
+func x86emuOp_cwd(_ uint8) {
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF("CDQ\n");
@@ -2161,7 +2161,7 @@ func x86emuOp_cwd(_ u8) {
 REMARKS:
 Handles opcode 0x9a
 ****************************************************************************/
-func x86emuOp_call_far_IMM(_ u8) {
+func x86emuOp_call_far_IMM(_ uint8) {
 var farseg, faroff uint32
 
     START_OF_INSTR();
@@ -2200,7 +2200,7 @@ var farseg, faroff uint32
 REMARKS:
 Handles opcode 0x9b
 ****************************************************************************/
-func x86emuOp_wait(_ u8) {
+func x86emuOp_wait(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("WAIT");
     TRACE_AND_STEP();
@@ -2213,7 +2213,7 @@ func x86emuOp_wait(_ u8) {
 REMARKS:
 Handles opcode 0x9c
 ****************************************************************************/
-func x86emuOp_pushf_word(_ u8) {
+func x86emuOp_pushf_word(_ uint8) {
 var flags uint32
 
     START_OF_INSTR();
@@ -2239,7 +2239,7 @@ var flags uint32
 REMARKS:
 Handles opcode 0x9d
 ****************************************************************************/
-func x86emuOp_popf_word(_ u8) {
+func x86emuOp_popf_word(_ uint8) {
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF("POPFD\n");
@@ -2260,7 +2260,7 @@ func x86emuOp_popf_word(_ u8) {
 REMARKS:
 Handles opcode 0x9e
 ****************************************************************************/
-func x86emuOp_sahf(_ u8) {
+func x86emuOp_sahf(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("SAHF\n");
     TRACE_AND_STEP();
@@ -2276,7 +2276,7 @@ func x86emuOp_sahf(_ u8) {
 REMARKS:
 Handles opcode 0x9f
 ****************************************************************************/
-func x86emuOp_lahf(_ u8) {
+func x86emuOp_lahf(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("LAHF\n");
     TRACE_AND_STEP();
@@ -2292,7 +2292,7 @@ func x86emuOp_lahf(_ u8) {
 REMARKS:
 Handles opcode 0xa0
 ****************************************************************************/
-func x86emuOp_mov_AL_M_IMM(_ u8) {
+func x86emuOp_mov_AL_M_IMM(_ uint8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("MOV\tAL,");
@@ -2308,7 +2308,7 @@ func x86emuOp_mov_AL_M_IMM(_ u8) {
 REMARKS:
 Handles opcode 0xa1
 ****************************************************************************/
-func x86emuOp_mov_AX_M_IMM(_ u8) {
+func x86emuOp_mov_AX_M_IMM(_ uint8) {
 
     START_OF_INSTR();
     offset := fetch_word_imm();
@@ -2331,7 +2331,7 @@ func x86emuOp_mov_AX_M_IMM(_ u8) {
 REMARKS:
 Handles opcode 0xa2
 ****************************************************************************/
-func x86emuOp_mov_M_AL_IMM(_ u8) {
+func x86emuOp_mov_M_AL_IMM(_ uint8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("MOV\t");
@@ -2347,7 +2347,7 @@ func x86emuOp_mov_M_AL_IMM(_ u8) {
 REMARKS:
 Handles opcode 0xa3
 ****************************************************************************/
-func x86emuOp_mov_M_AX_IMM(_ u8) {
+func x86emuOp_mov_M_AX_IMM(_ uint8) {
 
     START_OF_INSTR();
     offset := fetch_word_imm();
@@ -2370,7 +2370,7 @@ func x86emuOp_mov_M_AX_IMM(_ u8) {
 REMARKS:
 Handles opcode 0xa4
 ****************************************************************************/
-func x86emuOp_movs_byte(_ u8) {
+func x86emuOp_movs_byte(_ uint8) {
 var val uint8
 var count uint32
 	var inc = int32(1)
@@ -2428,7 +2428,7 @@ func cxcount() int {
 REMARKS:
 Handles opcode 0xa5
 ****************************************************************************/
-func x86emuOp_movs_word(_ u8) {
+func x86emuOp_movs_word(_ uint8) {
 var val uint32
 var inc int32
 var count uint32
@@ -2480,7 +2480,7 @@ var count uint32
 REMARKS:
 Handles opcode 0xa6
 ****************************************************************************/
-func x86emuOp_cmps_byte(_ u8) {
+func x86emuOp_cmps_byte(_ uint8) {
 var val1, val2 int8
 var inc int32
 
@@ -2527,7 +2527,7 @@ var inc int32
 REMARKS:
 Handles opcode 0xa7
 ****************************************************************************/
-func x86emuOp_cmps_word(_ u8) {
+func x86emuOp_cmps_word(_ uint8) {
 var val1,val2 uint32
 var inc int32
 
@@ -2590,7 +2590,7 @@ var inc int32
 REMARKS:
 Handles opcode 0xa8
 ****************************************************************************/
-func x86emuOp_test_AL_IMM(_ u8) {
+func x86emuOp_test_AL_IMM(_ uint8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("TEST\tAL,");
@@ -2606,7 +2606,7 @@ func x86emuOp_test_AL_IMM(_ u8) {
 REMARKS:
 Handles opcode 0xa9
 ****************************************************************************/
-func x86emuOp_test_AX_IMM(_ u8) {
+func x86emuOp_test_AX_IMM(_ uint8) {
     var srcval u32
 
     START_OF_INSTR();
@@ -2632,7 +2632,7 @@ func x86emuOp_test_AX_IMM(_ u8) {
 REMARKS:
 Handles opcode 0xaa
 ****************************************************************************/
-func x86emuOp_stos_byte(_ u8) {
+func x86emuOp_stos_byte(_ uint8) {
     START_OF_INSTR();
 	DECODE_PRINTF("STOS\tBYTE\n");
 	inc := incamount(1)
@@ -2659,7 +2659,7 @@ M.X86.C.Dec()
 REMARKS:
 Handles opcode 0xab
 ****************************************************************************/
-func x86emuOp_stos_word(_ u8) {
+func x86emuOp_stos_word(_ uint8) {
 var inc int32
 var count uint32
 
@@ -2697,7 +2697,7 @@ if Halted() {break;}
 REMARKS:
 Handles opcode 0xac
 ****************************************************************************/
-func x86emuOp_lods_byte(_ u8) {
+func x86emuOp_lods_byte(_ uint8) {
 var inc int32
 
     START_OF_INSTR();
@@ -2726,7 +2726,7 @@ M.X86.C.Dec()
 REMARKS:
 Handles opcode 0xad
 ****************************************************************************/
-func x86emuOp_lods_word(_ u8) {
+func x86emuOp_lods_word(_ uint8) {
 var inc int32
 var count uint32
 
@@ -2763,7 +2763,7 @@ if Halted() {break;}
 REMARKS:
 Handles opcode 0xae
 ****************************************************************************/
-func x86emuOp_scas_byte(_ u8) {
+func x86emuOp_scas_byte(_ uint8) {
 var val2 int8
 var inc int32
 
@@ -2809,7 +2809,7 @@ M.X86.C.Dec()
 REMARKS:
 Handles opcode 0xaf
 ****************************************************************************/
-func x86emuOp_scas_word(_ u8) {
+func x86emuOp_scas_word(_ uint8) {
 var inc int32
 var val uint32
 
@@ -2874,7 +2874,7 @@ M.X86.C.Dec()
 REMARKS:
 Handles opcode 0xb0 - 0xb7
 ****************************************************************************/
-func x86emuOp_mov_byte_register_IMM(u8 op1) {
+func x86emuOp_mov_byte_register_IMM(op1 uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("MOV\t");
     ptr := DECODE_RM_BYTE_REGISTER(op1 & 0x7);
@@ -2891,7 +2891,7 @@ func x86emuOp_mov_byte_register_IMM(u8 op1) {
 REMARKS:
 Handles opcode 0xb8 - 0xbf
 ****************************************************************************/
-func x86emuOp_mov_word_register_IMM(_ u8) {
+func x86emuOp_mov_word_register_IMM(_ uint8) {
     var srcval u32
 
     op1 &= 0x7;
@@ -2921,7 +2921,7 @@ func x86emuOp_mov_word_register_IMM(_ u8) {
 REMARKS:
 Handles opcode 0xc0
 ****************************************************************************/
-func x86emuOp_opcC0_byte_RM_MEM(_ u8) {
+func x86emuOp_opcC0_byte_RM_MEM(_ uint8) {
     var mod, rl, rh int
 var destreg *uint8
     var destoffset uint
@@ -2997,7 +2997,7 @@ var amt uint8
 REMARKS:
 Handles opcode 0xc1
 ****************************************************************************/
-func x86emuOp_opcC1_word_RM_MEM(_ u8) {
+func x86emuOp_opcC1_word_RM_MEM(_ uint8) {
     var mod, rl, rh int
     var destoffset uint
 var amt uint8
@@ -3095,7 +3095,7 @@ var amt uint8
 REMARKS:
 Handles opcode 0xc2
 ****************************************************************************/
-func x86emuOp_ret_near_IMM(_ u8) {
+func x86emuOp_ret_near_IMM(_ uint8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("RET\t");
@@ -3113,7 +3113,7 @@ func x86emuOp_ret_near_IMM(_ u8) {
 REMARKS:
 Handles opcode 0xc3
 ****************************************************************************/
-func x86emuOp_ret_near(_ u8) {
+func x86emuOp_ret_near(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("RET\n");
  TRACE_AND_STEP();
@@ -3127,7 +3127,7 @@ func x86emuOp_ret_near(_ u8) {
 REMARKS:
 Handles opcode 0xc4
 ****************************************************************************/
-func x86emuOp_les_R_IMM(_ u8) {
+func x86emuOp_les_R_IMM(_ uint8) {
 var mod, rh, rl int32
     u16 *dstreg;
     var srcoffset uint
@@ -3154,7 +3154,7 @@ var mod, rh, rl int32
 REMARKS:
 Handles opcode 0xc5
 ****************************************************************************/
-func x86emuOp_lds_R_IMM(_ u8) {
+func x86emuOp_lds_R_IMM(_ uint8) {
 var mod, rh, rl int32
     u16 *dstreg;
     var srcoffset uint
@@ -3180,7 +3180,7 @@ var mod, rh, rl int32
 REMARKS:
 Handles opcode 0xc6
 ****************************************************************************/
-func x86emuOp_mov_byte_RM_IMM(_ u8) {
+func x86emuOp_mov_byte_RM_IMM(_ uint8) {
     var mod, rl, rh int
 var destreg *uint8
     var destoffset uint
@@ -3215,7 +3215,7 @@ var imm uint8
 REMARKS:
 Handles opcode 0xc7
 ****************************************************************************/
-func x86emuOp_mov_word_RM_IMM(_ u8) {
+func x86emuOp_mov_word_RM_IMM(_ uint8) {
     var mod, rl, rh int
     var destoffset uint
 
@@ -3267,7 +3267,7 @@ func x86emuOp_mov_word_RM_IMM(_ u8) {
 REMARKS:
 Handles opcode 0xc8
 ****************************************************************************/
-func x86emuOp_enter(_ u8) {
+func x86emuOp_enter(_ uint8) {
 
     START_OF_INSTR();
     local := fetch_word_imm();
@@ -3294,7 +3294,7 @@ func x86emuOp_enter(_ u8) {
 REMARKS:
 Handles opcode 0xc9
 ****************************************************************************/
-func x86emuOp_leave(_ u8) {
+func x86emuOp_leave(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("LEAVE\n");
     TRACE_AND_STEP();
@@ -3308,7 +3308,7 @@ func x86emuOp_leave(_ u8) {
 REMARKS:
 Handles opcode 0xca
 ****************************************************************************/
-func x86emuOp_ret_far_IMM(_ u8) {
+func x86emuOp_ret_far_IMM(_ uint8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("RETF\t");
@@ -3327,7 +3327,7 @@ func x86emuOp_ret_far_IMM(_ u8) {
 REMARKS:
 Handles opcode 0xcb
 ****************************************************************************/
-func x86emuOp_ret_far(_ u8) {
+func x86emuOp_ret_far(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("RETF\n");
  TRACE_AND_STEP();
@@ -3342,7 +3342,7 @@ func x86emuOp_ret_far(_ u8) {
 REMARKS:
 Handles opcode 0xcc
 ****************************************************************************/
-func x86emuOp_int3(_ u8) {
+func x86emuOp_int3(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("INT 3\n");
     tmp := mem_access_word(3 * 4 + 2);
@@ -3367,7 +3367,7 @@ func x86emuOp_int3(_ u8) {
 REMARKS:
 Handles opcode 0xcd
 ****************************************************************************/
-func x86emuOp_int_IMM(_ u8) {
+func x86emuOp_int_IMM(_ uint8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("INT\t");
@@ -3394,7 +3394,7 @@ func x86emuOp_int_IMM(_ u8) {
 REMARKS:
 Handles opcode 0xce
 ****************************************************************************/
-func x86emuOp_into(_ u8) {
+func x86emuOp_into(_ uint8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("INTO\n");
@@ -3421,7 +3421,7 @@ func x86emuOp_into(_ u8) {
 REMARKS:
 Handles opcode 0xcf
 ****************************************************************************/
-func x86emuOp_iret(_ u8) {
+func x86emuOp_iret(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("IRET\n");
 
@@ -3438,7 +3438,7 @@ func x86emuOp_iret(_ u8) {
 REMARKS:
 Handles opcode 0xd0
 ****************************************************************************/
-func x86emuOp_opcD0_byte_RM_1(_ u8) {
+func x86emuOp_opcD0_byte_RM_1(_ uint8) {
     var mod, rl, rh int
 var destreg *uint8
     var destoffset uint
@@ -3510,7 +3510,7 @@ var destreg *uint8
 REMARKS:
 Handles opcode 0xd1
 ****************************************************************************/
-func x86emuOp_opcD1_word_RM_1(_ u8) {
+func x86emuOp_opcD1_word_RM_1(_ uint8) {
     var mod, rl, rh int
     var destoffset uint
 
@@ -3603,7 +3603,7 @@ func x86emuOp_opcD1_word_RM_1(_ u8) {
 REMARKS:
 Handles opcode 0xd2
 ****************************************************************************/
-func x86emuOp_opcD2_byte_RM_CL(_ u8) {
+func x86emuOp_opcD2_byte_RM_CL(_ uint8) {
     var mod, rl, rh int
 var destreg *uint8
     var destoffset uint
@@ -3677,7 +3677,7 @@ var amt uint8
 REMARKS:
 Handles opcode 0xd3
 ****************************************************************************/
-func x86emuOp_opcD3_word_RM_CL(_ u8) {
+func x86emuOp_opcD3_word_RM_CL(_ uint8) {
     var mod, rl, rh int
     var destoffset uint
 var amt uint8
@@ -3771,7 +3771,7 @@ var amt uint8
 REMARKS:
 Handles opcode 0xd4
 ****************************************************************************/
-func x86emuOp_aam(_ u8) {
+func x86emuOp_aam(_ uint8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("AAM\n");
@@ -3792,7 +3792,7 @@ func x86emuOp_aam(_ u8) {
 REMARKS:
 Handles opcode 0xd5
 ****************************************************************************/
-func x86emuOp_aad(_ u8) {
+func x86emuOp_aad(_ uint8) {
 var _ uint8
 
     START_OF_INSTR();
@@ -3810,7 +3810,7 @@ var _ uint8
 REMARKS:
 Handles opcode 0xd7
 ****************************************************************************/
-func x86emuOp_xlat(_ u8) {
+func x86emuOp_xlat(_ uint8) {
 var addr uint16
 
     START_OF_INSTR();
@@ -3828,7 +3828,7 @@ var addr uint16
 REMARKS:
 Handles opcode 0xe0
 ****************************************************************************/
-func x86emuOp_loopne(_ u8) {
+func x86emuOp_loopne(_ uint8) {
 var ip int16
 
     START_OF_INSTR();
@@ -3849,7 +3849,7 @@ var ip int16
 REMARKS:
 Handles opcode 0xe1
 ****************************************************************************/
-func x86emuOp_loope(_ u8) {
+func x86emuOp_loope(_ uint8) {
 
 
     START_OF_INSTR();
@@ -3869,7 +3869,7 @@ func x86emuOp_loope(_ u8) {
 REMARKS:
 Handles opcode 0xe2
 ****************************************************************************/
-func x86emuOp_loop(_ u8) {
+func x86emuOp_loop(_ uint8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("LOOP\t");
@@ -3888,7 +3888,7 @@ func x86emuOp_loop(_ u8) {
 REMARKS:
 Handles opcode 0xe3
 ****************************************************************************/
-func x86emuOp_jcxz(_ u8) {
+func x86emuOp_jcxz(_ uint8) {
 var target uint16
 var offset int8
 
@@ -3911,7 +3911,7 @@ var offset int8
 REMARKS:
 Handles opcode 0xe4
 ****************************************************************************/
-func x86emuOp_in_byte_AL_IMM(_ u8) {
+func x86emuOp_in_byte_AL_IMM(_ uint8) {
 var port uint8
 
     START_OF_INSTR();
@@ -3928,7 +3928,7 @@ var port uint8
 REMARKS:
 Handles opcode 0xe5
 ****************************************************************************/
-func x86emuOp_in_word_AX_IMM(_ u8) {
+func x86emuOp_in_word_AX_IMM(_ uint8) {
 var port uint8
 
     START_OF_INSTR();
@@ -3953,7 +3953,7 @@ var port uint8
 REMARKS:
 Handles opcode 0xe6
 ****************************************************************************/
-func x86emuOp_out_byte_IMM_AL(_ u8) {
+func x86emuOp_out_byte_IMM_AL(_ uint8) {
 var port uint8
 
     START_OF_INSTR();
@@ -3970,7 +3970,7 @@ var port uint8
 REMARKS:
 Handles opcode 0xe7
 ****************************************************************************/
-func x86emuOp_out_word_IMM_AX(_ u8) {
+func x86emuOp_out_word_IMM_AX(_ uint8) {
 var port uint8
 
     START_OF_INSTR();
@@ -3995,7 +3995,7 @@ var port uint8
 REMARKS:
 Handles opcode 0xe8
 ****************************************************************************/
-func x86emuOp_call_near_IMM(_ u8) {
+func x86emuOp_call_near_IMM(_ uint8) {
 	var ip32 uint32
 	var ip16 uint16
     START_OF_INSTR();
@@ -4027,7 +4027,7 @@ func x86emuOp_call_near_IMM(_ u8) {
 REMARKS:
 Handles opcode 0xe9
 ****************************************************************************/
-func x86emuOp_jump_near_IMM(_ u8) {
+func x86emuOp_jump_near_IMM(_ uint8) {
 var ip uint32
 
     START_OF_INSTR();
@@ -4055,7 +4055,7 @@ var ip uint32
 REMARKS:
 Handles opcode 0xea
 ****************************************************************************/
-func x86emuOp_jump_far_IMM(_ u8) {
+func x86emuOp_jump_far_IMM(_ uint8) {
 var ip uint32
     START_OF_INSTR();
     DECODE_PRINTF("JMP\tFAR ");
@@ -4079,7 +4079,7 @@ var ip uint32
 REMARKS:
 Handles opcode 0xeb
 ****************************************************************************/
-func x86emuOp_jump_byte_IMM(_ u8) {
+func x86emuOp_jump_byte_IMM(_ uint8) {
 var target uint16
 var offset int8
 
@@ -4099,7 +4099,7 @@ var offset int8
 REMARKS:
 Handles opcode 0xec
 ****************************************************************************/
-func x86emuOp_in_byte_AL_DX(_ u8) {
+func x86emuOp_in_byte_AL_DX(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("IN\tAL,DX\n");
     TRACE_AND_STEP();
@@ -4112,7 +4112,7 @@ func x86emuOp_in_byte_AL_DX(_ u8) {
 REMARKS:
 Handles opcode 0xed
 ****************************************************************************/
-func x86emuOp_in_word_AX_DX(_ u8) {
+func x86emuOp_in_word_AX_DX(_ uint8) {
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF("IN\tEAX,DX\n");
@@ -4133,7 +4133,7 @@ func x86emuOp_in_word_AX_DX(_ u8) {
 REMARKS:
 Handles opcode 0xee
 ****************************************************************************/
-func x86emuOp_out_byte_DX_AL(_ u8) {
+func x86emuOp_out_byte_DX_AL(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("OUT\tDX,AL\n");
     TRACE_AND_STEP();
@@ -4146,7 +4146,7 @@ func x86emuOp_out_byte_DX_AL(_ u8) {
 REMARKS:
 Handles opcode 0xef
 ****************************************************************************/
-func x86emuOp_out_word_DX_AX(_ u8) {
+func x86emuOp_out_word_DX_AX(_ uint8) {
     START_OF_INSTR();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) {
         DECODE_PRINTF("OUT\tDX,EAX\n");
@@ -4167,7 +4167,7 @@ func x86emuOp_out_word_DX_AX(_ u8) {
 REMARKS:
 Handles opcode 0xf0
 ****************************************************************************/
-func x86emuOp_lock(_ u8) {
+func x86emuOp_lock(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("LOCK:\n");
     TRACE_AND_STEP();
@@ -4181,7 +4181,7 @@ func x86emuOp_lock(_ u8) {
 REMARKS:
 Handles opcode 0xf2
 ****************************************************************************/
-func x86emuOp_repne(_ u8) {
+func x86emuOp_repne(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("REPNE\n");
     TRACE_AND_STEP();
@@ -4197,7 +4197,7 @@ func x86emuOp_repne(_ u8) {
 REMARKS:
 Handles opcode 0xf3
 ****************************************************************************/
-func x86emuOp_repe(_ u8) {
+func x86emuOp_repe(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("REPE\n");
     TRACE_AND_STEP();
@@ -4213,7 +4213,7 @@ func x86emuOp_repe(_ u8) {
 REMARKS:
 Handles opcode 0xf4
 ****************************************************************************/
-func x86emuOp_halt(_ u8) {
+func x86emuOp_halt(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("HALT\n");
     TRACE_AND_STEP();
@@ -4226,7 +4226,7 @@ func x86emuOp_halt(_ u8) {
 REMARKS:
 Handles opcode 0xf5
 ****************************************************************************/
-func x86emuOp_cmc(_ u8) {
+func x86emuOp_cmc(_ uint8) {
     /* complement the carry flag. */
     START_OF_INSTR();
     DECODE_PRINTF("CMC\n");
@@ -4240,7 +4240,7 @@ func x86emuOp_cmc(_ u8) {
 REMARKS:
 Handles opcode 0xf6
 ****************************************************************************/
-func x86emuOp_opcF6_byte_RM(_ u8) {
+func x86emuOp_opcF6_byte_RM(_ uint8) {
     var mod, rl, rh int
 var destreg *uint8
     var destoffset uint
@@ -4355,7 +4355,7 @@ var destval, srcval uint8
 REMARKS:
 Handles opcode 0xf7
 ****************************************************************************/
-func x86emuOp_opcF7_word_RM(_ u8) {
+func x86emuOp_opcF7_word_RM(_ uint8) {
     var mod, rl, rh int
     var destoffset uint
 
@@ -4576,7 +4576,7 @@ var destval, srcval uint16
 REMARKS:
 Handles opcode 0xf8
 ****************************************************************************/
-func x86emuOp_clc(_ u8) {
+func x86emuOp_clc(_ uint8) {
     /* clear the carry flag. */
     START_OF_INSTR();
     DECODE_PRINTF("CLC\n");
@@ -4590,7 +4590,7 @@ func x86emuOp_clc(_ u8) {
 REMARKS:
 Handles opcode 0xf9
 ****************************************************************************/
-func x86emuOp_stc(_ u8) {
+func x86emuOp_stc(_ uint8) {
     /* set the carry flag. */
     START_OF_INSTR();
     DECODE_PRINTF("STC\n");
@@ -4604,7 +4604,7 @@ func x86emuOp_stc(_ u8) {
 REMARKS:
 Handles opcode 0xfa
 ****************************************************************************/
-func x86emuOp_cli(_ u8) {
+func x86emuOp_cli(_ uint8) {
     /* clear interrupts. */
     START_OF_INSTR();
     DECODE_PRINTF("CLI\n");
@@ -4618,7 +4618,7 @@ func x86emuOp_cli(_ u8) {
 REMARKS:
 Handles opcode 0xfb
 ****************************************************************************/
-func x86emuOp_sti(_ u8) {
+func x86emuOp_sti(_ uint8) {
     /* enable  interrupts. */
     START_OF_INSTR();
     DECODE_PRINTF("STI\n");
@@ -4632,7 +4632,7 @@ func x86emuOp_sti(_ u8) {
 REMARKS:
 Handles opcode 0xfc
 ****************************************************************************/
-func x86emuOp_cld(_ u8) {
+func x86emuOp_cld(_ uint8) {
     /* clear interrupts. */
     START_OF_INSTR();
     DECODE_PRINTF("CLD\n");
@@ -4646,7 +4646,7 @@ func x86emuOp_cld(_ u8) {
 REMARKS:
 Handles opcode 0xfd
 ****************************************************************************/
-func x86emuOp_std(_ u8) {
+func x86emuOp_std(_ uint8) {
     /* clear interrupts. */
     START_OF_INSTR();
     DECODE_PRINTF("STD\n");
@@ -4660,7 +4660,7 @@ func x86emuOp_std(_ u8) {
 REMARKS:
 Handles opcode 0xfe
 ****************************************************************************/
-func x86emuOp_opcFE_byte_RM(_ u8) {
+func x86emuOp_opcFE_byte_RM(_ uint8) {
 var mod, rh, rl int32
     var destval u8
     var destoffset uint
@@ -4725,7 +4725,7 @@ var destreg *uint8
 REMARKS:
 Handles opcode 0xff
 ****************************************************************************/
-func x86emuOp_opcFF_word_RM(_ u8) {
+func x86emuOp_opcFF_word_RM(_ uint8) {
 var mod, rh, rl int32
 var destoffset uint32
  var destreg *u16
@@ -4919,8 +4919,7 @@ var destval32 uint32
 /***************************************************************************
  * Single byte operation code table:
  **************************************************************************/
-void (*x86emu_optab[256])(u8) =
-{
+var x86emu_optab = [256]optab  {
 /*  0x00 */ x86emuOp_genop_byte_RM_R,
 /*  0x01 */ x86emuOp_genop_word_RM_R,
 /*  0x02 */ x86emuOp_genop_byte_R_RM,

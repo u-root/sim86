@@ -155,3 +155,5 @@ type X86EMU_intrFuncs struct {
 type __int128_t int64
 type __uint128_t uint64
 type __builtin_ms_va_list []byte
+
+type optab func (u8)
