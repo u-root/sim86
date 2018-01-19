@@ -128,13 +128,13 @@ func set_parity_flag(res uint32) {
     CONDITIONAL_SET_FLAG(PARITY(res & 0xFF), F_PF);
 }
 
-func set_szp_flags_8(u8 res) {
+func set_szp_flags_8(res uint8) {
     CONDITIONAL_SET_FLAG(res & 0x80, F_SF);
     CONDITIONAL_SET_FLAG(res == 0, F_ZF);
     set_parity_flag(res);
 }
 
-func set_szp_flags_16(u16 res) {
+func set_szp_flags_16(res uint16) {
     CONDITIONAL_SET_FLAG(res & 0x8000, F_SF);
     CONDITIONAL_SET_FLAG(res == 0, F_ZF);
     set_parity_flag(res);
@@ -146,14 +146,14 @@ func set_szp_flags_32(res uint32) {
     set_parity_flag(res);
 }
 
-func no_carry_byte_side_eff(u8 res) {
+func no_carry_byte_side_eff(res uint8) {
     CLEAR_FLAG(F_OF);
     CLEAR_FLAG(F_CF);
     CLEAR_FLAG(F_AF);
     set_szp_flags_8(res);
 }
 
-func no_carry_word_side_eff(u16 res) {
+func no_carry_word_side_eff(res uint16) {
     CLEAR_FLAG(F_OF);
     CLEAR_FLAG(F_CF);
     CLEAR_FLAG(F_AF);
