@@ -22,6 +22,17 @@ type register interface {
 type register16 interface {
 	Set(uint16)
 	Get() uint16
+	Set16(uint16)
+	Get16() uint16
+}
+
+type register8 interface {
+	Set(uint8)
+	Get() uint8
+	Set8(uint8)
+	Get8() uint8
+	Seth8(uint8)
+	Geth8() uint8
 }
 
 type reg struct {
@@ -29,7 +40,11 @@ type reg struct {
 }
 
 type reg16 struct {
-	reg uint16
+	reg uint32
+}
+
+type reg8 struct {
+	reg uint32
 }
 
 func (r reg) Set32(i uint32) {
@@ -44,6 +59,38 @@ func (r reg) Set16(i uint16) {
 }
 func (r reg) Get16() uint16 {
 	return uint16(r.reg)
+}
+
+func (r reg16) Set(i uint16) {
+	r.reg = (r.reg & 0xffff0000) | uint32(i)
+}
+func (r reg16) Get() uint16 {
+	return uint16(r.reg)
+}
+func (r reg16) Set16(i uint16) {
+	r.Set(i)
+}
+func (r reg16) Get16() uint16 {
+	return r.Get()
+}
+
+func (r reg8) Set(i uint8) {
+	r.reg = (r.reg & 0xffffff00) | uint32(i)
+}
+func (r reg8) Get() uint8 {
+	return uint8(r.reg)
+}
+func (r reg8) Set8(i uint8) {
+	r.Set(i)
+}
+func (r reg8) Get8() uint8 {
+	return r.Get()
+}
+func (r reg8) Seth8(i uint8) {
+	r.reg = (r.reg & 0xfff00ff) | uint32(i)<<8
+}
+func (r reg8) Geth8() uint8 {
+	return uint8(r.reg>>8)
 }
 
 func (r reg) Seth8(i uint8) {
@@ -76,11 +123,14 @@ func (r reg) Get() uint32 {
 	return r.Get16()
 }
 
+// Changes takes a variable and adds it. It can be negative.
+// In this case, due to the mode, we use the ability to override
+// the number of bits in the register.
 func (r reg) Change(i int) {
 	if M.x86.mode & SYSMODE_32BIT_REP != 0 {
-		r.Set32(r.Get32() + i)
+		r.Set32(r.Get32() + uint32(i))
 	} else {
-		r.Set16(r.Get16() + i)
+		r.Set16(r.Get16() + uint16(i))
 	}
 }
 
@@ -90,13 +140,6 @@ func (r reg) Dec() {
 
 func (r reg) Inc() {
 	r.Change(1)
-}
-
-func (r reg16) Set(i uint16) {
-	r.reg = i
-}
-func (r reg16) Get() uint16 {
-	return r.reg
 }
 
 type i386_general_regs struct {
@@ -156,4 +199,4 @@ type __int128_t int64
 type __uint128_t uint64
 type __builtin_ms_va_list []byte
 
-type optab func (u8)
+type optab func (uint8)

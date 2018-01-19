@@ -508,7 +508,7 @@ REMARKS:
 Return a pointer to the register given by the R/RM field of the
 modrm byte, for byte operands. Also enables the decoding of instructions.
 ****************************************************************************/
-func decode_rm_byte_register(reg int) register {
+func decode_rm_byte_register(reg int) register8 {
 	switch reg {
 	case 0:
 		DECODE_PRINTF("AL")
@@ -550,7 +550,7 @@ REMARKS:
 Return a pointer to the register given by the R/RM field of the
 modrm byte, for word operands.  Also enables the decoding of instructions.
 ****************************************************************************/
-func decode_rm_word_register(reg int) register {
+func decode_rm_word_register(reg int) register16 {
 	switch reg {
 	case 0:
 		DECODE_PRINTF("AX")

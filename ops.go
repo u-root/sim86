@@ -93,7 +93,7 @@ var genop_byte_operation= []func(d, s uint8) uint8 {
     cmp_byte, /* 07 */
 };
 
-var genop_word_operation= []func(u16 d, u16 s) u16 {
+var genop_word_operation= []func(s, d uint16) uint16 {
     add_word, /*00 */
     or_word, /*01 */
     adc_word, /*02 */
