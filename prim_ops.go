@@ -2283,11 +2283,11 @@ Implements the IN string instruction and side effects.
 func single_in(int size)
 {
     if (size == 1)
-        store_data_byte_abs(M.x86.R_ES, M.x86.R_DI,(*sys_inb)(M.x86.R_DX));
+        store_data_byte_abs(M.x86.R_ES, M.x86.R_DI,sys_inb(M.x86.R_DX));
     else if (size == 2)
-        store_data_word_abs(M.x86.R_ES, M.x86.R_DI,(*sys_inw)(M.x86.R_DX));
+        store_data_word_abs(M.x86.R_ES, M.x86.R_DI,sys_inw(M.x86.R_DX));
     else
-        store_data_long_abs(M.x86.R_ES, M.x86.R_DI,(*sys_inl)(M.x86.R_DX));
+        store_data_long_abs(M.x86.R_ES, M.x86.R_DI,sys_inl(M.x86.R_DX));
 }
 
 void ins(int size)
@@ -2325,11 +2325,11 @@ Implements the OUT string instruction and side effects.
 func single_out(int size)
 {
      if (size == 1)
-       (*sys_outb)(M.x86.R_DX,fetch_data_byte_abs(M.x86.R_ES, M.x86.R_SI));
+       sys_outb(M.x86.R_DX,fetch_data_byte_abs(M.x86.R_ES, M.x86.R_SI));
      else if (size == 2)
-       (*sys_outw)(M.x86.R_DX,fetch_data_word_abs(M.x86.R_ES, M.x86.R_SI));
+       sys_outw(M.x86.R_DX,fetch_data_word_abs(M.x86.R_ES, M.x86.R_SI));
      else
-       (*sys_outl)(M.x86.R_DX,fetch_data_long_abs(M.x86.R_ES, M.x86.R_SI));
+       sys_outl(M.x86.R_DX,fetch_data_long_abs(M.x86.R_ES, M.x86.R_SI));
 }
 
 void outs(int size)
