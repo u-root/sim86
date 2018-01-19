@@ -173,7 +173,7 @@ func no_carry_long_side_eff(res uint32) {
 }
 
 func calc_carry_chain(bits int, d uint32, s uint32, res uint32, set_carry int) {
-    u32 cc;
+var cc uint32
 
     cc = (s & d) | ((~res) & (s | d));
     CONDITIONAL_SET_FLAG(XOR2(cc >> (bits - 2)), F_OF);
@@ -184,7 +184,7 @@ func calc_carry_chain(bits int, d uint32, s uint32, res uint32, set_carry int) {
 }
 
 func calc_borrow_chain(bits int, d uint32, s uint32, res uint32, set_carry int) {
-    u32 bc;
+var bc uint32
 
     bc = (res & (~d | s)) | (~d & s);
     CONDITIONAL_SET_FLAG(XOR2(bc >> (bits - 2)), F_OF);
@@ -200,7 +200,7 @@ Implements the AAA instruction and side effects.
 ****************************************************************************/
 u16 aaa_word(d uint16)
 {
-    u16 res;
+var res uint16
     if ((d & 0xf) > 0x9 || ACCESS_FLAG(F_AF)) {
         d += 0x6;
         d += 0x100;
@@ -221,7 +221,7 @@ Implements the AAA instruction and side effects.
 ****************************************************************************/
 u16 aas_word(d uint16)
 {
-    u16 res;
+var res uint16
     if ((d & 0xf) > 0x9 || ACCESS_FLAG(F_AF)) {
         d -= 0x6;
         d -= 0x100;
@@ -242,7 +242,7 @@ Implements the AAD instruction and side effects.
 ****************************************************************************/
 u16 aad_word(d uint16)
 {
-    u16 l;
+var l uint16
     hb uint8, lb;
 
     hb = (u8)((d >> 8) & 0xff);
@@ -310,8 +310,8 @@ Implements the ADC instruction and side effects.
 ****************************************************************************/
 u32 adc_long(d uint32, s uint32)
 {
-    u32 lo;    /* all operands in native machine order */
-    u32 hi;
+var lo uint32    /* all operands in native machine order */
+var hi uint32
     var res u32;
 
     lo = (d & 0xFFFF) + (s & 0xFFFF);
@@ -385,7 +385,7 @@ Implements the AND instruction and side effects.
 ****************************************************************************/
 u8 and_byte(d uint8, s uint8)
 {
-    u8 res;    /* all operands in native machine order */
+var res uint8    /* all operands in native machine order */
 
     res = d & s;
 
@@ -399,7 +399,7 @@ Implements the AND instruction and side effects.
 ****************************************************************************/
 u16 and_word(d uint16, s uint16)
 {
-    u16 res;   /* all operands in native machine order */
+var res uint16   /* all operands in native machine order */
 
     res = d & s;
 
@@ -599,7 +599,7 @@ Implements the OR instruction and side effects.
 ****************************************************************************/
 u8 or_byte(d uint8, s uint8)
 {
-    u8 res;    /* all operands in native machine order */
+var res uint8    /* all operands in native machine order */
 
     res = d | s;
     no_carry_byte_side_eff(res);
@@ -613,7 +613,7 @@ Implements the OR instruction and side effects.
 ****************************************************************************/
 u16 or_word(d uint16, s uint16)
 {
-    u16 res;   /* all operands in native machine order */
+var res uint16   /* all operands in native machine order */
 
     res = d | s;
     no_carry_word_side_eff(res);
@@ -639,7 +639,7 @@ Implements the OR instruction and side effects.
 ****************************************************************************/
 u8 neg_byte(s uint8)
 {
-    u8 res;
+var res uint8
 
     CONDITIONAL_SET_FLAG(s != 0, F_CF);
     res = (u8)-s;
@@ -655,7 +655,7 @@ Implements the OR instruction and side effects.
 ****************************************************************************/
 u16 neg_word(s uint16)
 {
-    u16 res;
+var res uint16
 
     CONDITIONAL_SET_FLAG(s != 0, F_CF);
     res = (u16)-s;
@@ -1648,7 +1648,7 @@ Implements the SBB instruction and side effects.
 u8 sbb_byte(d uint8, s uint8)
 {
     var res u32;   /* all operands in native machine order */
-    u32 bc;
+var bc uint32
 
     if (ACCESS_FLAG(F_CF))
         res = d - s - 1;
@@ -1671,7 +1671,7 @@ Implements the SBB instruction and side effects.
 u16 sbb_word(d uint16, s uint16)
 {
     var res u32;   /* all operands in native machine order */
-    u32 bc;
+var bc uint32
 
     if (ACCESS_FLAG(F_CF))
         res = d - s - 1;
@@ -1694,7 +1694,7 @@ Implements the SBB instruction and side effects.
 u32 sbb_long(d uint32, s uint32)
 {
     var res u32;   /* all operands in native machine order */
-    u32 bc;
+var bc uint32
 
     if (ACCESS_FLAG(F_CF))
         res = d - s - 1;
@@ -1718,7 +1718,7 @@ Implements the SUB instruction and side effects.
 u8 sub_byte(d uint8, s uint8)
 {
     var res u32;   /* all operands in native machine order */
-    u32 bc;
+var bc uint32
 
     res = d - s;
     set_szp_flags_8(uint8(res));
@@ -1738,7 +1738,7 @@ Implements the SUB instruction and side effects.
 u16 sub_word(d uint16, s uint16)
 {
     var res u32;   /* all operands in native machine order */
-    u32 bc;
+var bc uint32
 
     res = d - s;
     set_szp_flags_16(uint16(res));
@@ -1758,7 +1758,7 @@ Implements the SUB instruction and side effects.
 u32 sub_long(d uint32, s uint32)
 {
     var res u32;   /* all operands in native machine order */
-    u32 bc;
+var bc uint32
 
     res = d - s;
     set_szp_flags_32(res);
@@ -1822,7 +1822,7 @@ Implements the XOR instruction and side effects.
 ****************************************************************************/
 u8 xor_byte(d uint8, s uint8)
 {
-    u8 res;    /* all operands in native machine order */
+var res uint8    /* all operands in native machine order */
 
     res = d ^ s;
     no_carry_byte_side_eff(res);
@@ -1835,7 +1835,7 @@ Implements the XOR instruction and side effects.
 ****************************************************************************/
 u16 xor_word(d uint16, s uint16)
 {
-    u16 res;   /* all operands in native machine order */
+var res uint16   /* all operands in native machine order */
 
     res = d ^ s;
     no_carry_word_side_eff(res);
@@ -1950,7 +1950,7 @@ REMARKS:
 Implements the MUL instruction and side effects.
 ****************************************************************************/
 func mul_byte(s uint8) {
-    u16 res = (u16)(M.x86.R_AL * s);
+var res = (u16)(M.x86.R_AL * s) uint16
 
     M.x86.R_AX = res;
     if (M.x86.R_AH == 0) {
@@ -2086,13 +2086,13 @@ func idiv_long(s uint32) {
 #else
     s32 div = 0, mod;
     s32 h_dvd = M.x86.R_EDX;
-    u32 l_dvd = M.x86.R_EAX;
-    u32 abs_s = s & 0x7FFFFFFF;
-    u32 abs_h_dvd = h_dvd & 0x7FFFFFFF;
-    u32 h_s = abs_s >> 1;
-    u32 l_s = abs_s << 31;
-    int counter = 31;
-    int carry;
+var l_dvd = M.x86.R_EAX uint32
+var abs_s = s & 0x7FFFFFFF uint32
+var abs_h_dvd = h_dvd & 0x7FFFFFFF uint32
+var h_s = abs_s >> 1 uint32
+var l_s = abs_s << 31 uint32
+var counter = 31 int32
+var carry int32
 
     if (s == 0) {
         x86emu_intr_raise(0);
@@ -2208,12 +2208,12 @@ func div_long(s uint32) {
 #else
     s32 div = 0, mod;
     s32 h_dvd = M.x86.R_EDX;
-    u32 l_dvd = M.x86.R_EAX;
+var l_dvd = M.x86.R_EAX uint32
 
-    u32 h_s = s;
-    u32 l_s = 0;
-    int counter = 32;
-    int carry;
+var h_s = s uint32
+var l_s = 0 uint32
+var counter = 32 int32
+var carry int32
 
     if (s == 0) {
         x86emu_intr_raise(0);
@@ -2270,7 +2270,7 @@ func single_in(size int) {
 }
 
 func ins(size int) {
-    int inc = size;
+var inc = size int32
 
     if (ACCESS_FLAG(F_DF)) {
         inc = -size;
@@ -2310,7 +2310,7 @@ func single_out(size int) {
 }
 
 func outs(size int) {
-    int inc = size;
+var inc = size int32
 
     if (ACCESS_FLAG(F_DF)) {
         inc = -size;
@@ -2383,7 +2383,7 @@ NOTE: Do not inline this, as (*sys_rdX) is already inline!
 ****************************************************************************/
 u16 pop_word()
 {
-    u16 res;
+var res uint16
 
 DB( if (CHECK_SP_ACCESS())
       x86emu_check_sp_access();)
@@ -2414,7 +2414,7 @@ REMARKS:
 CPUID takes EAX/ECX as inputs, writes EAX/EBX/ECX/EDX as output
 ****************************************************************************/
 func x86emu_cpuid() {
-    u32 feature = M.x86.R_EAX;
+var feature = M.x86.R_EAX uint32
 
     switch (feature) {
     case 0:

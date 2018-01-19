@@ -1,30 +1,30 @@
-sed -i 's/int mod, rl, rh;/var mod, rl, rh int/' $1
-sed -i 's/uint destoffset;/var destoffset uint/' $1
-sed -i 's/u8 \*destreg, \*srcreg;/var destreg, srcreg *u8/' $1
-sed -i 's/u8 destval;/var destval u8/' $1
-sed -i 's/u16 destval;/var destval u16/' $1
-sed -i 's/u16 *srcreg;/var srcreg u16*/' $1
-sed -i 's/u32 destval;/var destval u32/' $1
-sed -i 's/u32 \*srcreg;/var srcreg *u32/' $1
-sed -i 's/u16 \*srcreg;/var srcreg *u16/' $1
-sed -i 's/u16 \*destreg;/var destreg *u16/' $1
-sed -i 's/u32 \*destreg, \*srcreg;/var destreg, srcreg *u32/' $1
-sed -i 's/u32 \*destreg32, srcval;/var destreg *u32; var srcreg u32/' $1
-sed -i 's/u16 \*destreg, *\*srcreg;/var destreg, srcreg *u16/' $1
-sed -i 's/uint srcoffset;/var srcoffset uint/' $1
-sed -i 's/u8 srcval;/var srcval u8/' $1
-sed -i 's/u16 srcval;/var srcval u16/' $1
-sed -i 's/u32 srcval;/var srcval u32/' $1
-sed -i 's/u32 old_sp = M.x86.R_ESP;/old_sp := uint32(M.x86.R_ESP)/' $1
-sed -i 's/u16 old_sp = M.x86.R_SP;/old_sp := uint16(M.x86.R_ESP)/' $1
-sed -i 's/u32 imm;/var imm uint32/' $1
-sed -i 's/s32 imm;/var imm int32/' $1
-sed -i 's/s16 imm;/var imm int16/' $1
-sed -i 's/s8 imm;/var imm int8/' $1
-sed -i 's/u32 \*destreg;/var destreg *u32/' $1
-sed -i 's/u32 res_lo,res_hi;/var res_lo, res_hi u32/' $1
-sed -i 's/u32 res;/var res u32/' $1
-sed -i 's/u32 \*destreg,\*srcreg;/var destreg, srcreg *u32/' $1
+# sed -i 's/int mod, rl, rh;/var mod, rl, rh int/' $1
+# sed -i 's/uint destoffset;/var destoffset uint/' $1
+# sed -i 's/u8 \*destreg, \*srcreg;/var destreg, srcreg *u8/' $1
+# sed -i 's/u8 destval;/var destval u8/' $1
+# sed -i 's/u16 destval;/var destval u16/' $1
+# sed -i 's/u16 *srcreg;/var srcreg u16*/' $1
+# sed -i 's/u32 destval;/var destval u32/' $1
+# sed -i 's/u32 \*srcreg;/var srcreg *u32/' $1
+# sed -i 's/u16 \*srcreg;/var srcreg *u16/' $1
+# sed -i 's/u16 \*destreg;/var destreg *u16/' $1
+# sed -i 's/u32 \*destreg, \*srcreg;/var destreg, srcreg *u32/' $1
+# sed -i 's/u32 \*destreg32, srcval;/var destreg *u32; var srcreg u32/' $1
+# sed -i 's/u16 \*destreg, *\*srcreg;/var destreg, srcreg *u16/' $1
+# sed -i 's/uint srcoffset;/var srcoffset uint/' $1
+# sed -i 's/u8 srcval;/var srcval u8/' $1
+# sed -i 's/u16 srcval;/var srcval u16/' $1
+# sed -i 's/u32 srcval;/var srcval u32/' $1
+# sed -i 's/u32 old_sp = M.x86.R_ESP;/old_sp := uint32(M.x86.R_ESP)/' $1
+# sed -i 's/u16 old_sp = M.x86.R_SP;/old_sp := uint16(M.x86.R_ESP)/' $1
+# sed -i 's/u32 imm;/var imm uint32/' $1
+# sed -i 's/s32 imm;/var imm int32/' $1
+# sed -i 's/s16 imm;/var imm int16/' $1
+# sed -i 's/s8 imm;/var imm int8/' $1
+# sed -i 's/u32 \*destreg;/var destreg *u32/' $1
+# sed -i 's/u32 res_lo,res_hi;/var res_lo, res_hi u32/' $1
+# sed -i 's/u32 res;/var res u32/' $1
+# sed -i 's/u32 \*destreg,\*srcreg;/var destreg, srcreg *u32/' $1
 sed -i 's/^  *u8  *\*\(.*\);/var \1 *uint8/' $1
 sed -i 's/^  *s8  *\(.*\);/var \1 int8/' $1
 sed -i 's/^  *u8  *\(.*\);/var \1 uint8/' $1
