@@ -97,18 +97,6 @@
 *
 ****************************************************************************/
 
-#define PRIM_OPS_NO_REDEFINE_ASM
-
-#define abs(x) ({                               \
-                int __x = (x);                  \
-                (__x < 0) ? -__x : __x;         \
-        })
-
-#define labs(x) ({                              \
-                long __x = (x);                 \
-                (__x < 0) ? -__x : __x;         \
-        })
-
 /*------------------------- Global Variables ------------------------------*/
 
 static u32 x86emu_parity_tab[8] =
@@ -136,33 +124,33 @@ REMARKS:
 implements side effects for byte operations that don't overflow
 ****************************************************************************/
 
-static void set_parity_flag(u32 res)
+func set_parity_flag(u32 res)
 {
     CONDITIONAL_SET_FLAG(PARITY(res & 0xFF), F_PF);
 }
 
-static void set_szp_flags_8(u8 res)
+func set_szp_flags_8(u8 res)
 {
     CONDITIONAL_SET_FLAG(res & 0x80, F_SF);
     CONDITIONAL_SET_FLAG(res == 0, F_ZF);
     set_parity_flag(res);
 }
 
-static void set_szp_flags_16(u16 res)
+func set_szp_flags_16(u16 res)
 {
     CONDITIONAL_SET_FLAG(res & 0x8000, F_SF);
     CONDITIONAL_SET_FLAG(res == 0, F_ZF);
     set_parity_flag(res);
 }
 
-static void set_szp_flags_32(u32 res)
+func set_szp_flags_32(u32 res)
 {
     CONDITIONAL_SET_FLAG(res & 0x80000000, F_SF);
     CONDITIONAL_SET_FLAG(res == 0, F_ZF);
     set_parity_flag(res);
 }
 
-static void no_carry_byte_side_eff(u8 res)
+func no_carry_byte_side_eff(u8 res)
 {
     CLEAR_FLAG(F_OF);
     CLEAR_FLAG(F_CF);
@@ -170,7 +158,7 @@ static void no_carry_byte_side_eff(u8 res)
     set_szp_flags_8(res);
 }
 
-static void no_carry_word_side_eff(u16 res)
+func no_carry_word_side_eff(u16 res)
 {
     CLEAR_FLAG(F_OF);
     CLEAR_FLAG(F_CF);
@@ -178,7 +166,7 @@ static void no_carry_word_side_eff(u16 res)
     set_szp_flags_16(res);
 }
 
-static void no_carry_long_side_eff(u32 res)
+func no_carry_long_side_eff(u32 res)
 {
     CLEAR_FLAG(F_OF);
     CLEAR_FLAG(F_CF);
@@ -186,7 +174,7 @@ static void no_carry_long_side_eff(u32 res)
     set_szp_flags_32(res);
 }
 
-static void calc_carry_chain(int bits, u32 d, u32 s, u32 res, int set_carry)
+func calc_carry_chain(int bits, u32 d, u32 s, u32 res, int set_carry)
 {
     u32 cc;
 
@@ -198,7 +186,7 @@ static void calc_carry_chain(int bits, u32 d, u32 s, u32 res, int set_carry)
     }
 }
 
-static void calc_borrow_chain(int bits, u32 d, u32 s, u32 res, int set_carry)
+func calc_borrow_chain(int bits, u32 d, u32 s, u32 res, int set_carry)
 {
     u32 bc;
 
@@ -2292,7 +2280,7 @@ REMARKS:
 Implements the IN string instruction and side effects.
 ****************************************************************************/
 
-static void single_in(int size)
+func single_in(int size)
 {
     if (size == 1)
         store_data_byte_abs(M.x86.R_ES, M.x86.R_DI,(*sys_inb)(M.x86.R_DX));
@@ -2334,7 +2322,7 @@ REMARKS:
 Implements the OUT string instruction and side effects.
 ****************************************************************************/
 
-static void single_out(int size)
+func single_out(int size)
 {
      if (size == 1)
        (*sys_outb)(M.x86.R_DX,fetch_data_byte_abs(M.x86.R_ES, M.x86.R_SI));

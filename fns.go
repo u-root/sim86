@@ -230,3 +230,18 @@ func SAVE_IP_CS(cs, ip uint16) {
 		M().x86.saved_ip = ip
 	      }
 }
+
+func labs(i int64) {
+	if i < 0 {
+		return -i
+	}
+	return i
+}
+
+func abs(i int) int {
+	if i < 0 {
+		return -i
+	}
+	return i
+}
+
