@@ -175,7 +175,7 @@ func no_carry_long_side_eff(res uint32) {
 func calc_carry_chain(bits int, d uint32, s uint32, res uint32, set_carry int) {
 var cc uint32
 
-    cc = (s & d) | ((~res) & (s | d));
+    cc = (s & d) | ((^res) & (s | d));
     CONDITIONAL_SET_FLAG(XOR2(cc >> (bits - 2)), F_OF);
     CONDITIONAL_SET_FLAG(cc & 0x8, F_AF);
     if (set_carry) {
@@ -186,7 +186,7 @@ var cc uint32
 func calc_borrow_chain(bits int, d uint32, s uint32, res uint32, set_carry int) {
 var bc uint32
 
-    bc = (res & (~d | s)) | (~d & s);
+    bc = (res & (^d | s)) | (^d & s);
     CONDITIONAL_SET_FLAG(XOR2(bc >> (bits - 2)), F_OF);
     CONDITIONAL_SET_FLAG(bc & 0x8, F_AF);
     if (set_carry) {
@@ -198,8 +198,7 @@ var bc uint32
 REMARKS:
 Implements the AAA instruction and side effects.
 ****************************************************************************/
-u16 aaa_word(d uint16)
-{
+func aaa_word(d uint16) {
 var res uint16
     if ((d & 0xf) > 0x9 || ACCESS_FLAG(F_AF)) {
         d += 0x6;
@@ -219,8 +218,7 @@ var res uint16
 REMARKS:
 Implements the AAA instruction and side effects.
 ****************************************************************************/
-u16 aas_word(d uint16)
-{
+func aas_word(d uint16){
 var res uint16
     if ((d & 0xf) > 0x9 || ACCESS_FLAG(F_AF)) {
         d -= 0x6;
@@ -240,8 +238,7 @@ var res uint16
 REMARKS:
 Implements the AAD instruction and side effects.
 ****************************************************************************/
-u16 aad_word(d uint16)
-{
+func  aad_word(d uint16)  uint16 {
 var l uint16
     hb uint8, lb;
 
@@ -257,8 +254,7 @@ var l uint16
 REMARKS:
 Implements the AAM instruction and side effects.
 ****************************************************************************/
-u16 aam_word(d uint8)
-{
+func  aam_word(d uint8)  uint16 {
     h uint16, l;
 
     h = (u16)(d / 10);
@@ -290,8 +286,7 @@ u8 adc_byte(d uint8, s uint8)
 REMARKS:
 Implements the ADC instruction and side effects.
 ****************************************************************************/
-u16 adc_word(d uint16, s uint16)
-{
+func  adc_word(d uint16, s uint16)  uint16 {
     var res u32;   /* all operands in native machine order */
 
     res = d + s;
@@ -308,8 +303,7 @@ u16 adc_word(d uint16, s uint16)
 REMARKS:
 Implements the ADC instruction and side effects.
 ****************************************************************************/
-u32 adc_long(d uint32, s uint32)
-{
+func adc_long(d uint32, s uint32)  uint32 {
 var lo uint32    /* all operands in native machine order */
 var hi uint32
     var res u32;
@@ -351,8 +345,7 @@ u8 add_byte(d uint8, s uint8)
 REMARKS:
 Implements the ADD instruction and side effects.
 ****************************************************************************/
-u16 add_word(d uint16, s uint16)
-{
+func  add_word(d uint16, s uint16)  uint16 {
     var res u32;   /* all operands in native machine order */
 
     res = d + s;
@@ -366,8 +359,7 @@ u16 add_word(d uint16, s uint16)
 REMARKS:
 Implements the ADD instruction and side effects.
 ****************************************************************************/
-u32 add_long(d uint32, s uint32)
-{
+func add_long(d uint32, s uint32)  uint32 {
     var res u32;
 
     res = d + s;
@@ -397,8 +389,7 @@ var res uint8    /* all operands in native machine order */
 REMARKS:
 Implements the AND instruction and side effects.
 ****************************************************************************/
-u16 and_word(d uint16, s uint16)
-{
+func  and_word(d uint16, s uint16)  uint16 {
 var res uint16   /* all operands in native machine order */
 
     res = d & s;
@@ -411,8 +402,7 @@ var res uint16   /* all operands in native machine order */
 REMARKS:
 Implements the AND instruction and side effects.
 ****************************************************************************/
-u32 and_long(d uint32, s uint32)
-{
+func and_long(d uint32, s uint32)  uint32 {
     var res u32;   /* all operands in native machine order */
 
     res = d & s;
@@ -439,8 +429,7 @@ u8 cmp_byte(d uint8, s uint8)
 REMARKS:
 Implements the CMP instruction and side effects.
 ****************************************************************************/
-u16 cmp_word(d uint16, s uint16)
-{
+func  cmp_word(d uint16, s uint16)  uint16 {
     var res u32;   /* all operands in native machine order */
 
     res = d - s;
@@ -454,8 +443,7 @@ u16 cmp_word(d uint16, s uint16)
 REMARKS:
 Implements the CMP instruction and side effects.
 ****************************************************************************/
-u32 cmp_long(d uint32, s uint32)
-{
+func cmp_long(d uint32, s uint32)  uint32 {
     var res u32;   /* all operands in native machine order */
 
     res = d - s;
@@ -521,8 +509,7 @@ u8 dec_byte(d uint8)
 REMARKS:
 Implements the DEC instruction and side effects.
 ****************************************************************************/
-u16 dec_word(d uint16)
-{
+func  dec_word(d uint16)  uint16 {
     var res u32;   /* all operands in native machine order */
 
     res = d - 1;
@@ -536,8 +523,7 @@ u16 dec_word(d uint16)
 REMARKS:
 Implements the DEC instruction and side effects.
 ****************************************************************************/
-u32 dec_long(d uint32)
-{
+func dec_long(d uint32)  uint32 {
     var res u32;   /* all operands in native machine order */
 
     res = d - 1;
@@ -567,8 +553,7 @@ u8 inc_byte(d uint8)
 REMARKS:
 Implements the INC instruction and side effects.
 ****************************************************************************/
-u16 inc_word(d uint16)
-{
+func  inc_word(d uint16)  uint16 {
     var res u32;   /* all operands in native machine order */
 
     res = d + 1;
@@ -582,8 +567,7 @@ u16 inc_word(d uint16)
 REMARKS:
 Implements the INC instruction and side effects.
 ****************************************************************************/
-u32 inc_long(d uint32)
-{
+func inc_long(d uint32)  uint32 {
     var res u32;   /* all operands in native machine order */
 
     res = d + 1;
@@ -611,8 +595,7 @@ var res uint8    /* all operands in native machine order */
 REMARKS:
 Implements the OR instruction and side effects.
 ****************************************************************************/
-u16 or_word(d uint16, s uint16)
-{
+func  or_word(d uint16, s uint16)  uint16 {
 var res uint16   /* all operands in native machine order */
 
     res = d | s;
@@ -624,8 +607,7 @@ var res uint16   /* all operands in native machine order */
 REMARKS:
 Implements the OR instruction and side effects.
 ****************************************************************************/
-u32 or_long(d uint32, s uint32)
-{
+func or_long(d uint32, s uint32)  uint32 {
     var res u32;   /* all operands in native machine order */
 
     res = d | s;
@@ -653,8 +635,7 @@ var res uint8
 REMARKS:
 Implements the OR instruction and side effects.
 ****************************************************************************/
-u16 neg_word(s uint16)
-{
+func  neg_word(s uint16)  uint16 {
 var res uint16
 
     CONDITIONAL_SET_FLAG(s != 0, F_CF);
@@ -669,8 +650,7 @@ var res uint16
 REMARKS:
 Implements the OR instruction and side effects.
 ****************************************************************************/
-u32 neg_long(s uint32)
-{
+func neg_long(s uint32)  uint32 {
     var res u32;
 
     CONDITIONAL_SET_FLAG(s != 0, F_CF);
@@ -687,25 +667,23 @@ Implements the NOT instruction and side effects.
 ****************************************************************************/
 u8 not_byte(s uint8)
 {
-    return ~s;
+    return ^s;
 }
 
 /****************************************************************************
 REMARKS:
 Implements the NOT instruction and side effects.
 ****************************************************************************/
-u16 not_word(s uint16)
-{
-    return ~s;
+func  not_word(s uint16)  uint16 {
+    return ^s;
 }
 
 /****************************************************************************
 REMARKS:
 Implements the NOT instruction and side effects.
 ****************************************************************************/
-u32 not_long(s uint32)
-{
-    return ~s;
+func not_long(s uint32)  uint32 {
+    return ^s;
 }
 
 /****************************************************************************
@@ -785,8 +763,7 @@ u8 rcl_byte(d uint8, s uint8)
 REMARKS:
 Implements the RCL instruction and side effects.
 ****************************************************************************/
-u16 rcl_word(d uint16, s uint8)
-{
+func  rcl_word(d uint16, s uint8)  uint16 {
     unsigned res int, cnt, mask, cf;
 
     res = d;
@@ -809,8 +786,7 @@ u16 rcl_word(d uint16, s uint8)
 REMARKS:
 Implements the RCL instruction and side effects.
 ****************************************************************************/
-u32 rcl_long(d uint32, s uint8)
-{
+func rcl_long(d uint32, s uint8)  uint32 {
     var res u32, cnt, mask, cf;
 
     res = d;
@@ -917,8 +893,7 @@ u8 rcr_byte(d uint8, s uint8)
 REMARKS:
 Implements the RCR instruction and side effects.
 ****************************************************************************/
-u16 rcr_word(d uint16, s uint8)
-{
+func  rcr_word(d uint16, s uint8)  uint16 {
     var res u32, cnt;
     mask uint32, cf, ocf = 0;
 
@@ -949,8 +924,7 @@ u16 rcr_word(d uint16, s uint8)
 REMARKS:
 Implements the RCR instruction and side effects.
 ****************************************************************************/
-u32 rcr_long(d uint32, s uint8)
-{
+func rcr_long(d uint32, s uint8)  uint32 {
     var res u32, cnt;
     mask uint32, cf, ocf = 0;
 
@@ -1031,8 +1005,7 @@ u8 rol_byte(d uint8, s uint8)
 REMARKS:
 Implements the ROL instruction and side effects.
 ****************************************************************************/
-u16 rol_word(d uint16, s uint8)
-{
+func  rol_word(d uint16, s uint8)  uint16 {
     unsigned res int, cnt, mask;
 
     res = d;
@@ -1056,8 +1029,7 @@ u16 rol_word(d uint16, s uint8)
 REMARKS:
 Implements the ROL instruction and side effects.
 ****************************************************************************/
-u32 rol_long(d uint32, s uint8)
-{
+func rol_long(d uint32, s uint8)  uint32 {
     var res u32, cnt, mask;
 
     res = d;
@@ -1127,8 +1099,7 @@ u8 ror_byte(d uint8, s uint8)
 REMARKS:
 Implements the ROR instruction and side effects.
 ****************************************************************************/
-u16 ror_word(d uint16, s uint8)
-{
+func  ror_word(d uint16, s uint8)  uint16 {
     unsigned res int, cnt, mask;
 
     res = d;
@@ -1150,8 +1121,7 @@ u16 ror_word(d uint16, s uint8)
 REMARKS:
 Implements the ROR instruction and side effects.
 ****************************************************************************/
-u32 ror_long(d uint32, s uint8)
-{
+func ror_long(d uint32, s uint8)  uint32 {
     var res u32, cnt, mask;
 
     res = d;
@@ -1215,8 +1185,7 @@ u8 shl_byte(d uint8, s uint8)
 REMARKS:
 Implements the SHL instruction and side effects.
 ****************************************************************************/
-u16 shl_word(d uint16, s uint8)
-{
+func  shl_word(d uint16, s uint8)  uint16 {
     unsigned cnt int, res, cf;
 
     if (s < 16) {
@@ -1253,8 +1222,7 @@ u16 shl_word(d uint16, s uint8)
 REMARKS:
 Implements the SHL instruction and side effects.
 ****************************************************************************/
-u32 shl_long(d uint32, s uint8)
-{
+func shl_long(d uint32, s uint8)  uint32 {
     unsigned cnt int, res, cf;
 
     if (s < 32) {
@@ -1323,8 +1291,7 @@ u8 shr_byte(d uint8, s uint8)
 REMARKS:
 Implements the SHR instruction and side effects.
 ****************************************************************************/
-u16 shr_word(d uint16, s uint8)
-{
+func  shr_word(d uint16, s uint8)  uint16 {
     unsigned cnt int, res, cf;
 
     if (s < 16) {
@@ -1358,8 +1325,7 @@ u16 shr_word(d uint16, s uint8)
 REMARKS:
 Implements the SHR instruction and side effects.
 ****************************************************************************/
-u32 shr_long(d uint32, s uint8)
-{
+func shr_long(d uint32, s uint8)  uint32 {
     unsigned cnt int, res, cf;
 
     if (s < 32) {
@@ -1405,7 +1371,7 @@ u8 sar_byte(d uint8, s uint8)
         res = (d >> cnt) & mask;
         CONDITIONAL_SET_FLAG(cf, F_CF);
         if (sf) {
-            res |= ~mask;
+            res |= ^mask;
         }
         set_szp_flags_8(uint8(res));
     } else if (cnt >= 8) {
@@ -1430,8 +1396,7 @@ u8 sar_byte(d uint8, s uint8)
 REMARKS:
 Implements the SAR instruction and side effects.
 ****************************************************************************/
-u16 sar_word(d uint16, s uint8)
-{
+func  sar_word(d uint16, s uint8)  uint16 {
     unsigned cnt int, res, cf, mask, sf;
 
     sf = d & 0x8000;
@@ -1443,7 +1408,7 @@ u16 sar_word(d uint16, s uint8)
         res = (d >> cnt) & mask;
         CONDITIONAL_SET_FLAG(cf, F_CF);
         if (sf) {
-            res |= ~mask;
+            res |= ^mask;
         }
         set_szp_flags_16(uint16(res));
     } else if (cnt >= 16) {
@@ -1468,8 +1433,7 @@ u16 sar_word(d uint16, s uint8)
 REMARKS:
 Implements the SAR instruction and side effects.
 ****************************************************************************/
-u32 sar_long(d uint32, s uint8)
-{
+func sar_long(d uint32, s uint8)  uint32 {
     cnt uint32, res, cf, mask, sf;
 
     sf = d & 0x80000000;
@@ -1481,7 +1445,7 @@ u32 sar_long(d uint32, s uint8)
         res = (d >> cnt) & mask;
         CONDITIONAL_SET_FLAG(cf, F_CF);
         if (sf) {
-            res |= ~mask;
+            res |= ^mask;
         }
         set_szp_flags_32(res);
     } else if (cnt >= 32) {
@@ -1506,8 +1470,7 @@ u32 sar_long(d uint32, s uint8)
 REMARKS:
 Implements the SHLD instruction and side effects.
 ****************************************************************************/
-u16 shld_word (d uint16, fill uint16, s uint8)
-{
+func  shld_word (d uint16, fill uint16, s uint8)  uint16 {
     unsigned cnt int, res, cf;
 
     if (s < 16) {
@@ -1541,8 +1504,7 @@ u16 shld_word (d uint16, fill uint16, s uint8)
 REMARKS:
 Implements the SHLD instruction and side effects.
 ****************************************************************************/
-u32 shld_long (d uint32, fill uint32, s uint8)
-{
+func shld_long (d uint32, fill uint32, s uint8)  uint32 {
     unsigned cnt int, res, cf;
 
     if (s < 32) {
@@ -1576,8 +1538,7 @@ u32 shld_long (d uint32, fill uint32, s uint8)
 REMARKS:
 Implements the SHRD instruction and side effects.
 ****************************************************************************/
-u16 shrd_word (d uint16, fill uint16, s uint8)
-{
+func  shrd_word (d uint16, fill uint16, s uint8)  uint16 {
     unsigned cnt int, res, cf;
 
     if (s < 16) {
@@ -1611,8 +1572,7 @@ u16 shrd_word (d uint16, fill uint16, s uint8)
 REMARKS:
 Implements the SHRD instruction and side effects.
 ****************************************************************************/
-u32 shrd_long (d uint32, fill uint32, s uint8)
-{
+func shrd_long (d uint32, fill uint32, s uint8)  uint32 {
     unsigned cnt int, res, cf;
 
     if (s < 32) {
@@ -1657,7 +1617,7 @@ var bc uint32
     set_szp_flags_8(uint8(res));
 
     /* calculate the borrow chain.  See note at top */
-    bc = (res & (~d | s)) | (~d & s);
+    bc = (res & (^d | s)) | (^d & s);
     CONDITIONAL_SET_FLAG(bc & 0x80, F_CF);
     CONDITIONAL_SET_FLAG(XOR2(bc >> 6), F_OF);
     CONDITIONAL_SET_FLAG(bc & 0x8, F_AF);
@@ -1668,8 +1628,7 @@ var bc uint32
 REMARKS:
 Implements the SBB instruction and side effects.
 ****************************************************************************/
-u16 sbb_word(d uint16, s uint16)
-{
+func  sbb_word(d uint16, s uint16)  uint16 {
     var res u32;   /* all operands in native machine order */
 var bc uint32
 
@@ -1680,7 +1639,7 @@ var bc uint32
     set_szp_flags_16(uint16(res));
 
     /* calculate the borrow chain.  See note at top */
-    bc = (res & (~d | s)) | (~d & s);
+    bc = (res & (^d | s)) | (^d & s);
     CONDITIONAL_SET_FLAG(bc & 0x8000, F_CF);
     CONDITIONAL_SET_FLAG(XOR2(bc >> 14), F_OF);
     CONDITIONAL_SET_FLAG(bc & 0x8, F_AF);
@@ -1691,8 +1650,7 @@ var bc uint32
 REMARKS:
 Implements the SBB instruction and side effects.
 ****************************************************************************/
-u32 sbb_long(d uint32, s uint32)
-{
+func sbb_long(d uint32, s uint32)  uint32 {
     var res u32;   /* all operands in native machine order */
 var bc uint32
 
@@ -1704,7 +1662,7 @@ var bc uint32
     set_szp_flags_32(res);
 
     /* calculate the borrow chain.  See note at top */
-    bc = (res & (~d | s)) | (~d & s);
+    bc = (res & (^d | s)) | (^d & s);
     CONDITIONAL_SET_FLAG(bc & 0x80000000, F_CF);
     CONDITIONAL_SET_FLAG(XOR2(bc >> 30), F_OF);
     CONDITIONAL_SET_FLAG(bc & 0x8, F_AF);
@@ -1724,7 +1682,7 @@ var bc uint32
     set_szp_flags_8(uint8(res));
 
     /* calculate the borrow chain.  See note at top */
-    bc = (res & (~d | s)) | (~d & s);
+    bc = (res & (^d | s)) | (^d & s);
     CONDITIONAL_SET_FLAG(bc & 0x80, F_CF);
     CONDITIONAL_SET_FLAG(XOR2(bc >> 6), F_OF);
     CONDITIONAL_SET_FLAG(bc & 0x8, F_AF);
@@ -1735,8 +1693,7 @@ var bc uint32
 REMARKS:
 Implements the SUB instruction and side effects.
 ****************************************************************************/
-u16 sub_word(d uint16, s uint16)
-{
+func  sub_word(d uint16, s uint16)  uint16 {
     var res u32;   /* all operands in native machine order */
 var bc uint32
 
@@ -1744,7 +1701,7 @@ var bc uint32
     set_szp_flags_16(uint16(res));
 
     /* calculate the borrow chain.  See note at top */
-    bc = (res & (~d | s)) | (~d & s);
+    bc = (res & (^d | s)) | (^d & s);
     CONDITIONAL_SET_FLAG(bc & 0x8000, F_CF);
     CONDITIONAL_SET_FLAG(XOR2(bc >> 14), F_OF);
     CONDITIONAL_SET_FLAG(bc & 0x8, F_AF);
@@ -1755,8 +1712,7 @@ var bc uint32
 REMARKS:
 Implements the SUB instruction and side effects.
 ****************************************************************************/
-u32 sub_long(d uint32, s uint32)
-{
+func sub_long(d uint32, s uint32)  uint32 {
     var res u32;   /* all operands in native machine order */
 var bc uint32
 
@@ -1764,7 +1720,7 @@ var bc uint32
     set_szp_flags_32(res);
 
     /* calculate the borrow chain.  See note at top */
-    bc = (res & (~d | s)) | (~d & s);
+    bc = (res & (^d | s)) | (^d & s);
     CONDITIONAL_SET_FLAG(bc & 0x80000000, F_CF);
     CONDITIONAL_SET_FLAG(XOR2(bc >> 30), F_OF);
     CONDITIONAL_SET_FLAG(bc & 0x8, F_AF);
@@ -1833,8 +1789,7 @@ var res uint8    /* all operands in native machine order */
 REMARKS:
 Implements the XOR instruction and side effects.
 ****************************************************************************/
-u16 xor_word(d uint16, s uint16)
-{
+func  xor_word(d uint16, s uint16)  uint16 {
 var res uint16   /* all operands in native machine order */
 
     res = d ^ s;
@@ -1846,8 +1801,7 @@ var res uint16   /* all operands in native machine order */
 REMARKS:
 Implements the XOR instruction and side effects.
 ****************************************************************************/
-u32 xor_long(d uint32, s uint32)
-{
+func xor_long(d uint32, s uint32)  uint32 {
     var res u32;   /* all operands in native machine order */
 
     res = d ^ s;
@@ -1921,10 +1875,10 @@ func imul_long_direct(u32 *res_lo, u32* res_hi,d uint32, s uint32) {
     *res_lo = (rlo_hi << 16) | (rlo_lo & 0xFFFF);
     *res_hi = rhi_lo;
     if (d_sign != s_sign) {
-        d = ~*res_lo;
+        d = ^*res_lo;
         s = (((d & 0xFFFF) + 1) >> 16) + (d >> 16);
-        *res_lo = ~*res_lo+1;
-        *res_hi = ~*res_hi+(s >> 16);
+        *res_lo = ^*res_lo+1;
+        *res_hi = ^*res_hi+(s >> 16);
         }
 #endif
 }
@@ -2288,7 +2242,7 @@ var inc = size int32
         if (M.x86.mode & SYSMODE_32BIT_REP) {
             M.x86.R_ECX = 0;
         }
-        M.x86.mode &= ~(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
+        M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
     } else {
         single_in(size);
         M.x86.R_DI += inc;
@@ -2328,7 +2282,7 @@ var inc = size int32
         if (M.x86.mode & SYSMODE_32BIT_REP) {
             M.x86.R_ECX = 0;
         }
-        M.x86.mode &= ~(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
+        M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
     } else {
         single_out(size);
         M.x86.R_SI += inc;
@@ -2342,8 +2296,7 @@ addr    - Address to fetch word from
 REMARKS:
 Fetches a word from emulator memory using an absolute address.
 ****************************************************************************/
-u16 mem_access_word(addr int)
-{
+func  mem_access_word(addr int)  uint16 {
 DB( if (CHECK_MEM_ACCESS())
       x86emu_check_mem_access(addr);)
     return (*sys_rdw)(addr);
@@ -2381,8 +2334,7 @@ Pops a word from the stack.
 
 NOTE: Do not inline this, as (*sys_rdX) is already inline!
 ****************************************************************************/
-u16 pop_word()
-{
+func  pop_word()  uint16 {
 var res uint16
 
 DB( if (CHECK_SP_ACCESS())
@@ -2398,8 +2350,7 @@ Pops a long from the stack.
 
 NOTE: Do not inline this, as (*sys_rdX) is already inline!
 ****************************************************************************/
-u32 pop_long()
-{
+func pop_long()  uint32 {
     var res u32;
 
 DB( if (CHECK_SP_ACCESS())
