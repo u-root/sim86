@@ -1031,7 +1031,7 @@ func rol_long(d uint32, s uint8)  uint32 {
     var res, cnt, mask uint32
 
     res = d;
-    if ((cnt = s % 32) != 0) {
+    if cnt = s % 32; cnt != 0 {
         res = (d << cnt);
         mask = (1 << cnt) - 1;
         res |= (d >> (32 - cnt)) & mask;
@@ -1039,7 +1039,8 @@ func rol_long(d uint32, s uint8)  uint32 {
         CONDITIONAL_SET_FLAG(s == 1 &&
                              XOR2((res & 0x1) + ((res >> 30) & 0x2)),
                              F_OF);
-    } if (s != 0) {
+    }
+	if (s != 0) {
         /* set the new carry flag, Note that it is the low order
            bit of the result!!!                               */
         CONDITIONAL_SET_FLAG(res & 0x1, F_CF);
@@ -1052,7 +1053,7 @@ REMARKS:
 Implements the ROR instruction and side effects.
 ****************************************************************************/
 func  ror_byte(d uint8, s uint8)  uint8 {
-    unsigned res int, cnt, mask;
+	var res, cnt, mask int
 
     /* rotate right */
     /*
@@ -1070,7 +1071,7 @@ func  ror_byte(d uint8, s uint8)  uint8 {
        2) B_(7) .. B_(8-n) <-  b_(n-1) .. b_(0)
      */
     res = d;
-    if ((cnt = s % 8) != 0) {           /* not a typo, do nada if cnt==0 */
+    if cnt = s % 8; cnt != 0 {           /* not a typo, do nada if cnt==0 */
         /* B_(7) .. B_(8-n) <-  b_(n-1) .. b_(0) */
         res = (d << (8 - cnt));
 
@@ -1097,10 +1098,10 @@ REMARKS:
 Implements the ROR instruction and side effects.
 ****************************************************************************/
 func  ror_word(d uint16, s uint8)  uint16 {
-    unsigned res int, cnt, mask;
+	var res , cnt, mask int
 
     res = d;
-    if ((cnt = s % 16) != 0) {
+    if cnt = s % 16; cnt != 0 {
         res = (d << (16 - cnt));
         mask = (1 << (16 - cnt)) - 1;
         res |= (d >> (cnt)) & mask;
@@ -1119,10 +1120,10 @@ REMARKS:
 Implements the ROR instruction and side effects.
 ****************************************************************************/
 func ror_long(d uint32, s uint8)  uint32 {
-    var res u32, cnt, mask;
+    var res,  cnt, mask uint32
 
     res = d;
-    if ((cnt = s % 32) != 0) {
+    if cnt = s % 32; cnt != 0 {
         res = (d << (32 - cnt));
         mask = (1 << (32 - cnt)) - 1;
         res |= (d >> (cnt)) & mask;
@@ -1141,7 +1142,7 @@ REMARKS:
 Implements the SHL instruction and side effects.
 ****************************************************************************/
 func  shl_byte(d uint8, s uint8)  uint8 {
-    unsigned cnt int, res, cf;
+    var cnt, res, cf int
 
     if (s < 8) {
         cnt = s % 8;
@@ -1182,7 +1183,7 @@ REMARKS:
 Implements the SHL instruction and side effects.
 ****************************************************************************/
 func  shl_word(d uint16, s uint8)  uint16 {
-    unsigned cnt int, res, cf;
+    var cnt, res, cf int
 
     if (s < 16) {
         cnt = s % 16;
@@ -1219,7 +1220,7 @@ REMARKS:
 Implements the SHL instruction and side effects.
 ****************************************************************************/
 func shl_long(d uint32, s uint8)  uint32 {
-    unsigned cnt int, res, cf;
+    var cnt, res, cf int
 
     if (s < 32) {
         cnt = s % 32;
@@ -1253,7 +1254,7 @@ REMARKS:
 Implements the SHR instruction and side effects.
 ****************************************************************************/
 func  shr_byte(d uint8, s uint8)  uint8 {
-    unsigned cnt int, res, cf;
+    var cnt, res, cf int
 
     if (s < 8) {
         cnt = s % 8;
@@ -1287,7 +1288,7 @@ REMARKS:
 Implements the SHR instruction and side effects.
 ****************************************************************************/
 func  shr_word(d uint16, s uint8)  uint16 {
-    unsigned cnt int, res, cf;
+    var cnt, res, cf int
 
     if (s < 16) {
         cnt = s % 16;
@@ -1321,7 +1322,7 @@ REMARKS:
 Implements the SHR instruction and side effects.
 ****************************************************************************/
 func shr_long(d uint32, s uint8)  uint32 {
-    unsigned cnt int, res, cf;
+    var cnt, res, cf int
 
     if (s < 32) {
         cnt = s % 32;
@@ -1354,7 +1355,7 @@ REMARKS:
 Implements the SAR instruction and side effects.
 ****************************************************************************/
 func  sar_byte(d uint8, s uint8)  uint8 {
-    unsigned cnt int, res, cf, mask, sf;
+    var cnt, res, cf, mask, sf int
 
     res = d;
     sf = d & 0x80;
@@ -1391,7 +1392,7 @@ REMARKS:
 Implements the SAR instruction and side effects.
 ****************************************************************************/
 func  sar_word(d uint16, s uint8)  uint16 {
-    unsigned cnt int, res, cf, mask, sf;
+    var cnt, res, cf, mask, sf int
 
     sf = d & 0x8000;
     cnt = s % 16;
@@ -1428,7 +1429,7 @@ REMARKS:
 Implements the SAR instruction and side effects.
 ****************************************************************************/
 func sar_long(d uint32, s uint8)  uint32 {
-    cnt uint32, res, cf, mask, sf;
+	var cnt, res, cf, mask, sf uint32
 
     sf = d & 0x80000000;
     cnt = s % 32;
@@ -1465,7 +1466,7 @@ REMARKS:
 Implements the SHLD instruction and side effects.
 ****************************************************************************/
 func  shld_word (d uint16, fill uint16, s uint8)  uint16 {
-    unsigned cnt int, res, cf;
+    var cnt, res, cf int
 
     if (s < 16) {
         cnt = s % 16;
@@ -1499,7 +1500,7 @@ REMARKS:
 Implements the SHLD instruction and side effects.
 ****************************************************************************/
 func shld_long (d uint32, fill uint32, s uint8)  uint32 {
-    unsigned cnt int, res, cf;
+    var cnt, res, cf int
 
     if (s < 32) {
         cnt = s % 32;
@@ -1533,7 +1534,7 @@ REMARKS:
 Implements the SHRD instruction and side effects.
 ****************************************************************************/
 func  shrd_word (d uint16, fill uint16, s uint8)  uint16 {
-    unsigned cnt int, res, cf;
+    var cnt, res, cf int
 
     if (s < 16) {
         cnt = s % 16;
@@ -1567,7 +1568,7 @@ REMARKS:
 Implements the SHRD instruction and side effects.
 ****************************************************************************/
 func shrd_long (d uint32, fill uint32, s uint8)  uint32 {
-    unsigned cnt int, res, cf;
+    var cnt, res, cf int
 
     if (s < 32) {
         cnt = s % 32;
@@ -1603,10 +1604,11 @@ func  sbb_byte(d uint8, s uint8)  uint8 {
     var res u32;   /* all operands in native machine order */
 var bc uint32
 
-    if (ACCESS_FLAG(F_CF))
+    if (ACCESS_FLAG(F_CF)) {
         res = d - s - 1;
-    else
-        res = d - s;
+    } else{
+	    res = d - s;
+    }
     set_szp_flags_8(uint8(res));
 
     /* calculate the borrow chain.  See note at top */
@@ -1625,10 +1627,11 @@ func  sbb_word(d uint16, s uint16)  uint16 {
     var res u32;   /* all operands in native machine order */
 var bc uint32
 
-    if (ACCESS_FLAG(F_CF))
+    if (ACCESS_FLAG(F_CF)) {
         res = d - s - 1;
-    else
-        res = d - s;
+    } else{
+	    res = d - s;
+    }
     set_szp_flags_16(uint16(res));
 
     /* calculate the borrow chain.  See note at top */
@@ -1647,10 +1650,11 @@ func sbb_long(d uint32, s uint32)  uint32 {
     var res u32;   /* all operands in native machine order */
 var bc uint32
 
-    if (ACCESS_FLAG(F_CF))
+    if (ACCESS_FLAG(F_CF)) {
         res = d - s - 1;
-    else
-        res = d - s;
+    } else{
+	    res = d - s;
+    }
 
     set_szp_flags_32(res);
 
@@ -1805,9 +1809,9 @@ REMARKS:
 Implements the IMUL instruction and side effects.
 ****************************************************************************/
 func imul_byte(s uint8) {
-    s16 res = (s16)(int8(M.x86.R_AL) * int8(s));
+	res := uint32(int16(M.x86.A.Get8()) * int16(s))
 
-    M.x86.R_AX = res;
+M.x86.A.Set(res)
     if (((M.x86.R_AL & 0x80) == 0 && M.x86.R_AH == 0x00) ||
         ((M.x86.R_AL & 0x80) != 0 && M.x86.R_AH == 0xFF)) {
         CLEAR_FLAG(F_CF);
