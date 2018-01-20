@@ -273,7 +273,7 @@ func  adc_byte(d uint8, s uint8)  uint8 {
     var res u32;   /* all operands in native machine order */
 
     res = d + s;
-    if (ACCESS_FLAG(F_CF)) res++;
+	if (ACCESS_FLAG(F_CF)) {res++;}
 
     set_szp_flags_8(res);
     calc_carry_chain(8,s,d,res,1);
@@ -289,8 +289,9 @@ func  adc_word(d uint16, s uint16)  uint16 {
     var res u32;   /* all operands in native machine order */
 
     res = d + s;
-    if (ACCESS_FLAG(F_CF))
-        res++;
+    if (ACCESS_FLAG(F_CF)){
+	    res++;
+    }
 
     set_szp_flags_16(uint16(res));
     calc_carry_chain(16,s,d,res,1);
@@ -680,7 +681,7 @@ REMARKS:
 Implements the RCL instruction and side effects.
 ****************************************************************************/
 func  rcl_byte(d uint8, s uint8)  uint8 {
-    unsigned res int, cnt, mask, cf;
+var res, int, cnt, mask, cf uint8
 
     /* s is the rotate distance.  It varies from 0 - 8. */
     /* have
@@ -708,8 +709,9 @@ func  rcl_byte(d uint8, s uint8)  uint8 {
        3) B_(n-1) <- cf
        4) B_(n-2) .. B_0 <-  b_7 .. b_(8-(n-1))
      */
-    res = d;
-    if ((cnt = s % 9) != 0) {
+	res = d;
+	cnt = s % 9
+    if cnt != 0 {
         /* extract the new CARRY FLAG. */
         /* CF <-  b_(8-n)             */
         cf = (d >> (8 - cnt)) & 0x1;
@@ -752,10 +754,11 @@ REMARKS:
 Implements the RCL instruction and side effects.
 ****************************************************************************/
 func  rcl_word(d uint16, s uint8)  uint16 {
-    unsigned res int, cnt, mask, cf;
+var res, int, cnt, mask, cf uint16
 
-    res = d;
-    if ((cnt = s % 17) != 0) {
+	res = d;
+	cnt = s % 17
+    if cnt != 0 {
         cf = (d >> (16 - cnt)) & 0x1;
         res = (d << cnt) & 0xffff;
         mask = (1 << (cnt - 1)) - 1;
@@ -775,10 +778,11 @@ REMARKS:
 Implements the RCL instruction and side effects.
 ****************************************************************************/
 func rcl_long(d uint32, s uint8)  uint32 {
-    var res u32, cnt, mask, cf;
+    var res, cnt, mask, cf uint32
 
-    res = d;
-    if ((cnt = s % 33) != 0) {
+	res = d;
+	cnt = s % 33
+    if cnt != 0 {
         cf = (d >> (32 - cnt)) & 0x1;
         res = (d << cnt) & 0xffffffff;
         mask = (1 << (cnt - 1)) - 1;
@@ -798,8 +802,7 @@ REMARKS:
 Implements the RCR instruction and side effects.
 ****************************************************************************/
 func  rcr_byte(d uint8, s uint8)  uint8 {
-    var res u32, cnt;
-    mask uint32, cf, ocf = 0;
+    var res, cnt, mask, cf, ocf uint32
 
     /* rotate right through carry */
     /*
@@ -823,8 +826,9 @@ func  rcr_byte(d uint8, s uint8)  uint8 {
        3) B_(8-n) <- cf
        4) B_(7) .. B_(8-(n-1)) <-  b_(n-2) .. b_(0)
      */
-    res = d;
-    if ((cnt = s % 9) != 0) {
+	res = d;
+	cnt = s % 9
+    if cnt != 0 {
         /* extract the new CARRY FLAG. */
         /* CF <-  b_(n-1)              */
         if (cnt == 1) {
@@ -837,8 +841,9 @@ func  rcr_byte(d uint8, s uint8)  uint8 {
                (i.e. packed bit array or unpacked.)
              */
             ocf = ACCESS_FLAG(F_CF) != 0;
-        } else
-            cf = (d >> (cnt - 1)) & 0x1;
+        } else {
+		cf = (d >> (cnt - 1)) & 0x1;
+	}
 
         /* B_(8-(n+1)) .. B_(0)  <-  b_(7) .. b_n  */
         /* note that the right hand side done by the mask
@@ -881,17 +886,18 @@ REMARKS:
 Implements the RCR instruction and side effects.
 ****************************************************************************/
 func  rcr_word(d uint16, s uint8)  uint16 {
-    var res u32, cnt;
-    mask uint32, cf, ocf = 0;
+    var res, cnt, mask, cf, ocf uint16
 
     /* rotate right through carry */
-    res = d;
-    if ((cnt = s % 17) != 0) {
+	res = d;
+	cnt = s % 17
+    if cnt != 0 {
         if (cnt == 1) {
             cf = d & 0x1;
             ocf = ACCESS_FLAG(F_CF) != 0;
-        } else
-            cf = (d >> (cnt - 1)) & 0x1;
+        } else {
+		cf = (d >> (cnt - 1)) & 0x1;
+	}
         mask = (1 << (16 - cnt)) - 1;
         res = (d >> cnt) & mask;
         res |= (d << (17 - cnt));
@@ -912,21 +918,23 @@ REMARKS:
 Implements the RCR instruction and side effects.
 ****************************************************************************/
 func rcr_long(d uint32, s uint8)  uint32 {
-    var res u32, cnt;
-    mask uint32, cf, ocf = 0;
+    var res, cnt, mask, cf, ocf uint32
 
     /* rotate right through carry */
-    res = d;
-    if ((cnt = s % 33) != 0) {
+	res = d
+	cnt = s % 33
+    if cnt != 0 {
         if (cnt == 1) {
             cf = d & 0x1;
             ocf = ACCESS_FLAG(F_CF) != 0;
-        } else
-            cf = (d >> (cnt - 1)) & 0x1;
+        } else {
+		cf = (d >> (cnt - 1)) & 0x1;
+	}
         mask = (1 << (32 - cnt)) - 1;
         res = (d >> cnt) & mask;
-        if (cnt != 1)
-            res |= (d << (33 - cnt));
+        if (cnt != 1) {
+		res |= (d << (33 - cnt));
+	}
         if (ACCESS_FLAG(F_CF)) {     /* carry flag is set */
             res |= 1 << (32 - cnt);
         }
@@ -944,7 +952,7 @@ REMARKS:
 Implements the ROL instruction and side effects.
 ****************************************************************************/
 func  rol_byte(d uint8, s uint8)  uint8 {
-    unsigned res int, cnt, mask;
+	var res, cnt, mask int
 
     /* rotate left */
     /*
@@ -962,8 +970,9 @@ func  rol_byte(d uint8, s uint8)  uint8 {
        1) B_(7) .. B_(n)  <-  b_(8-(n+1)) .. b_(0)
        2) B_(n-1) .. B_(0) <-  b_(7) .. b_(8-n)
      */
-    res = d;
-    if ((cnt = s % 8) != 0) {
+	res = d;
+	cnt = s % 8
+    if cnt != 0 {
         /* B_(7) .. B_(n)  <-  b_(8-(n+1)) .. b_(0) */
         res = (d << cnt);
 
@@ -979,7 +988,8 @@ func  rol_byte(d uint8, s uint8)  uint8 {
         CONDITIONAL_SET_FLAG(s == 1 &&
                              XOR2((res & 0x1) + ((res >> 6) & 0x2)),
                              F_OF);
-    } if (s != 0) {
+    }
+	if (s != 0) {
         /* set the new carry flag, Note that it is the low order
            bit of the result!!!                               */
         CONDITIONAL_SET_FLAG(res & 0x1, F_CF);
@@ -992,10 +1002,11 @@ REMARKS:
 Implements the ROL instruction and side effects.
 ****************************************************************************/
 func  rol_word(d uint16, s uint8)  uint16 {
-    unsigned res int, cnt, mask;
+	var res , cnt, mask int
 
-    res = d;
-    if ((cnt = s % 16) != 0) {
+	res = d;
+	cnt = s % 16
+	if cnt != 0 {
         res = (d << cnt);
         mask = (1 << cnt) - 1;
         res |= (d >> (16 - cnt)) & mask;
@@ -1003,7 +1014,8 @@ func  rol_word(d uint16, s uint8)  uint16 {
         CONDITIONAL_SET_FLAG(s == 1 &&
                              XOR2((res & 0x1) + ((res >> 14) & 0x2)),
                              F_OF);
-    } if (s != 0) {
+	}
+	if (s != 0) {
         /* set the new carry flag, Note that it is the low order
            bit of the result!!!                               */
         CONDITIONAL_SET_FLAG(res & 0x1, F_CF);
@@ -1016,7 +1028,7 @@ REMARKS:
 Implements the ROL instruction and side effects.
 ****************************************************************************/
 func rol_long(d uint32, s uint8)  uint32 {
-    var res u32, cnt, mask;
+    var res, cnt, mask uint32
 
     res = d;
     if ((cnt = s % 32) != 0) {
