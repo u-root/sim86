@@ -116,7 +116,7 @@ var genop_long_operation= []func(d, s uint32) uint32 {
 };
 
 /* used by opcodes 80, c0, d0, and d2. */
-var opcD0_byte_operation= []func(u8 d, u8 s) u8 {
+var opcD0_byte_operation= []func(d, s uint8) uint8 {
     rol_byte,
     ror_byte,
     rcl_byte,
@@ -128,7 +128,7 @@ var opcD0_byte_operation= []func(u8 d, u8 s) u8 {
 };
 
 /* used by opcodes c1, d1, and d3. */
-var opcD1_word_operation= []func(u16 s, u8 d) u16 {
+var opcD1_word_operation= []func(s uint16,  d uint8) uint16 {
     rol_word,
     ror_word,
     rcl_word,
