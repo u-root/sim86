@@ -47,9 +47,9 @@ type reg8 struct {
 	reg uint32
 }
 
-func (r reg32) Get() uint32 {
-	return r.reg32
-}
+//func (r reg32) Get() uint32 {
+//	return r.reg32
+//}
 
 func (r reg32) Set32(i uint32) {
 	r.reg = i
