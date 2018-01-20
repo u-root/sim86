@@ -2092,28 +2092,23 @@ func single_in(size int) {
 }
 
 func ins(size int) {
-var inc = size int32
+inc := size
 
     if (ACCESS_FLAG(F_DF)) {
         inc = -size;
     }
     if (M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)) {
-        /* don't care whether REPE or REPNE */
-        /* in until (E)CX is ZERO. */
-        u32 count = ((M.x86.mode & SYSMODE_32BIT_REP) ?
-                     M.x86.R_ECX : M.x86.R_CX);
-        while (count--) {
-          single_in(size);
-          M.x86.R_DI += inc;
-          }
-        M.x86.R_CX = 0;
-        if (M.x86.mode & SYSMODE_32BIT_REP) {
-            M.x86.R_ECX = 0;
-        }
-        M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
+	    /* don't care whether REPE or REPNE */
+	    /* in until (E)CX is ZERO. */
+	    count := GetClrCount()
+	    for count > 0 {
+		    count--
+		    single_in(size);
+		    M.x86.DI.Add(uint32(inc))
+	}
     } else {
-        single_in(size);
-        M.x86.R_DI += inc;
+	    single_in(size);
+	    M.x86.DI.Add(uint32(inc))
     }
 }
 
@@ -2123,12 +2118,14 @@ Implements the OUT string instruction and side effects.
 ****************************************************************************/
 
 func single_out(size int) {
-     if (size == 1)
+	switch size {
+		case 1:
        sys_outb(M.x86.D.Get16(),fetch_data_byte_abs(M.x86.R_ES, M.x86.R_SI));
-     else if (size == 2)
+		case 2:
        sys_outw(M.x86.D.Get16(),fetch_data_word_abs(M.x86.R_ES, M.x86.R_SI));
-     else
-       sys_outl(M.x86.D.Get16(),fetch_data_long_abs(M.x86.R_ES, M.x86.R_SI));
+		default:
+		sys_outl(M.x86.D.Get16(),fetch_data_long_abs(M.x86.R_ES, M.x86.R_SI));
+	}
 }
 
 func outs(size int) {

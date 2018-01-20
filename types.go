@@ -111,7 +111,7 @@ func (r reg) Add(v interface{}) {
 	case uint32: r.Set32(r.Get32() + i)
 	case uint16: r.Set16(r.Get16() + i)
 	case uint8: r.Setl8(r.Getl8() + i)
-	default: log.Fatalf("Can't set register with %v", v)
+	default: log.Fatalf("Can't add register with %v", v)
 	}
 }
 

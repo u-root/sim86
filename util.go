@@ -14,6 +14,13 @@ func Count(mode uint32) uint32 {
 	}
 	return uint32(M.x86.C.Get16())
 }
+func ClrCount(mode uint32) uint32 {
+	if M.x86.mode & mode {
+		M.x86.C.set32(0)
+		return
+	}
+	M.x86.C.Set16(0)
+}
 // DecCount decrements count, depending on the mode.
 func DecCount() {
 	if M.x86.mode & SYSMODE_PREFIX_ADDR != 0 {
@@ -32,8 +39,8 @@ func GetClrCount() uint32 {
 		count = uint32(M.x86.C.Get16())
 		M.x86.C.Set16(0)
 	} else {
-		M.x86.C.Set32(0)
 		count = M.x86.C.Get32()
+		M.x86.C.Set32(0)
 	}
 
 	return count
