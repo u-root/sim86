@@ -104,7 +104,7 @@ var genop_word_operation= []func(s, d uint16) uint16 {
     cmp_word, /*07 */
 };
 
-var genop_long_operation= []func(u32 d, u32 s) u32 {
+var genop_long_operation= []func(d, s uint32) uint32 {
     add_long, /*00 */
     or_long, /*01 */
     adc_long, /*02 */

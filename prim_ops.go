@@ -2129,28 +2129,23 @@ func single_out(size int) {
 }
 
 func outs(size int) {
-var inc = size int32
+	inc := uint16(size)
 
     if (ACCESS_FLAG(F_DF)) {
         inc = -size;
     }
     if (M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)) {
         /* don't care whether REPE or REPNE */
-        /* out until (E)CX is ZERO. */
-        u32 count = ((M.x86.mode & SYSMODE_32BIT_REP) ?
-                     M.x86.R_ECX : M.x86.R_CX);
-        while (count--) {
+	    /* out until (E)CX is ZERO. */
+	    count := GetClrCount()
+	    for count > 0 {
+		    count--
           single_out(size);
-          M.x86.R_SI += inc;
+		    M.x86.SI.Add(inc)
           }
-        M.x86.R_CX = 0;
-        if (M.x86.mode & SYSMODE_32BIT_REP) {
-            M.x86.R_ECX = 0;
-        }
-        M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
     } else {
-        single_out(size);
-        M.x86.R_SI += inc;
+	    single_out(size);
+	    M.x86.SI.Add(inc)
     }
 }
 
@@ -2162,9 +2157,10 @@ REMARKS:
 Fetches a word from emulator memory using an absolute address.
 ****************************************************************************/
 func  mem_access_word(addr int)  uint16 {
-DB( if (CHECK_MEM_ACCESS())
-      x86emu_check_mem_access(addr);)
-    return (*sys_rdw)(addr);
+	if (CHECK_MEM_ACCESS()) {
+		x86emu_check_mem_access(addr)
+	}
+    return sys_rdw(addr);
 }
 
 /****************************************************************************
@@ -2174,10 +2170,11 @@ Pushes a word onto the stack.
 NOTE: Do not inline this, as (*sys_wrX) is already inline!
 ****************************************************************************/
 func push_word(w uint16) {
-DB( if (CHECK_SP_ACCESS())
-      x86emu_check_sp_access();)
-    M.x86.R_SP -= 2;
-    (*sys_wrw)((uint32(M.x86.R_SS) << 4)  + M.x86.R_SP, w);
+	if (CHECK_SP_ACCESS()) {
+		x86emu_check_sp_access();
+	}
+	M.x86.SP.Add(int16(-2))
+	sys_wrw(uint32(M.x86.SS.Get16()) << 4  + M.x86.SP.Get16(), w);
 }
 
 /****************************************************************************
@@ -2187,10 +2184,11 @@ Pushes a long onto the stack.
 NOTE: Do not inline this, as (*sys_wrX) is already inline!
 ****************************************************************************/
 func push_long(w uint32) {
-DB( if (CHECK_SP_ACCESS())
-      x86emu_check_sp_access();)
-    M.x86.R_SP -= 4;
-    (*sys_wrl)((uint32(M.x86.R_SS) << 4)  + M.x86.R_SP, w);
+	if (CHECK_SP_ACCESS()) {
+		x86emu_check_sp_access();
+	}
+	M.x86.SP.Add(int16(-4))
+	sys_wrl(uint32(M.x86.SS.Get16()) << 4  + M.x86.SP.Get16(), w)
 }
 
 /****************************************************************************
@@ -2200,13 +2198,14 @@ Pops a word from the stack.
 NOTE: Do not inline this, as (*sys_rdX) is already inline!
 ****************************************************************************/
 func  pop_word()  uint16 {
-var res uint16
-
-DB( if (CHECK_SP_ACCESS())
-      x86emu_check_sp_access();)
-    res = (*sys_rdw)((uint32(M.x86.R_SS) << 4)  + M.x86.R_SP);
-    M.x86.R_SP += 2;
-    return res;
+	var res uint16
+	
+	if (CHECK_SP_ACCESS()) {
+		x86emu_check_sp_access();
+	}
+	res = sys_rdw((uint32(M.x86.SS.Get()) << 4)  + M.x86.SP.Get16())
+	M.x86.SP.Add(int16( 2))
+	return res;
 }
 
 /****************************************************************************
@@ -2218,11 +2217,12 @@ NOTE: Do not inline this, as (*sys_rdX) is already inline!
 func pop_long()  uint32 {
     var res u32;
 
-DB( if (CHECK_SP_ACCESS())
-      x86emu_check_sp_access();)
-    res = (*sys_rdl)((uint32(M.x86.R_SS) << 4)  + M.x86.R_SP);
-    M.x86.R_SP += 4;
-    return res;
+	if (CHECK_SP_ACCESS()){
+		x86emu_check_sp_access();
+	}
+	res = sys_rdl(uint32(M.x86.SS.Get()) << 4  + M.x86.SP.Get16());
+	M.x86.SP.Add(int16(4))
+	return res;
 }
 
 /****************************************************************************
@@ -2230,9 +2230,9 @@ REMARKS:
 CPUID takes EAX/ECX as inputs, writes EAX/EBX/ECX/EDX as output
 ****************************************************************************/
 func x86emu_cpuid() {
-var feature = M.x86.R_EAX uint32
+	feature := M.x86.A.Get32()
 
-    switch (feature) {
+	switch (feature) {
     case 0:
         /* Regardless if we have real data from the hardware, the emulator
          * will only support upto feature 1, which we set in register EAX.

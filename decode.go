@@ -1075,14 +1075,6 @@ func decode_rmXX_address(mod uint32, rm uint32) uint32 {
 	return decode_rm10_address(rm)
 }
 
-func push_word(w uint16) {
-	panic("fix me")
-}
-
-func mem_access_word(addr uint32) uint16 {
-	panic("fix me")
-}
-
 func INC_DECODED_INST_LEN(amt uint16) {
 	if (DEBUG_DECODE())  	       {
 		x86emu_inc_decoded_inst_len(uint32(amt))
