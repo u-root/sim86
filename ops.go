@@ -76,6 +76,8 @@
 /* constant arrays to do several instructions in just one function */
 package main
 
+import "fmt"
+
 var x86emu_GenOpName = []string {
     "ADD", "OR", "ADC", "SBB", "AND", "SUB", "XOR", "CMP"};
 
@@ -167,10 +169,10 @@ Handles illegal opcodes.
 ****************************************************************************/
 func x86emuOp_illegal_op( op1 uint8) {
     START_OF_INSTR();
-	if (M.x86.SP.Get16() != 0) {
+	if (M.x86.spc.SP.Get16() != 0) {
         DECODE_PRINTF("ILLEGAL X86 OPCODE\n");
         TRACE_REGS();
-        fmt.Printf("%04x:%04x: %02X ILLEGAL X86 OPCODE!\n", M.x86.R_CS, M.x86.R_IP-1,op1)
+		fmt.Printf("%04x:%04x: %02X ILLEGAL X86 OPCODE!\n", M.x86.seg.CS.Get(), M.x86.spc.IP.Get()-1,op1)
                                           ;
         HALT_SYS();
         }    else {
@@ -191,9 +193,6 @@ Handles opcodes 0x00, 0x08, 0x10, 0x18, 0x20, 0x28, 0x30, 0x38
 ****************************************************************************/
 func x86emuOp_genop_byte_RM_R(op1 uint8) {
     var mod, rl, rh int
-    var destoffset uint
-    var destreg, srcreg *u8
-    var destval u8
 
     op1 = (op1 >> 3) & 0x7;
 
@@ -202,9 +201,9 @@ func x86emuOp_genop_byte_RM_R(op1 uint8) {
     DECODE_PRINTF("\t");
     FETCH_DECODE_MODRM(mod, rh, rl);
 	if (mod<3)        {
-		destoffset = decode_rmXX_address(mod,rl);
+		destoffset := decode_rmXX_address(mod,rl);
 		DECODE_PRINTF(",");
-		destval = fetch_data_byte(destoffset);
+		destval := fetch_data_byte(destoffset);
 		srcreg := DECODE_RM_BYTE_REGISTER(rh);
 		DECODE_PRINTF("\n");
 		TRACE_AND_STEP();
@@ -218,7 +217,7 @@ func x86emuOp_genop_byte_RM_R(op1 uint8) {
 		srcreg := DECODE_RM_BYTE_REGISTER(rh);
 		DECODE_PRINTF("\n");
 		TRACE_AND_STEP();
-		*destreg = genop_byte_operation[op1](*destreg, *srcreg);
+		destreg.Set(genop_byte_operation[op1](destreg.Get(), srcreg.Get()))
         }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();

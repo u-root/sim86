@@ -1,5 +1,6 @@
 package main
 
+import "fmt"
 var notyet = `
 # define CHECK_IP_FETCH()              	(M.x86.check & CHECK_IP_FETCH_F)
 # define CHECK_SP_ACCESS()             	(M.x86.check & CHECK_SP_ACCESS_F)
@@ -244,3 +245,12 @@ func abs(i int) int {
 	return i
 }
 
+func START_OF_INSTR() {
+	fmt.Printf("Start instruction\n")
+}
+func END_OF_INSTR() {
+	fmt.Printf("End instruction\n")
+}
+func TRACE_REGS() {
+	fmt.Printf("Trace regs\n")
+}
