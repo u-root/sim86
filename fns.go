@@ -231,7 +231,7 @@ func SAVE_IP_CS(cs, ip uint16) {
 	      }
 }
 
-func labs(i int64) {
+func labs(i int64) int64 {
 	if i < 0 {
 		return -i
 	}

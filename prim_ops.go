@@ -2156,7 +2156,7 @@ addr    - Address to fetch word from
 REMARKS:
 Fetches a word from emulator memory using an absolute address.
 ****************************************************************************/
-func  mem_access_word(addr int)  uint16 {
+func  mem_access_word(addr uint32)  uint16 {
 	if (CHECK_MEM_ACCESS()) {
 		x86emu_check_mem_access(addr)
 	}

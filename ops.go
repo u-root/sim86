@@ -140,7 +140,7 @@ var opcD1_word_operation= []func(s uint16,  d uint8) uint16 {
 };
 
 /* used by opcodes c1, d1, and d3. */
-var opcD1_long_operation= []func(u32 s, u8 d) u32 {
+var opcD1_long_operation= []func(s uint32, d uint8) uint32 {
     rol_long,
     ror_long,
     rcl_long,
@@ -167,7 +167,7 @@ Handles illegal opcodes.
 ****************************************************************************/
 func x86emuOp_illegal_op( op1 uint8) {
     START_OF_INSTR();
-    if (M.x86.R_SP != 0) {
+	if (M().x86.R_SP != 0) {
         DECODE_PRINTF("ILLEGAL X86 OPCODE\n");
         TRACE_REGS();
         printf("%04x:%04x: %02X ILLEGAL X86 OPCODE!\n", M.x86.R_CS, M.x86.R_IP-1,op1)

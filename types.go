@@ -35,7 +35,7 @@ type register8 interface {
 	Geth8() uint8
 }
 
-type reg struct {
+type reg32 struct {
 	reg uint32
 }
 
@@ -47,17 +47,21 @@ type reg8 struct {
 	reg uint32
 }
 
-func (r reg) Set32(i uint32) {
-	r.reg = i
-}
-func (r reg) Get32() uint32 {
-	return r.reg
+func (r reg32) Get() uint32 {
+	return r.reg32
 }
 
-func (r reg) Set16(i uint16) {
+func (r reg32) Set32(i uint32) {
+	r.reg = i
+}
+func (r reg32) Get32() uint32 {
+	return r.reg32
+}
+
+func (r reg32) Set16(i uint16) {
 	r.reg = uint32(i)
 }
-func (r reg) Get16() uint16 {
+func (r reg32) Get16() uint16 {
 	return uint16(r.reg)
 }
 
@@ -93,20 +97,29 @@ func (r reg8) Geth8() uint8 {
 	return uint8(r.reg>>8)
 }
 
-func (r reg) Seth8(i uint8) {
+func (r reg32) Seth8(i uint8) {
 	r.reg = (r.reg & 0x0000ff00) | uint32(i)<<8
 }
-func (r reg) Geth8() uint8 {
+func (r reg32) Geth8() uint8 {
 	return uint8(r.reg >> 8)
 }
-func (r reg) Setl8(i uint8) {
+func (r reg32) Setl8(i uint8) {
 	r.reg = (r.reg & 0xffffff00) | uint32(i)
 }
-func (r reg) Getl8() uint8 {
+func (r reg32) Getl8() uint8 {
 	return uint8(r.reg >> 8)
 }
 
-func (r reg) Add(v interface{}) {
+func (r reg32) Set(v interface{}) {
+	switch i := v.(type) {
+	case uint32: r.Set32(i)
+	case uint16: r.Set16(i)
+	case uint8: r.Setl8(i)
+	default: log.Fatalf("Can't set register with %v", v)
+	}
+}
+
+func (r reg32) Add(v interface{}) {
 	switch i := v.(type) {
 	case uint32: r.Set32(r.Get32() + i)
 	case uint16: r.Set16(r.Get16() + i)
@@ -116,7 +129,7 @@ func (r reg) Add(v interface{}) {
 }
 
 // Get gets the register as uint32. The amount of data depends on the SYSMODE.
-func (r reg) Get() uint32 {
+func (r reg32) Get() uint32 {
 	if M.x86.mode & SYSMODE_32BIT_REP != 0 {
 		return r.Get32()
 	}
@@ -126,7 +139,7 @@ func (r reg) Get() uint32 {
 // Changes takes a variable and adds it. It can be negative.
 // In this case, due to the mode, we use the ability to override
 // the number of bits in the register.
-func (r reg) Change(i int) {
+func (r reg32) Change(i int) {
 	if M.x86.mode & SYSMODE_32BIT_REP != 0 {
 		r.Set32(r.Get32() + uint32(i))
 	} else {
@@ -134,27 +147,27 @@ func (r reg) Change(i int) {
 	}
 }
 
-func (r reg) Dec() {
+func (r reg32) Dec() {
 	r.Change(-1)
 }
 
-func (r reg) Inc() {
+func (r reg32) Inc() {
 	r.Change(1)
 }
 
 type i386_general_regs struct {
-	A reg
-	B reg
-	C reg
-	D reg
+	A reg32
+	B reg32
+	C reg32
+	D reg32
 }
 
 type i386_special_regs struct {
-	SP    reg
-	BP    reg
-	SI    reg
-	DI    reg
-	IP    reg
+	SP    reg32
+	BP    reg32
+	SI    reg32
+	DI    reg32
+	IP    reg32
 	FLAGS uint32
 }
 type i386_segment_regs struct {

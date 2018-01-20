@@ -512,28 +512,28 @@ func decode_rm_byte_register(reg int) register8 {
 	switch reg {
 	case 0:
 		DECODE_PRINTF("AL")
-		return M().x86.gen.A
+		return reg8(M().x86.gen.A)
 	case 1:
 		DECODE_PRINTF("CL")
-		return M().x86.gen.C
+		return reg8(M().x86.gen.C)
 	case 2:
 		DECODE_PRINTF("DL")
-		return M().x86.gen.D
+		return reg8(M().x86.gen.D)
 	case 3:
 		DECODE_PRINTF("BL")
-		return M().x86.gen.B
+		return reg8(M().x86.gen.B)
 	case 4:
 		DECODE_PRINTF("AH")
-		return M().x86.gen.A
+		return reg8(M().x86.gen.A)
 	case 5:
 		DECODE_PRINTF("CH")
-		return M().x86.gen.C
+		return reg8(M().x86.gen.C)
 	case 6:
 		DECODE_PRINTF("DH")
-		return M().x86.gen.D
+		return reg8(M().x86.gen.D)
 	case 7:
 		DECODE_PRINTF("BH")
-		return M().x86.gen.B
+		return reg8(M().x86.gen.B)
 	}
 	HALT_SYS()
 	return nil /* NOT REACHED OR REACHED ON ERROR */
@@ -554,28 +554,28 @@ func decode_rm_word_register(reg int) register16 {
 	switch reg {
 	case 0:
 		DECODE_PRINTF("AX")
-		return &M().x86.gen.A
+		return reg16(M().x86.gen.A)
 	case 1:
 		DECODE_PRINTF("CX")
-		return &M().x86.gen.C
+		return reg16(M().x86.gen.C)
 	case 2:
 		DECODE_PRINTF("DX")
-		return &M().x86.gen.D
+		return reg16(M().x86.gen.D)
 	case 3:
 		DECODE_PRINTF("BX")
-		return &M().x86.gen.B
+		return reg16(M().x86.gen.B)
 	case 4:
 		DECODE_PRINTF("SP")
-		return &M().x86.spc.SP
+		return reg16(M().x86.spc.SP)
 	case 5:
 		DECODE_PRINTF("BP")
-		return &M().x86.spc.BP
+		return reg16(M().x86.spc.BP)
 	case 6:
 		DECODE_PRINTF("SI")
-		return &M().x86.spc.SI
+		return reg16(M().x86.spc.SI)
 	case 7:
 		DECODE_PRINTF("DI")
-		return &M().x86.spc.DI
+		return reg16(M().x86.spc.DI)
 	}
 	HALT_SYS()
 	return nil /* NOTREACHED OR REACHED ON ERROR */
@@ -596,28 +596,28 @@ func decode_rm_long_register(reg int) register {
 	switch reg {
 	case 0:
 		DECODE_PRINTF("EAX")
-		return &M().x86.gen.A
+		return reg32(M().x86.gen.A)
 	case 1:
 		DECODE_PRINTF("ECX")
-		return &M().x86.gen.C
+		return reg32(M().x86.gen.C)
 	case 2:
 		DECODE_PRINTF("EDX")
-		return &M().x86.gen.D
+		return reg32(M().x86.gen.D)
 	case 3:
 		DECODE_PRINTF("EBX")
-		return &M().x86.gen.B
+		return reg32(M().x86.gen.B)
 	case 4:
 		DECODE_PRINTF("ESP")
-		return &M().x86.spc.SP
+		return reg32(M().x86.spc.SP)
 	case 5:
 		DECODE_PRINTF("EBP")
-		return &M().x86.spc.BP
+		return reg32(M().x86.spc.BP)
 	case 6:
 		DECODE_PRINTF("ESI")
-		return &M().x86.spc.SI
+		return reg32(M().x86.spc.SI)
 	case 7:
 		DECODE_PRINTF("EDI")
-		return &M().x86.spc.DI
+		return reg32(M().x86.spc.DI)
 	}
 	HALT_SYS()
 	return nil /* NOTREACHED OR REACHED ON ERROR */
