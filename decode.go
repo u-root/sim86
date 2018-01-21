@@ -152,7 +152,7 @@ next instruction.
 
 NOTE: Do not inline this function, as sys_rdb is already inline!
 ****************************************************************************/
-func fetch_decode_modrm() (int, int, int) {
+func fetch_decode_modrm() (uint32, uint32, uint32) {
 	var fetched byte
 
 	if CHECK_IP_FETCH() {
@@ -163,9 +163,9 @@ func fetch_decode_modrm() (int, int, int) {
 	fetched = sys_rdb(uint32(M.x86.seg.CS.Get()) << 4 + uint32(ip))
 	M.x86.spc.IP.Set16(ip + 1)
 	INC_DECODED_INST_LEN(1)
-	mod := int((fetched >> 6) & 0x03)
-	regh := int((fetched >> 3) & 0x07)
-	regl := int((fetched >> 0) & 0x07)
+	mod := uint32((fetched >> 6) & 0x03)
+	regh := uint32((fetched >> 3) & 0x07)
+	regl := uint32((fetched >> 0) & 0x07)
 	return mod, regh, regl
 }
 
