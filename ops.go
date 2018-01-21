@@ -199,7 +199,7 @@ func x86emuOp_genop_byte_RM_R(op1 uint8) {
     START_OF_INSTR();
     DECODE_PRINTF(x86emu_GenOpName[op1]);
     DECODE_PRINTF("\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
 	if (mod<3)        {
 		destoffset := decode_rmXX_address(mod,rl);
 		DECODE_PRINTF(",");
@@ -236,7 +236,7 @@ func x86emuOp_genop_word_RM_R(op1 uint8) {
     START_OF_INSTR();
     DECODE_PRINTF(x86emu_GenOpName[op1]);
     DECODE_PRINTF("\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
 
     if (mod<3) {
         destoffset = decode_rmXX_address(mod,rl);
@@ -298,7 +298,7 @@ func x86emuOp_genop_byte_R_RM(op1 uint8) {
     START_OF_INSTR();
     DECODE_PRINTF(x86emu_GenOpName[op1]);
     DECODE_PRINTF("\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
     if (mod < 3) {
         destreg := DECODE_RM_BYTE_REGISTER(rh);
         DECODE_PRINTF(",");
@@ -330,7 +330,7 @@ func x86emuOp_genop_word_R_RM(op1 uint8) {
     START_OF_INSTR();
     DECODE_PRINTF(x86emu_GenOpName[op1]);
     DECODE_PRINTF("\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
     if (mod < 3) {
         srcoffset := decode_rmXX_address(mod,rl);
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
@@ -896,7 +896,7 @@ func x86emuOp_imul_word_IMM(_ uint8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("IMUL\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
     if (mod < 3) {
         srcoffset = decode_rmXX_address(mod, rl);
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
@@ -1013,7 +1013,7 @@ func x86emuOp_imul_byte_IMM(_ uint8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("IMUL\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
     if (mod < 3) {
         srcoffset = decode_rmXX_address(mod, rl);
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
@@ -1203,7 +1203,7 @@ var imm uint8
      * that the decoded instruction
      */
     START_OF_INSTR();
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
 
     if (DEBUG_DECODE()) {
         /* XXX DECODE_PRINTF may be changed to something more
@@ -1279,7 +1279,7 @@ func x86emuOp_opc81_word_RM_IMM(_ uint8) {
      * that the decoded instruction
      */
     START_OF_INSTR();
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
 
     if (DEBUG_DECODE()) {
         /* XXX DECODE_PRINTF may be changed to something more
@@ -1384,7 +1384,7 @@ var imm uint8
      * the immediate byte is sign extended to a word length.
      */
     START_OF_INSTR();
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
 
     if (DEBUG_DECODE()) {
         /* XXX DECODE_PRINTF may be changed to something more
@@ -1458,7 +1458,7 @@ func x86emuOp_opc83_word_RM_IMM(_ uint8) {
      * the immediate byte is sign extended to a word length.
      */
     START_OF_INSTR();
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
 
     if (DEBUG_DECODE()) {
         /* XXX DECODE_PRINTF may be changed to something more
@@ -1554,7 +1554,7 @@ func x86emuOp_test_byte_RM_R(_ uint8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("TEST\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
     if (mod < 3) {
         destoffset = decode_rmXX_address(mod, rl);
         DECODE_PRINTF(",");
@@ -1585,7 +1585,7 @@ func x86emuOp_test_word_RM_R(_ uint8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("TEST\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
     if (mod < 3) {
         destoffset = decode_rmXX_address(mod, rl);
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
@@ -1638,7 +1638,7 @@ var tmp uint8
 
     START_OF_INSTR();
     DECODE_PRINTF("XCHG\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
     if (mod < 3) {
         destoffset = decode_rmXX_address(mod, rl);
         DECODE_PRINTF(",");
@@ -1674,7 +1674,7 @@ func x86emuOp_xchg_word_RM_R(_ uint8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("XCHG\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
     if (mod < 3) {
         destoffset = decode_rmXX_address(mod, rl);
         DECODE_PRINTF(",");
@@ -1738,7 +1738,7 @@ func x86emuOp_mov_byte_RM_R(_ uint8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("MOV\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
     if (mod < 3) {
         destoffset = decode_rmXX_address(mod, rl);
         DECODE_PRINTF(",");
@@ -1768,7 +1768,7 @@ func x86emuOp_mov_word_RM_R(_ uint8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("MOV\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
     if (mod < 3) {
         destoffset = decode_rmXX_address(mod, rl);
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
@@ -1821,7 +1821,7 @@ func x86emuOp_mov_byte_R_RM(_ uint8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("MOV\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
     if (mod < 3) {
         destreg := DECODE_RM_BYTE_REGISTER(rh);
         DECODE_PRINTF(",");
@@ -1852,7 +1852,7 @@ func x86emuOp_mov_word_R_RM(_ uint8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("MOV\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
     if (mod < 3) {
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
 
@@ -1908,7 +1908,7 @@ func x86emuOp_mov_word_RM_SR(_ uint8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("MOV\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
     if (mod < 3) {
         destoffset = decode_rmXX_address(mod, rl);
         DECODE_PRINTF(",");
@@ -1939,7 +1939,7 @@ func x86emuOp_lea_word_R_M(_ uint8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("LEA\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
     if (mod < 3) {
         if (M.x86.mode & SYSMODE_PREFIX_ADDR) {
 		srcreg := DECODE_RM_LONG_REGISTER(rh);
@@ -1974,7 +1974,7 @@ func x86emuOp_mov_word_SR_RM(_ uint8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("MOV\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
     if (mod < 3) {
         destreg = decode_rm_seg_register(rh);
         DECODE_PRINTF(",");
@@ -2011,7 +2011,7 @@ func x86emuOp_pop_RM(_ uint8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("POP\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
     if (rh != 0) {
         DECODE_PRINTF("ILLEGAL DECODE OF OPCODE 8F\n");
         HALT_SYS();
@@ -2933,7 +2933,7 @@ var amt uint8
      * result, except that the decoded instruction
      */
     START_OF_INSTR();
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
 
     if (DEBUG_DECODE()) {
         /* XXX DECODE_PRINTF may be changed to something more
@@ -3007,7 +3007,7 @@ var amt uint8
      * result, except that the decoded instruction
      */
     START_OF_INSTR();
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
 
     if (DEBUG_DECODE()) {
         /* XXX DECODE_PRINTF may be changed to something more
@@ -3133,7 +3133,7 @@ var mod, rh, rl int32
 
     START_OF_INSTR();
     DECODE_PRINTF("LES\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
     if (mod < 3) {
         dstreg := DECODE_RM_WORD_REGISTER(rh);
         DECODE_PRINTF(",");
@@ -3160,7 +3160,7 @@ var mod, rh, rl int32
 
     START_OF_INSTR();
     DECODE_PRINTF("LDS\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
     if (mod < 3) {
         dstreg := DECODE_RM_WORD_REGISTER(rh);
         DECODE_PRINTF(",");
@@ -3187,7 +3187,7 @@ var imm uint8
 
     START_OF_INSTR();
     DECODE_PRINTF("MOV\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
     if (rh != 0) {
         DECODE_PRINTF("ILLEGAL DECODE OF OPCODE c6\n");
         HALT_SYS();
@@ -3220,7 +3220,7 @@ func x86emuOp_mov_word_RM_IMM(_ uint8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("MOV\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
     if (rh != 0) {
         DECODE_PRINTF("ILLEGAL DECODE OF OPCODE 8F\n");
         HALT_SYS();
@@ -3449,7 +3449,7 @@ var destreg *uint8
      * result, except that the decoded instruction
      */
     START_OF_INSTR();
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
 
     if (DEBUG_DECODE()) {
         /* XXX DECODE_PRINTF may be changed to something more
@@ -3519,7 +3519,7 @@ func x86emuOp_opcD1_word_RM_1(_ uint8) {
      * result, except that the decoded instruction
      */
     START_OF_INSTR();
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
 
     if (DEBUG_DECODE()) {
         /* XXX DECODE_PRINTF may be changed to something more
@@ -3615,7 +3615,7 @@ var amt uint8
      * result, except that the decoded instruction
      */
     START_OF_INSTR();
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
 
     if (DEBUG_DECODE()) {
         /* XXX DECODE_PRINTF may be changed to something more
@@ -3687,7 +3687,7 @@ var amt uint8
      * result, except that the decoded instruction
      */
     START_OF_INSTR();
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
 
     if (DEBUG_DECODE()) {
         /* XXX DECODE_PRINTF may be changed to something more
@@ -4248,7 +4248,7 @@ var destval, srcval uint8
     /* long, drawn out code follows.  Double switch for a total
        of 32 cases.  */
     START_OF_INSTR();
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
     DECODE_PRINTF(opF6_names[rh]);
     if (mod < 3) {
         DECODE_PRINTF("BYTE PTR ");
@@ -4359,7 +4359,7 @@ func x86emuOp_opcF7_word_RM(_ uint8) {
     var destoffset uint
 
     START_OF_INSTR();
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
     DECODE_PRINTF(opF6_names[rh]);
     if (mod < 3) {
 
@@ -4667,7 +4667,7 @@ var destreg *uint8
 
     /* Yet another special case instruction. */
     START_OF_INSTR();
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
 
     if (DEBUG_DECODE()) {
         /* XXX DECODE_PRINTF may be changed to something more
@@ -4733,7 +4733,7 @@ var destval32 uint32
 
     /* Yet another special case instruction. */
     START_OF_INSTR();
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl = fetch_decode_modrm();
 
     if (DEBUG_DECODE()) {
         /* XXX DECODE_PRINTF may be changed to something more
