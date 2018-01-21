@@ -309,11 +309,10 @@ Byte value read from the absolute memory location.
 
 NOTE: Do not inline this function as sys_rdX is already inline!
 ****************************************************************************/
-func fetch_data_byte(offset uint) uint8 {
+func fetch_data_byte(offset uint32) uint8 {
 
-	panic("fix me")
 
-	return 0 // sys_rdb((get_data_segment() << 4) + offset);
+	return sys_rdb(uint32(get_data_segment() << 4) + offset);
 }
 
 /****************************************************************************
