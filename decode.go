@@ -548,7 +548,7 @@ REMARKS:
 Return a pointer to the register given by the R/RM field of the
 modrm byte, for word operands.  Also enables the decoding of instructions.
 ****************************************************************************/
-func decode_rm_word_register(reg int) register16 {
+func decode_rm_word_register(reg uint32) register16 {
 	switch reg {
 	case 0:
 		DECODE_PRINTF("AX")
