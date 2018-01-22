@@ -309,10 +309,10 @@ Byte value read from the absolute memory location.
 
 NOTE: Do not inline this function as sys_rdX is already inline!
 ****************************************************************************/
-func fetch_data_byte(offset uint32) uint8 {
+func fetch_data_byte(offset uint16) uint8 {
 
 
-	return sys_rdb(uint32(get_data_segment() << 4) + offset);
+	return sys_rdb(uint32(get_data_segment() << 4) + uint32(offset));
 }
 
 /****************************************************************************
@@ -324,10 +324,8 @@ Word value read from the absolute memory location.
 
 NOTE: Do not inline this function as sys_rdX is already inline!
 ****************************************************************************/
-func fetch_data_word(offset uint) uint16 {
-
-	panic("fix me")
-	return 0 // return sys_rdw((get_data_segment() << 4) + offset);
+func fetch_data_word(offset uint16) uint16 {
+	return sys_rdw(uint32(get_data_segment() << 4) + uint32(offset));
 }
 
 /****************************************************************************
@@ -592,7 +590,7 @@ REMARKS:
 Return a pointer to the register given by the R/RM field of the
 modrm byte, for dword operands.  Also enables the decoding of instructions.
 ****************************************************************************/
-func decode_rm_long_register(reg int) register {
+func decode_rm_long_register(reg uint32) register {
 	switch reg {
 	case 0:
 		DECODE_PRINTF("EAX")
