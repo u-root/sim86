@@ -179,7 +179,7 @@ moves the instruction pointer to the next value.
 
 NOTE: Do not inline this function, as sys_rdb is already inline!
 ****************************************************************************/
-func fetch_byte_imm() uint32 {
+func fetch_byte_imm() uint8 {
 	var fetched uint8
 
 	if CHECK_IP_FETCH() {
@@ -190,7 +190,7 @@ func fetch_byte_imm() uint32 {
 	fetched = sys_rdb((uint32(M.x86.seg.CS.Get()) << 4) + uint32(ip))
 	M.x86.spc.IP.Set16(ip + 1)
 	INC_DECODED_INST_LEN(1)
-	return uint32(fetched)
+	return fetched
 }
 
 /****************************************************************************
@@ -758,7 +758,7 @@ func decode_sib_address(mod uint32) uint32 {
 			offset = displacement
 			break
 		case 1:
-			displacement = fetch_byte_imm()
+			displacement = uint32(fetch_byte_imm())
 			DECODE_PRINTF2("[%d][EBP]", displacement)
 			offset = M.x86.spc.BP.Get32() + displacement
 			break
