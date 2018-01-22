@@ -1,0 +1,17 @@
+#!/bin/bash
+set -e
+sed -i 's/\*srcreg);/srcreg.Get());/' $1
+sed -i 's/\*srcreg))/srcreg.Get()))/' $1
+sed -i 's/\*srcreg = \(uint16.*\);/srcreg.Set16(\1)/' $1
+sed -i 's/\*srcreg = \(uint32.*\);/srcreg.Set32(\1)/' $1
+sed -i 's/(s32)\*srcreg /srcreg.Get32()/' $1
+ sed -i 's/\*srcreg = \(.*\);/srcreg.Set(\1)/' $1
+
+sed -i 's/\*destreg);/destreg.Get());/' $1
+sed -i 's/\*destreg))/destreg.Get()))/' $1
+sed -i 's/\*destreg,/destreg.Get(),/' $1
+sed -i 's/\*destreg = \(uint16.*\);/destreg.Set16(\1)/' $1
+sed -i 's/\*destreg = \(uint32.*\);/destreg.Set32(\1)/' $1
+sed -i 's/(s32)\*destreg /destreg.Get32()/' $1
+# sed -i 's/\*destreg = \(.*\);/destreg.Set(\1)/' $1
+

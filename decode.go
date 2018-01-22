@@ -633,7 +633,7 @@ Return a pointer to the register given by the R/RM field of the
 modrm byte, for word operands, modified from above for the weirdo
 special case of segreg operands.  Also enables the decoding of instructions.
 ****************************************************************************/
-func decode_rm_seg_register(reg int) register16 {
+func decode_rm_seg_register(reg uint32) register16 {
 	switch reg {
 	case 0:
 		DECODE_PRINTF("ES")
