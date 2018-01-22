@@ -456,8 +456,8 @@ REMARKS:
 Handles opcode 0x0f. Escape for two-byte opcode (286 or better)
 ****************************************************************************/
 func x86emuOp_two_byte(_ uint8) {
-	op2 := sys_rdb((uint32(M.x86.seg.CS.Get()) << 4) + (M.x86.R_IP))
-	M.x86.R_IP++
+	op2 := sys_rdb((uint32(M.x86.seg.CS.Get()) << 4) + (M.x86.spc.IP.Get16()))
+	M.x86.sp.IP.Set16(M.x86.spc.IP.Get16()+1)
     INC_DECODED_INST_LEN(1);
     x86emu_optab2[op2](op2);
 }
@@ -1167,12 +1167,12 @@ var cond int32
     START_OF_INSTR();
     cond = x86emu_check_jump_condition(op1 & 0xF);
     offset = int8(fetch_byte_imm);
-    target = (u16)(M.x86.R_IP + int16(offset));
+    target = (u16)(M.x86.spc.IP.Get16() + int16(offset));
     DECODE_PRINTF2("%x\n", target);
     TRACE_AND_STEP();
     if (cond) {
-        M.x86.R_IP = target;
- JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get(), M.x86.R_IP, " NEAR COND ");
+        M.x86.spc.IP.Set16(target)
+ JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get(), M.x86.spc.IP.Get16(), " NEAR COND ");
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -2149,11 +2149,11 @@ var farseg, faroff uint32
     push_word(M.x86.seg.CS.Get());
     M.x86.seg.CS.Set(farseg)
     if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-        push_long(M.x86.R_EIP);
+        push_long(M.x86.spc.IP.Get32());
     } else {
-        push_word(M.x86.R_IP);
+        push_word(M.x86.spc.IP.Get16());
     }
-    M.x86.R_EIP = faroff & 0xffff;
+    M.x86.spc.IP.Set32(faroff & 0xffff)
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -3062,7 +3062,7 @@ func x86emuOp_ret_near_IMM(_ uint8) {
     DECODE_PRINTF2("%x\n", imm);
  TRACE_AND_STEP();
 	M.x86.IP.Set( pop_word())
- RETURN_TRACE(M.x86.saved_cs,M.x86.saved_ip, M.x86.seg.CS.Get(), M.x86.R_IP, "NEAR");
+ RETURN_TRACE(M.x86.saved_cs,M.x86.saved_ip, M.x86.seg.CS.Get(), M.x86.spc.IP.Get16(), "NEAR");
 	M.x86.SP.Add( imm)
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -3076,8 +3076,8 @@ func x86emuOp_ret_near(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("RET\n");
  TRACE_AND_STEP();
-    M.x86.R_IP = pop_word();
- RETURN_TRACE(M.x86.saved_cs,M.x86.saved_ip, M.x86.seg.CS.Get(), M.x86.R_IP, "NEAR");
+    M.x86.spc.IP.Set16(pop_word())
+ RETURN_TRACE(M.x86.saved_cs,M.x86.saved_ip, M.x86.seg.CS.Get(), M.x86.spc.IP.Get16(), "NEAR");
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -3272,7 +3272,7 @@ func x86emuOp_ret_far_IMM(_ uint8) {
  TRACE_AND_STEP();
 	M.x86.IP.Set( pop_word())
 	M.x86.CS.Set( pop_word())
- RETURN_TRACE(M.x86.saved_cs,M.x86.saved_ip, M.x86.seg.CS.Get(), M.x86.R_IP, "FAR");
+ RETURN_TRACE(M.x86.saved_cs,M.x86.saved_ip, M.x86.seg.CS.Get(), M.x86.spc.IP.Get16(), "FAR");
     M.x86.R_SP += imm;
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -3286,9 +3286,9 @@ func x86emuOp_ret_far(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("RETF\n");
  TRACE_AND_STEP();
-    M.x86.R_IP = pop_word();
+    M.x86.spc.IP.Set16(pop_word())
     M.x86.seg.CS.Set(pop_word())
- RETURN_TRACE(M.x86.saved_cs,M.x86.saved_ip, M.x86.seg.CS.Get(), M.x86.R_IP, "FAR");
+ RETURN_TRACE(M.x86.saved_cs,M.x86.saved_ip, M.x86.seg.CS.Get(), M.x86.spc.IP.Get16(), "FAR");
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -3311,8 +3311,8 @@ func x86emuOp_int3(_ uint8) {
         CLEAR_FLAG(F_TF);
         push_word(M.x86.seg.CS.Get());
         M.x86.seg.CS.Set(mem_access_word(3 * 4 + 2))
-        push_word(M.x86.R_IP);
-        M.x86.R_IP = mem_access_word(3 * 4);
+        push_word(M.x86.spc.IP.Get16());
+        M.x86.spc.IP.Set16(mem_access_word(3 * 4))
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -3338,8 +3338,8 @@ func x86emuOp_int_IMM(_ uint8) {
         CLEAR_FLAG(F_TF);
         push_word(M.x86.seg.CS.Get());
         M.x86.seg.CS.Set(mem_access_word(intnum * 4 + 2))
-        push_word(M.x86.R_IP);
-        M.x86.R_IP = mem_access_word(intnum * 4);
+        push_word(M.x86.spc.IP.Get16());
+        M.x86.spc.IP.Set16(mem_access_word(intnum * 4))
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -3364,8 +3364,8 @@ func x86emuOp_into(_ uint8) {
             CLEAR_FLAG(F_TF);
             push_word(M.x86.seg.CS.Get());
             M.x86.seg.CS.Set(mem_access_word(4 * 4 + 2))
-            push_word(M.x86.R_IP);
-            M.x86.R_IP = mem_access_word(4 * 4);
+            push_word(M.x86.spc.IP.Get16());
+            M.x86.spc.IP.Set16(mem_access_word(4 * 4))
         }
     }
     DECODE_CLEAR_SEGOVR();
@@ -3382,7 +3382,7 @@ func x86emuOp_iret(_ uint8) {
 
     TRACE_AND_STEP();
 
-    M.x86.R_IP = pop_word();
+    M.x86.spc.IP.Set16(pop_word())
     M.x86.seg.CS.Set(pop_word())
     M.x86.R_FLG = pop_word();
     DECODE_CLEAR_SEGOVR();
@@ -3845,12 +3845,12 @@ var offset int8
     START_OF_INSTR();
     DECODE_PRINTF("JCXZ\t");
     offset = int8(fetch_byte_imm);
-    target = (u16)(M.x86.R_IP + offset);
+    target = (u16)(M.x86.spc.IP.Get16() + offset);
     DECODE_PRINTF2("%x\n", target);
     TRACE_AND_STEP();
     if (M.x86.R_CX == 0) {
-        M.x86.R_IP = target;
- JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get(), M.x86.R_IP, " CXZ ");
+        M.x86.spc.IP.Set16(target)
+ JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get(), M.x86.spc.IP.Get16(), " CXZ ");
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -3951,22 +3951,22 @@ func x86emuOp_call_near_IMM(_ uint8) {
     DECODE_PRINTF("CALL\t");
     if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
         ip32 = int32(fetch_long_imm());
-        ip32 += int16(M.x86.R_IP); /* CHECK SIGN */
+        ip32 += int16(M.x86.spc.IP.Get16()); /* CHECK SIGN */
         DECODE_PRINTF2("%04x\n", uint16(ip32));
         CALL_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get(), ip32, "");
     } else {
         ip16 = int16(fetch_word_imm());
-        ip16 += int16(M.x86.R_IP); /* CHECK SIGN */
+        ip16 += int16(M.x86.spc.IP.Get16()); /* CHECK SIGN */
         DECODE_PRINTF2("%04x\n", ip16);
         CALL_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get(), ip16, "");
     }
     TRACE_AND_STEP();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-        push_long(M.x86.R_EIP);
-        M.x86.R_EIP = ip32 & 0xffff;
+        push_long(M.x86.spc.IP.Get32());
+        M.x86.spc.IP.Set32(ip32 & 0xffff)
     } else {
-        push_word(M.x86.R_IP);
-        M.x86.R_EIP = ip16;
+        push_word(M.x86.spc.IP.Get16());
+        M.x86.spc.IP.Set32(ip16)
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -3983,18 +3983,18 @@ var ip uint32
     DECODE_PRINTF("JMP\t");
     if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
         ip = uint32(fetch_long_imm)();
- ip += uint32(M.x86.R_EIP);
+ ip += uint32(M.x86.spc.IP.Get32());
  DECODE_PRINTF2("%08x\n", uint32(ip));
         JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get(), ip, " NEAR ");
  TRACE_AND_STEP();
- M.x86.R_EIP = uint32(ip);
+ M.x86.spc.IP.Set32(uint32(ip))
     } else {
         ip = int16(fetch_word_imm)();
-        ip += int16(M.x86.R_IP);
+        ip += int16(M.x86.spc.IP.Get16());
         DECODE_PRINTF2("%04x\n", uint16(ip));
         JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get(), ip, " NEAR ");
         TRACE_AND_STEP();
-        M.x86.R_IP = uint16(ip);
+        M.x86.spc.IP.Set16(uint16(ip))
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -4035,11 +4035,11 @@ var offset int8
     START_OF_INSTR();
     DECODE_PRINTF("JMP\t");
     offset = int8(fetch_byte_imm);
-    target = (u16)(M.x86.R_IP + offset);
+    target = (u16)(M.x86.spc.IP.Get16() + offset);
     DECODE_PRINTF2("%x\n", target);
     JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get(), target, " BYTE ");
     TRACE_AND_STEP();
-    M.x86.R_IP = target;
+    M.x86.spc.IP.Set16(target)
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -4756,8 +4756,8 @@ var destval32 uint32
         case 2: /* call word ptr ... */
             destval = fetch_data_word(destoffset);
             TRACE_AND_STEP();
-            push_word(M.x86.R_IP);
-            M.x86.R_IP = destval;
+            push_word(M.x86.spc.IP.Get16());
+            M.x86.spc.IP.Set16(destval)
             break;
         case 3: /* call far ptr ... */
             destval = fetch_data_word(destoffset);
@@ -4765,21 +4765,21 @@ var destval32 uint32
             TRACE_AND_STEP();
             push_word(M.x86.seg.CS.Get());
             M.x86.seg.CS.Set(destval2)
-            push_word(M.x86.R_IP);
-            M.x86.R_IP = destval;
+            push_word(M.x86.spc.IP.Get16());
+            M.x86.spc.IP.Set16(destval)
             break;
         case 4: /* jmp word ptr ... */
             destval = fetch_data_word(destoffset);
             JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get(), destval, " WORD ");
             TRACE_AND_STEP();
-            M.x86.R_IP = destval;
+            M.x86.spc.IP.Set16(destval)
             break;
         case 5: /* jmp far ptr ... */
             destval = fetch_data_word(destoffset);
             destval2 = fetch_data_word(destoffset + 2);
             JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, destval2, destval, " FAR ");
             TRACE_AND_STEP();
-            M.x86.R_IP = destval;
+            M.x86.spc.IP.Set16(destval)
             M.x86.seg.CS.Set(destval2)
             break;
         case 6: /*  push word ptr ... */
@@ -4825,7 +4825,7 @@ var destval32 uint32
             destreg := decode_rm_word_register(rl);
             DECODE_PRINTF("\n");
             TRACE_AND_STEP();
-            push_word(M.x86.R_IP);
+            push_word(M.x86.spc.IP.Get16());
             M.x86.IP.Set(destreg.Get16())
         case 3: /* jmp far ptr ... */
             DECODE_PRINTF("OPERATION UNDEFINED 0XFF\n");
