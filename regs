@@ -4,6 +4,12 @@ sed -i 's/M.x86.R_AX = \(.*\);/M.x86.gen.A.Set16(\1)/' $1
 sed -i 's/M.x86.R_AX/M.x86.gen.A.Get16()/' $1
 sed -i 's/M.x86.R_EAX = \(.*\);/M.x86.gen.A.Set32(\1)/' $1
 sed -i 's/M.x86.R_EAX/M.x86.gen.A.Get32()/' $1
+sed -i 's/M.x86.R_ESP = \(.*\);/M.x86.spc.SP.Set32(\1)/' $1
+sed -i 's/M.x86.R_ESP/M.x86.spc.SP.Get32()/' $1
+sed -i 's/M.x86.R_ESI = \(.*\);/M.x86.spc.SI.Set32(\1)/' $1
+sed -i 's/M.x86.R_ESI/M.x86.spc.SI.Get32()/' $1
 # segs
-sed -i 's/M.x86.R_\(.\)S = \(.*\);/M.x86.gen.\1S.Set(\2)/' $1
-sed -i 's/M.x86.R_\(.\)S/M.x86.gen.\1S.Get()/' $1
+sed -i 's/M.x86.R_CS = \(.*\);/M.x86.seg.CS.Set(\1)/' $1
+sed -i 's/M.x86.R_CS/M.x86.seg.CS.Get()/' $1
+sed -i 's/M.x86.R_ES = \(.*\);/M.x86.seg.ES.Set(\1)/' $1
+sed -i 's/M.x86.R_ES/M.x86.seg.ES.Get()/' $1
