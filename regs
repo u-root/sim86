@@ -2,5 +2,8 @@ sed -i 's/M.x86.R_AL = \(.*\);/M.x86.gen.A.Setl8(\1)/' $1
 sed -i 's/M.x86.R_AL/M.x86.gen.A.Getl8()/' $1
 sed -i 's/M.x86.R_AX = \(.*\);/M.x86.gen.A.Set16(\1)/' $1
 sed -i 's/M.x86.R_AX/M.x86.gen.A.Get16()/' $1
-sed -i 's/M.x326.R_EAX = \(.*\);/M.x86.gen.A.Set32(\1)/' $1
-sed -i 's/M.x326.R_EAX/M.x86.gen.A.Get32()/' $1
+sed -i 's/M.x86.R_EAX = \(.*\);/M.x86.gen.A.Set32(\1)/' $1
+sed -i 's/M.x86.R_EAX/M.x86.gen.A.Get32()/' $1
+# segs
+sed -i 's/M.x86.R_\(.\)S = \(.*\);/M.x86.gen.\1S.Set(\2)/' $1
+sed -i 's/M.x86.R_\(.\)S/M.x86.gen.\1S.Get()/' $1

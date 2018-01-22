@@ -404,9 +404,9 @@ func x86emuOp_genop_word_AX_IMM(op1 uint8) {
     DECODE_PRINTF2("%x\n", srcval);
     TRACE_AND_STEP();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-        M.x86.R_EAX = genop_long_operation[op1](M.x86.R_EAX, srcval);
+        M.x86.gen.A.Set32(genop_long_operation[op1](M.x86.gen.A.Get32(), srcval))
     } else {
-        M.x86.R_AX = genop_word_operation[op1](M.x86.R_AX, uint16(srcval));
+        M.x86.gen.A.Set16(genop_word_operation[op1](M.x86.gen.A.Get16(), uint16(srcval)))
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -459,7 +459,7 @@ func x86emuOp_two_byte(_ uint8) {
 	op2 := sys_rdb((uint32(M.x86.R_CS) << 4) + (M.x86.R_IP))
 	M.x86.R_IP++
     INC_DECODED_INST_LEN(1);
-    (*x86emu_optab2[op2])(op2);
+    x86emu_optab2[op2](op2);
 }
 
 /****************************************************************************
@@ -590,7 +590,7 @@ func x86emuOp_aaa(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("AAA\n");
     TRACE_AND_STEP();
-    M.x86.R_AX = aaa_word(M.x86.R_AX);
+    M.x86.gen.A.Set16(aaa_word(M.x86.gen.A.Get16()))
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -616,7 +616,7 @@ func x86emuOp_aas(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("AAS\n");
     TRACE_AND_STEP();
-    M.x86.R_AX = aas_word(M.x86.R_AX);
+    M.x86.gen.A.Set16(aas_word(M.x86.gen.A.Get16()))
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -736,7 +736,7 @@ func x86emuOp_push_all(_ uint8) {
     if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
         old_sp := uint32(M.x86.R_ESP)
 
-        push_long(M.x86.R_EAX);
+        push_long(M.x86.gen.A.Get32());
         push_long(M.x86.R_ECX);
         push_long(M.x86.R_EDX);
         push_long(M.x86.R_EBX);
@@ -747,7 +747,7 @@ func x86emuOp_push_all(_ uint8) {
     } else {
         old_sp := uint16(M.x86.R_ESP)
 
-        push_word(M.x86.R_AX);
+        push_word(M.x86.gen.A.Get16());
         push_word(M.x86.R_CX);
         push_word(M.x86.R_DX);
         push_word(M.x86.R_BX);
@@ -780,7 +780,7 @@ func x86emuOp_pop_all(_ uint8) {
         M.x86.R_EBX = pop_long();
         M.x86.R_EDX = pop_long();
         M.x86.R_ECX = pop_long();
-        M.x86.R_EAX = pop_long();
+        M.x86.gen.A.Set32(pop_long())
     } else {
         M.x86.R_DI = pop_word();
         M.x86.R_SI = pop_word();
@@ -789,7 +789,7 @@ func x86emuOp_pop_all(_ uint8) {
         M.x86.R_BX = pop_word();
         M.x86.R_DX = pop_word();
         M.x86.R_CX = pop_word();
-        M.x86.R_AX = pop_word();
+        M.x86.gen.A.Set16(pop_word())
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -2043,8 +2043,8 @@ var tmp uint32
         reg32 = decode_rm_long_register(op1);
         DECODE_PRINTF("\n");
         TRACE_AND_STEP();
-        tmp = M.x86.R_EAX;
-        M.x86.R_EAX = *reg32;
+        tmp = M.x86.gen.A.Get32();
+        M.x86.gen.A.Set32(*reg32)
         *reg32 = tmp;
     } else {
         u16 *reg16;
@@ -2052,8 +2052,8 @@ var tmp uint32
         reg16 = decode_rm_word_register(op1);
         DECODE_PRINTF("\n");
         TRACE_AND_STEP();
-        tmp = M.x86.R_AX;
-        M.x86.R_AX = *reg16;
+        tmp = M.x86.gen.A.Get16();
+        M.x86.gen.A.Set16(*reg16)
         *reg16 = uint16(tmp);
     }
     DECODE_CLEAR_SEGOVR();
@@ -2073,10 +2073,10 @@ func x86emuOp_cbw(_ uint8) {
     }
     TRACE_AND_STEP();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-        if (M.x86.R_AX & 0x8000) {
-            M.x86.R_EAX |= 0xffff0000;
+        if (M.x86.gen.A.Get16() & 0x8000) {
+            M.x86.gen.A.Get32() |= 0xffff0000;
         } else {
-            M.x86.R_EAX &= 0x0000ffff;
+            M.x86.gen.A.Get32() &= 0x0000ffff;
         }
     } else {
         if (M.x86.gen.A.Getl8() & 0x80) {
@@ -2103,13 +2103,13 @@ func x86emuOp_cwd(_ uint8) {
     DECODE_PRINTF("CWD\n");
     TRACE_AND_STEP();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-        if (M.x86.R_EAX & 0x80000000) {
+        if (M.x86.gen.A.Get32() & 0x80000000) {
             M.x86.R_EDX = 0xffffffff;
         } else {
             M.x86.R_EDX = 0x0;
         }
     } else {
-        if (M.x86.R_AX & 0x8000) {
+        if (M.x86.gen.A.Get16() & 0x8000) {
             M.x86.R_DX = 0xffff;
         } else {
             M.x86.R_DX = 0x0;
@@ -2582,9 +2582,9 @@ func x86emuOp_test_AX_IMM(_ uint8) {
     DECODE_PRINTF2("%x\n", srcval);
     TRACE_AND_STEP();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-        test_long(M.x86.R_EAX, srcval);
+        test_long(M.x86.gen.A.Get32(), srcval);
     } else {
-        test_word(M.x86.R_AX, uint16(srcval));
+        test_word(M.x86.gen.A.Get16(), uint16(srcval));
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -2644,9 +2644,9 @@ inc = incamount(2)
 		count--
 
         if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-            store_data_long_abs(M.x86.R_ES, M.x86.R_DI, M.x86.R_EAX);
+            store_data_long_abs(M.x86.R_ES, M.x86.R_DI, M.x86.gen.A.Get32());
         } else {
-            store_data_word_abs(M.x86.R_ES, M.x86.R_DI, M.x86.R_AX);
+            store_data_word_abs(M.x86.R_ES, M.x86.R_DI, M.x86.gen.A.Get16());
         }
         M.x86.DI.Change(inc)
 if Halted() {break;}
@@ -2710,9 +2710,9 @@ inc = incamount(2)
 	for count > 0 {
 		count--
         if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-            M.x86.R_EAX = fetch_data_long(M.x86.R_SI);
+            M.x86.gen.A.Set32(fetch_data_long(M.x86.R_SI))
         } else {
-            M.x86.R_AX = fetch_data_word(M.x86.R_SI);
+            M.x86.gen.A.Set16(fetch_data_word(M.x86.R_SI))
         }
         M.x86.SI.Change(inc)
 if Halted() {break;}
@@ -2790,10 +2790,10 @@ inc = incamount(2)
         for cxCount != 0 {
             if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
                 val = fetch_data_long_abs(M.x86.R_ES, M.x86.R_DI);
-                cmp_long(M.x86.R_EAX, val);
+                cmp_long(M.x86.gen.A.Get32(), val);
             } else {
                 val = fetch_data_word_abs(M.x86.R_ES, M.x86.R_DI);
-                cmp_word(M.x86.R_AX, uint16(val));
+                cmp_word(M.x86.gen.A.Get16(), uint16(val));
             }
 M.X86.C.Dec()
             M.x86.DI.Change(inc)
@@ -2807,10 +2807,10 @@ M.X86.C.Dec()
         for cxCount != 0 {
             if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
                 val = fetch_data_long_abs(M.x86.R_ES, M.x86.R_DI);
-                cmp_long(M.x86.R_EAX, val);
+                cmp_long(M.x86.gen.A.Get32(), val);
             } else {
                 val = fetch_data_word_abs(M.x86.R_ES, M.x86.R_DI);
-                cmp_word(M.x86.R_AX, uint16(val));
+                cmp_word(M.x86.gen.A.Get16(), uint16(val));
             }
 M.X86.C.Dec()
             M.x86.DI.Change(inc)
@@ -2821,10 +2821,10 @@ M.X86.C.Dec()
     } else {
         if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
             val = fetch_data_long_abs(M.x86.R_ES, M.x86.R_DI);
-            cmp_long(M.x86.R_EAX, val);
+            cmp_long(M.x86.gen.A.Get32(), val);
         } else {
             val = fetch_data_word_abs(M.x86.R_ES, M.x86.R_DI);
-            cmp_word(M.x86.R_AX, uint16(val));
+            cmp_word(M.x86.gen.A.Get16(), uint16(val));
         }
         M.x86.DI.Change(inc)
     }
@@ -3748,7 +3748,7 @@ var _ uint8
     DECODE_PRINTF("AAD\n");
     a := fetch_byte_imm();
     TRACE_AND_STEP();
-    M.x86.R_AX = aad_word(M.x86.R_AX);
+    M.x86.gen.A.Set16(aad_word(M.x86.gen.A.Get16()))
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -3890,9 +3890,9 @@ var port uint8
     }
     TRACE_AND_STEP();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-        M.x86.R_EAX = sys_inl(port);
+        M.x86.gen.A.Set32(sys_inl(port))
     } else {
-        M.x86.R_AX = sys_inw(port);
+        M.x86.gen.A.Set16(sys_inw(port))
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -3932,9 +3932,9 @@ var port uint8
     }
     TRACE_AND_STEP();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-        sys_outl(port, M.x86.R_EAX);
+        sys_outl(port, M.x86.gen.A.Get32());
     } else {
-        sys_outw(port, M.x86.R_AX);
+        sys_outw(port, M.x86.gen.A.Get16());
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -4070,9 +4070,9 @@ func x86emuOp_in_word_AX_DX(_ uint8) {
     }
     TRACE_AND_STEP();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-        M.x86.R_EAX = sys_inl(M.x86.R_DX);
+        M.x86.gen.A.Set32(sys_inl(M.x86.R_DX))
     } else {
-        M.x86.R_AX = sys_inw(M.x86.R_DX);
+        M.x86.gen.A.Set16(sys_inw(M.x86.R_DX))
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -4104,9 +4104,9 @@ func x86emuOp_out_word_DX_AX(_ uint8) {
     }
     TRACE_AND_STEP();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-        sys_outl(M.x86.R_DX, M.x86.R_EAX);
+        sys_outl(M.x86.R_DX, M.x86.gen.A.Get32());
     } else {
-        sys_outw(M.x86.R_DX, M.x86.R_AX);
+        sys_outw(M.x86.R_DX, M.x86.gen.A.Get16());
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
