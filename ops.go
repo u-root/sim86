@@ -337,19 +337,19 @@ func x86emuOp_genop_word_R_RM(op1 uint8) {
         } else {
             destreg := decode_rm_word_register(rh);
             DECODE_PRINTF(",");
-	    srcval := fetch_data_word(srcoffset);
+	    srcval := fetch_data_word(uint16((srcoffset)));
             DECODE_PRINTF("\n");
             TRACE_AND_STEP();
             destreg.Set(genop_word_operation[op1](destreg.Get(), srcval))
         }
     } else { /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-            destreg32 := decode_rm_long_register(rh);
+            destreg := decode_rm_long_register(rh);
             DECODE_PRINTF(",");
             srcreg := decode_rm_long_register(rl);
             DECODE_PRINTF("\n");
             TRACE_AND_STEP();
-		destreg32.Set( genop_long_operation[op1](*destreg32, srcreg.Get()))
+		destreg.Set( genop_long_operation[op1](destreg.Get(), srcreg.Get()))
         } else {
             destreg := decode_rm_word_register(rh);
             DECODE_PRINTF(",");
@@ -916,7 +916,7 @@ func x86emuOp_imul_word_IMM(_ uint8) {
 
             destreg := decode_rm_word_register(rh);
             DECODE_PRINTF(",");
-            srcval := fetch_data_word(srcoffset);
+            srcval := fetch_data_word(uint16((srcoffset)));
             imm := fetch_word_imm();
             DECODE_PRINTF2(",%d\n", int32(imm));
             TRACE_AND_STEP();
@@ -1032,7 +1032,7 @@ func x86emuOp_imul_byte_IMM(_ uint8) {
 
             destreg := decode_rm_word_register(rh);
             DECODE_PRINTF(",");
-            srcval := fetch_data_word(srcoffset);
+            srcval := fetch_data_word(uint16((srcoffset)));
             imm := fetch_byte_imm();
             DECODE_PRINTF2(",%d\n", int32(imm));
             TRACE_AND_STEP();
@@ -1636,7 +1636,7 @@ var tmp uint8
         DECODE_PRINTF("\n");
         TRACE_AND_STEP();
         tmp = *srcreg;
-        srcreg.Set(*destreg)
+        srcreg.Set(destreg.Get())
         *destreg = tmp;
     }
     DECODE_CLEAR_SEGOVR();
@@ -1839,7 +1839,7 @@ func x86emuOp_mov_word_R_RM(_ uint8) {
             destreg := decode_rm_word_register(rh);
             DECODE_PRINTF(",");
             srcoffset = decode_rmXX_address(mod, rl);
-            srcval = fetch_data_word(srcoffset);
+            srcval = fetch_data_word(uint16((srcoffset)));
             DECODE_PRINTF("\n");
             TRACE_AND_STEP();
 		destreg.Set( srcval)
@@ -1943,7 +1943,7 @@ func x86emuOp_mov_word_SR_RM(_ uint8) {
 	    destreg := decode_rm_seg_register(rh);
         DECODE_PRINTF(",");
 	srcoffset := decode_rmXX_address(mod, rl);
-	srcval := fetch_data_word(srcoffset);
+	srcval := fetch_data_word(uint16((srcoffset)));
         DECODE_PRINTF("\n");
         TRACE_AND_STEP();
         *destreg = srcval;
@@ -3099,8 +3099,8 @@ func x86emuOp_les_R_IMM(_ uint8) {
         srcoffset = decode_rmXX_address(mod, rl);
         DECODE_PRINTF("\n");
         TRACE_AND_STEP();
-        *dstreg = fetch_data_word(srcoffset);
-        M.x86.R_ES = fetch_data_word(srcoffset + 2);
+        *dstreg = fetch_data_word(uint16((srcoffset)));
+        M.x86.R_ES = fetch_data_word((srcoffset + 2));
     }
     /* else UNDEFINED!                   register to register */
 
@@ -3125,8 +3125,8 @@ func x86emuOp_lds_R_IMM(_ uint8) {
         srcoffset = decode_rmXX_address(mod, rl);
         DECODE_PRINTF("\n");
         TRACE_AND_STEP();
-        *dstreg = fetch_data_word(srcoffset);
-        M.x86.R_DS = fetch_data_word(srcoffset + 2);
+        *dstreg = fetch_data_word(uint16((srcoffset)));
+        M.x86.R_DS = fetch_data_word((srcoffset + 2));
     }
     /* else UNDEFINED! */
     DECODE_CLEAR_SEGOVR();
@@ -4500,17 +4500,17 @@ var destval, srcval uint16
             case 5:
                 DECODE_PRINTF("\n");
                 TRACE_AND_STEP();
-                imul_word(*destreg.Get16());
+                imul_word(destreg.Get().Get16());
                 break;
             case 6:
                 DECODE_PRINTF("\n");
                 TRACE_AND_STEP();
-                div_word(*destreg.Get16());
+                div_word(destreg.Get().Get16());
                 break;
             case 7:
                 DECODE_PRINTF("\n");
                 TRACE_AND_STEP();
-                idiv_word(*destreg.Get16());
+                idiv_word(destreg.Get().Get16());
                 break;
             }
         }
@@ -4798,10 +4798,10 @@ var destval32 uint32
         switch (rh) {
         case 0:
             if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-                destreg32 = decode_rm_long_register(rl);
+                destreg = decode_rm_long_register(rl);
                 DECODE_PRINTF("\n");
                 TRACE_AND_STEP();
-                *destreg32 = inc_long(*destreg32);
+                *destreg = inc_long(destreg.Get());
             } else {
                 destreg := decode_rm_word_register(rl);
                 DECODE_PRINTF("\n");
