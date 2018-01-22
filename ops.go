@@ -206,7 +206,7 @@ func x86emuOp_genop_byte_RM_R(op1 uint8) {
 		srcreg := decode_rm_byte_register(rh);
 		DECODE_PRINTF("\n");
 		TRACE_AND_STEP();
-		destval = genop_byte_operation[op1](destval, *srcreg);
+		destval = genop_byte_operation[op1](destval, srcreg.Get());
 		if (op1 != 7){
 			store_data_byte(destoffset, destval);
 		}

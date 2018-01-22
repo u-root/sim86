@@ -404,7 +404,7 @@ the current 'default' segment, which may have been overridden.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-func store_data_byte(offset uint, val uint8) byte {
+func store_data_byte(offset uint32, val uint8) byte {
 
 	panic("fix me")
 	return 0 //(*sys_wrb)((get_data_segment() << 4) + offset, val);
@@ -421,7 +421,7 @@ the current 'default' segment, which may have been overridden.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-func store_data_word(offset uint, val uint16) uint16 {
+func store_data_word(offset uint32, val uint16) uint16 {
 
 	panic("fix me")
 	return 0 // (*sys_wrw)((get_data_segment() << 4) + offset, val);
@@ -438,7 +438,7 @@ the current 'default' segment, which may have been overridden.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-func store_data_long(offset uint, val uint32) uint32 {
+func store_data_long(offset uint32, val uint32) uint32 {
 
 	panic("fix me")
 
@@ -456,7 +456,7 @@ Writes a byte value to an absolute memory location.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-func store_data_byte_abs(segment uint, offset uint, val uint8) {
+func store_data_byte_abs(segment uint, offset uint32, val uint8) {
 
 	panic("fix me")
 }
@@ -472,7 +472,7 @@ Writes a word value to an absolute memory location.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-func store_data_word_abs(segment uint, offset uint, val uint16) {
+func store_data_word_abs(segment uint, offset uint32, val uint16) {
 
 	panic("fix me")
 
@@ -490,7 +490,7 @@ Writes a long value to an absolute memory location.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-func store_data_long_abs(segment uint, offset uint, val uint32) {
+func store_data_long_abs(segment uint, offset uint32, val uint32) {
 
 	panic("fix me")
 

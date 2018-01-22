@@ -254,3 +254,12 @@ func END_OF_INSTR() {
 func TRACE_REGS() {
 	fmt.Printf("Trace regs\n")
 }
+func SINGLE_STEP (){
+	if (DEBUG_STEP())  {
+	x86emu_single_step()
+}
+}
+func TRACE_AND_STEP() {
+TRACE_REGS()
+SINGLE_STEP()
+}
