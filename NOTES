@@ -40,3 +40,6 @@ and more
 now we need ops2.go
 staticvoidfunc
 
+casts
+funcdecls
+fixdecls

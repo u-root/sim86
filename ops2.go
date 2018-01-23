@@ -53,7 +53,7 @@ func x86emuOp2_illegal_op(op2 u8) {
     DECODE_PRINTF("ILLEGAL EXTENDED X86 OPCODE\n");
     TRACE_REGS();
     fmt.Printf("%04x:%04x: %02X ILLEGAL EXTENDED X86 OPCODE!\n",
-        M.x86.R_CS, M.x86.R_IP-2, op2);
+        M.x86.seg.CS.Get(), M.x86.spc.IP.Get16()-2, op2);
     HALT_SYS();
     END_OF_INSTR();
 }
@@ -65,7 +65,6 @@ func x86emuOp2_illegal_op(op2 u8) {
 
 func x86emuOp2_opc_01(op2 u8) {
   int mod, rl, rh;
-  u16 *destreg;
   uint destoffset;
 
   START_OF_INSTR();
@@ -103,7 +102,7 @@ func x86emuOp2_opc_01(op2 u8) {
     DECODE_PRINTF("ILLEGAL EXTENDED X86 OPCODE IN 0F 01\n");
     TRACE_REGS();
     fmt.Printf("%04x:%04x: %02X ILLEGAL EXTENDED X86 OPCODE!\n",
-        M.x86.R_CS, M.x86.R_IP-2, op2);
+        M.x86.seg.CS.Get(), M.x86.spc.IP.Get16()-2, op2);
     HALT_SYS();
     break;
   }
@@ -172,11 +171,11 @@ func x86emuOp2_rdtsc(_ u8) {
   DECODE_PRINTF("RDTSC\n");
   TRACE_AND_STEP();
 #ifdef __HAS_LONG_LONG__
-  M.x86.R_EAX = counter & 0xffffffff;
-  M.x86.R_EDX = counter >> 32;
+  M.x86.gen.A.Set32(counter & 0xffffffff)
+  M.x86.gen.D.Set32(counter >> 32)
 #else
-  M.x86.R_EAX = counter;
-  M.x86.R_EDX = 0;
+  M.x86.gen.A.Set32(counter)
+  M.x86.gen.D.Set32(0)
 #endif
   DECODE_CLEAR_SEGOVR();
   END_OF_INSTR();
@@ -192,8 +191,8 @@ func x86emuOp2_rdmsr(op2 u8) {
   START_OF_INSTR();
   DECODE_PRINTF("RDMSR\n");
   TRACE_AND_STEP();
-  M.x86.R_EDX = 0;
-  M.x86.R_EAX = 0;
+  M.x86.gen.D.Set32(0)
+  M.x86.gen.A.Set32(0)
   DECODE_CLEAR_SEGOVR();
   END_OF_INSTR();
 }
@@ -282,12 +281,12 @@ func x86emuOp2_long_jump(op2 u8) {
     START_OF_INSTR();
     cond = x86emu_check_jump_condition(op2 & 0xF);
     target = int16(fetch_word_imm());
-    target += int16(M.x86.R_IP);
+    target += int16(M.x86.spc.IP.Get16());
     DECODE_PRINTF2("%04x\n", target);
     TRACE_AND_STEP();
     if (cond) {
-        M.x86.R_IP = uint16(target);
-	JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.R_CS, M.x86.R_IP, " LONG COND ");
+        M.x86.spc.IP.Set16(uint16(target))
+	JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get(), M.x86.spc.IP.Get16(), " LONG COND ");
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -315,35 +314,35 @@ func x86emuOp2_bswap(op2 u8) {
     switch (op2) {
       case 0xc8:
         DECODE_PRINTF("EAX\n");
-        M.x86.R_EAX = x86emu_bswap(M.x86.R_EAX);
+        M.x86.gen.A.Set32(x86emu_bswap(M.x86.gen.A.Get32()))
         break;
       case 0xc9:
         DECODE_PRINTF("ECX\n");
-        M.x86.R_ECX = x86emu_bswap(M.x86.R_ECX);
+        M.x86.gen.C.Set32(x86emu_bswap(M.x86.gen.C.Get32()))
         break;
       case 0xca:
         DECODE_PRINTF("EDX\n");
-        M.x86.R_EDX = x86emu_bswap(M.x86.R_EDX);
+        M.x86.gen.D.Set32(x86emu_bswap(M.x86.gen.D.Get32()))
         break;
       case 0xcb:
         DECODE_PRINTF("EBX\n");
-        M.x86.R_EBX = x86emu_bswap(M.x86.R_EBX);
+        M.x86.gen.B.Set32(x86emu_bswap(M.x86.gen.B.Get32()))
         break;
       case 0xcc:
         DECODE_PRINTF("ESP\n");
-        M.x86.R_ESP = x86emu_bswap(M.x86.R_ESP);
+        M.x86.gen.SP.Set32(x86emu_bswap(M.x86.gen.SP.Get32()))
         break;
       case 0xcd:
         DECODE_PRINTF("EBP\n");
-        M.x86.R_EBP = x86emu_bswap(M.x86.R_EBP);
+        M.x86.gen.BP.Set32(x86emu_bswap(M.x86.gen.BP.Get32()))
         break;
       case 0xce:
         DECODE_PRINTF("ESI\n");
-        M.x86.R_ESI = x86emu_bswap(M.x86.R_ESI);
+        M.x86.gen.SI.Set32(x86emu_bswap(M.x86.gen.SI.Get32()))
         break;
       case 0xcf:
         DECODE_PRINTF("EDI\n");
-        M.x86.R_EDI = x86emu_bswap(M.x86.R_EDI);
+        M.x86.gen.DI.Set32(x86emu_bswap(M.x86.gen.DI.Get32()))
         break;
     }
     TRACE_AND_STEP();
@@ -501,7 +500,6 @@ func x86emuOp2_bt_R(_ u8) {
         srcoffset = decode_rmXX_address(mod, rl);
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 srcval;
-            u32 *shiftreg;
 
             DECODE_PRINTF(",");
             shiftreg = DECODE_RM_LONG_REGISTER(rh);
@@ -512,7 +510,6 @@ func x86emuOp2_bt_R(_ u8) {
             CONDITIONAL_SET_FLAG(srcval & (0x1 << bit),F_CF);
         } else {
             u16 srcval;
-            u16 *shiftreg;
 
             DECODE_PRINTF(",");
             shiftreg = DECODE_RM_WORD_REGISTER(rh);
@@ -524,7 +521,6 @@ func x86emuOp2_bt_R(_ u8) {
         }
     } else {                     /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *srcreg,*shiftreg;
 
             srcreg = DECODE_RM_LONG_REGISTER(rl);
             DECODE_PRINTF(",");
@@ -533,7 +529,6 @@ func x86emuOp2_bt_R(_ u8) {
             bit = *shiftreg & 0x1F;
             CONDITIONAL_SET_FLAG(*srcreg & (0x1 << bit),F_CF);
         } else {
-            u16 *srcreg,*shiftreg;
 
             srcreg = DECODE_RM_WORD_REGISTER(rl);
             DECODE_PRINTF(",");
@@ -563,7 +558,6 @@ func x86emuOp2_shld_IMM(_ u8) {
         destoffset = decode_rmXX_address(mod, rl);
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 destval;
-            u32 *shiftreg;
 
             DECODE_PRINTF(",");
             shiftreg = DECODE_RM_LONG_REGISTER(rh);
@@ -576,7 +570,6 @@ func x86emuOp2_shld_IMM(_ u8) {
             store_data_long(destoffset, destval);
         } else {
             u16 destval;
-            u16 *shiftreg;
 
             DECODE_PRINTF(",");
             shiftreg = DECODE_RM_WORD_REGISTER(rh);
@@ -590,7 +583,6 @@ func x86emuOp2_shld_IMM(_ u8) {
         }
     } else {                     /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *destreg,*shiftreg;
 
             destreg = DECODE_RM_LONG_REGISTER(rl);
             DECODE_PRINTF(",");
@@ -601,7 +593,6 @@ func x86emuOp2_shld_IMM(_ u8) {
             TRACE_AND_STEP();
             *destreg = shld_long(*destreg,*shiftreg,shift);
         } else {
-            u16 *destreg,*shiftreg;
 
             destreg = DECODE_RM_WORD_REGISTER(rl);
             DECODE_PRINTF(",");
@@ -632,7 +623,6 @@ func x86emuOp2_shld_CL(_ u8) {
         destoffset = decode_rmXX_address(mod, rl);
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 destval;
-            u32 *shiftreg;
 
             DECODE_PRINTF(",");
             shiftreg = DECODE_RM_LONG_REGISTER(rh);
@@ -643,7 +633,6 @@ func x86emuOp2_shld_CL(_ u8) {
             store_data_long(destoffset, destval);
         } else {
             u16 destval;
-            u16 *shiftreg;
 
             DECODE_PRINTF(",");
             shiftreg = DECODE_RM_WORD_REGISTER(rh);
@@ -655,7 +644,6 @@ func x86emuOp2_shld_CL(_ u8) {
         }
     } else {                     /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *destreg,*shiftreg;
 
             destreg = DECODE_RM_LONG_REGISTER(rl);
             DECODE_PRINTF(",");
@@ -664,7 +652,6 @@ func x86emuOp2_shld_CL(_ u8) {
             TRACE_AND_STEP();
             *destreg = shld_long(*destreg,*shiftreg,M.x86.R_CL);
         } else {
-            u16 *destreg,*shiftreg;
 
             destreg = DECODE_RM_WORD_REGISTER(rl);
             DECODE_PRINTF(",");
@@ -720,7 +707,6 @@ func x86emuOp2_bts_R(_ u8) {
         srcoffset = decode_rmXX_address(mod, rl);
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 srcval,mask;
-            u32 *shiftreg;
 
             DECODE_PRINTF(",");
             shiftreg = DECODE_RM_LONG_REGISTER(rh);
@@ -733,7 +719,6 @@ func x86emuOp2_bts_R(_ u8) {
             store_data_long(srcoffset+disp, srcval | mask);
         } else {
             u16 srcval,mask;
-            u16 *shiftreg;
 
             DECODE_PRINTF(",");
             shiftreg = DECODE_RM_WORD_REGISTER(rh);
@@ -747,7 +732,6 @@ func x86emuOp2_bts_R(_ u8) {
         }
     } else {                     /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *srcreg,*shiftreg;
             u32 mask;
 
             srcreg = DECODE_RM_LONG_REGISTER(rl);
@@ -759,7 +743,6 @@ func x86emuOp2_bts_R(_ u8) {
             CONDITIONAL_SET_FLAG(*srcreg & mask,F_CF);
             *srcreg |= mask;
         } else {
-            u16 *srcreg,*shiftreg;
             u16 mask;
 
             srcreg = DECODE_RM_WORD_REGISTER(rl);
@@ -792,7 +775,6 @@ func x86emuOp2_shrd_IMM(_ u8) {
         destoffset = decode_rmXX_address(mod, rl);
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 destval;
-            u32 *shiftreg;
 
             DECODE_PRINTF(",");
             shiftreg = DECODE_RM_LONG_REGISTER(rh);
@@ -805,7 +787,6 @@ func x86emuOp2_shrd_IMM(_ u8) {
             store_data_long(destoffset, destval);
         } else {
             u16 destval;
-            u16 *shiftreg;
 
             DECODE_PRINTF(",");
             shiftreg = DECODE_RM_WORD_REGISTER(rh);
@@ -819,7 +800,6 @@ func x86emuOp2_shrd_IMM(_ u8) {
         }
     } else {                     /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *destreg,*shiftreg;
 
             destreg = DECODE_RM_LONG_REGISTER(rl);
             DECODE_PRINTF(",");
@@ -830,7 +810,6 @@ func x86emuOp2_shrd_IMM(_ u8) {
             TRACE_AND_STEP();
             *destreg = shrd_long(*destreg,*shiftreg,shift);
         } else {
-            u16 *destreg,*shiftreg;
 
             destreg = DECODE_RM_WORD_REGISTER(rl);
             DECODE_PRINTF(",");
@@ -862,7 +841,6 @@ func x86emuOp2_shrd_CL(_ u8) {
         DECODE_PRINTF(",");
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 destval;
-            u32 *shiftreg;
 
             shiftreg = DECODE_RM_LONG_REGISTER(rh);
             DECODE_PRINTF(",CL\n");
@@ -872,7 +850,6 @@ func x86emuOp2_shrd_CL(_ u8) {
             store_data_long(destoffset, destval);
         } else {
             u16 destval;
-            u16 *shiftreg;
 
             shiftreg = DECODE_RM_WORD_REGISTER(rh);
             DECODE_PRINTF(",CL\n");
@@ -883,7 +860,6 @@ func x86emuOp2_shrd_CL(_ u8) {
         }
     } else {                     /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *destreg,*shiftreg;
 
             destreg = DECODE_RM_LONG_REGISTER(rl);
             DECODE_PRINTF(",");
@@ -892,7 +868,6 @@ func x86emuOp2_shrd_CL(_ u8) {
             TRACE_AND_STEP();
             *destreg = shrd_long(*destreg,*shiftreg,M.x86.R_CL);
         } else {
-            u16 *destreg,*shiftreg;
 
             destreg = DECODE_RM_WORD_REGISTER(rl);
             DECODE_PRINTF(",");
@@ -919,7 +894,6 @@ func x86emuOp2_imul_R_RM(_ u8) {
     FETCH_DECODE_MODRM(mod, rh, rl);
     if (mod < 3) {
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *destreg;
             u32 srcval;
             u32 res_lo,res_hi;
 
@@ -938,7 +912,6 @@ func x86emuOp2_imul_R_RM(_ u8) {
             }
             *destreg = uint32(res_lo);
         } else {
-            u16 *destreg;
             u16 srcval;
             u32 res;
 
@@ -959,7 +932,6 @@ func x86emuOp2_imul_R_RM(_ u8) {
         }
     } else {                     /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *destreg,*srcreg;
             u32 res_lo,res_hi;
 
             destreg = DECODE_RM_LONG_REGISTER(rh);
@@ -976,7 +948,6 @@ func x86emuOp2_imul_R_RM(_ u8) {
             }
             *destreg = uint32(res_lo);
         } else {
-            u16 *destreg,*srcreg;
             u32 res;
 
             destreg = DECODE_RM_WORD_REGISTER(rh);
@@ -1003,7 +974,6 @@ Handles opcode 0x0f,0xb2
 ****************************************************************************/
 func x86emuOp2_lss_R_IMM(_ u8) {
     int mod, rh, rl;
-    u16 *dstreg;
     uint srcoffset;
 
     START_OF_INSTR();
@@ -1016,7 +986,7 @@ func x86emuOp2_lss_R_IMM(_ u8) {
         DECODE_PRINTF("\n");
         TRACE_AND_STEP();
         *dstreg = fetch_data_word(srcoffset);
-        M.x86.R_SS = fetch_data_word(srcoffset + 2);
+        M.x86.seg.SS.Set(fetch_data_word(srcoffset + 2))
     } else {                     /* register to register */
         /* UNDEFINED! */
         TRACE_AND_STEP();
@@ -1042,7 +1012,6 @@ func x86emuOp2_btr_R(_ u8) {
         DECODE_PRINTF(",");
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 srcval,mask;
-            u32 *shiftreg;
 
             shiftreg = DECODE_RM_LONG_REGISTER(rh);
             TRACE_AND_STEP();
@@ -1054,7 +1023,6 @@ func x86emuOp2_btr_R(_ u8) {
             store_data_long(srcoffset+disp, srcval & ~mask);
         } else {
             u16 srcval,mask;
-            u16 *shiftreg;
 
             shiftreg = DECODE_RM_WORD_REGISTER(rh);
             TRACE_AND_STEP();
@@ -1067,7 +1035,6 @@ func x86emuOp2_btr_R(_ u8) {
         }
     } else {                     /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *srcreg,*shiftreg;
             u32 mask;
 
             srcreg = DECODE_RM_LONG_REGISTER(rl);
@@ -1079,7 +1046,6 @@ func x86emuOp2_btr_R(_ u8) {
             CONDITIONAL_SET_FLAG(*srcreg & mask,F_CF);
             *srcreg &= ~mask;
         } else {
-            u16 *srcreg,*shiftreg;
             u16 mask;
 
             srcreg = DECODE_RM_WORD_REGISTER(rl);
@@ -1102,7 +1068,6 @@ Handles opcode 0x0f,0xb4
 ****************************************************************************/
 func x86emuOp2_lfs_R_IMM(_ u8) {
     int mod, rh, rl;
-    u16 *dstreg;
     uint srcoffset;
 
     START_OF_INSTR();
@@ -1130,7 +1095,6 @@ Handles opcode 0x0f,0xb5
 ****************************************************************************/
 func x86emuOp2_lgs_R_IMM(_ u8) {
     int mod, rh, rl;
-    u16 *dstreg;
     uint srcoffset;
 
     START_OF_INSTR();
@@ -1165,7 +1129,6 @@ func x86emuOp2_movzx_byte_R_RM(_ u8) {
     FETCH_DECODE_MODRM(mod, rh, rl);
     if (mod < 3) {
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *destreg;
             u32 srcval;
 
             destreg = DECODE_RM_LONG_REGISTER(rh);
@@ -1176,7 +1139,6 @@ func x86emuOp2_movzx_byte_R_RM(_ u8) {
             TRACE_AND_STEP();
             *destreg = srcval;
         } else {
-            u16 *destreg;
             u16 srcval;
 
             destreg = DECODE_RM_WORD_REGISTER(rh);
@@ -1189,7 +1151,6 @@ func x86emuOp2_movzx_byte_R_RM(_ u8) {
         }
     } else {                     /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *destreg;
             u8  *srcreg;
 
             destreg = DECODE_RM_LONG_REGISTER(rh);
@@ -1199,7 +1160,6 @@ func x86emuOp2_movzx_byte_R_RM(_ u8) {
             TRACE_AND_STEP();
             *destreg = *srcreg;
         } else {
-            u16 *destreg;
             u8  *srcreg;
 
             destreg = DECODE_RM_WORD_REGISTER(rh);
@@ -1221,9 +1181,7 @@ Handles opcode 0x0f,0xb7
 func x86emuOp2_movzx_word_R_RM(_ u8) {
     int mod, rl, rh;
     uint srcoffset;
-    u32 *destreg;
     u32 srcval;
-    u16 *srcreg;
 
     START_OF_INSTR();
     DECODE_PRINTF("MOVZX\t");
@@ -1277,7 +1235,7 @@ func x86emuOp2_btX_I(_ u8) {
         DECODE_PRINTF("ILLEGAL EXTENDED X86 OPCODE\n");
         TRACE_REGS();
         fmt.Printf("%04x:%04x: %02X%02X ILLEGAL EXTENDED X86 OPCODE EXTENSION!\n",
-                M.x86.R_CS, M.x86.R_IP-3,op2, (mod<<6)|(rh<<3)|rl);
+                M.x86.seg.CS.Get(), M.x86.spc.IP.Get16()-3,op2, (mod<<6)|(rh<<3)|rl);
         HALT_SYS();
     }
     if (mod < 3) {
@@ -1330,7 +1288,6 @@ func x86emuOp2_btX_I(_ u8) {
         }
     } else {                     /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *srcreg;
             u32 mask;
 
             srcreg = DECODE_RM_LONG_REGISTER(rl);
@@ -1354,7 +1311,6 @@ func x86emuOp2_btX_I(_ u8) {
                 break;
             }
         } else {
-            u16 *srcreg;
             u16 mask;
 
             srcreg = DECODE_RM_WORD_REGISTER(rl);
@@ -1400,7 +1356,6 @@ func x86emuOp2_btc_R(_ u8) {
         DECODE_PRINTF(",");
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 srcval,mask;
-            u32 *shiftreg;
 
             shiftreg = DECODE_RM_LONG_REGISTER(rh);
             TRACE_AND_STEP();
@@ -1412,7 +1367,6 @@ func x86emuOp2_btc_R(_ u8) {
             store_data_long(srcoffset+disp, srcval ^ mask);
         } else {
             u16 srcval,mask;
-            u16 *shiftreg;
 
             shiftreg = DECODE_RM_WORD_REGISTER(rh);
             TRACE_AND_STEP();
@@ -1425,7 +1379,6 @@ func x86emuOp2_btc_R(_ u8) {
         }
     } else {                     /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *srcreg,*shiftreg;
             u32 mask;
 
             srcreg = DECODE_RM_LONG_REGISTER(rl);
@@ -1437,7 +1390,6 @@ func x86emuOp2_btc_R(_ u8) {
             CONDITIONAL_SET_FLAG(*srcreg & mask,F_CF);
             *srcreg ^= mask;
         } else {
-            u16 *srcreg,*shiftreg;
             u16 mask;
 
             srcreg = DECODE_RM_WORD_REGISTER(rl);
@@ -1469,7 +1421,6 @@ func x86emuOp2_bsf(_ u8) {
         srcoffset = decode_rmXX_address(mod, rl);
         DECODE_PRINTF(",");
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 srcval, *dstreg;
 
             dstreg = DECODE_RM_LONG_REGISTER(rh);
             TRACE_AND_STEP();
@@ -1478,7 +1429,6 @@ func x86emuOp2_bsf(_ u8) {
             for (*dstreg = 0; *dstreg < 32; (*dstreg)++)
                 if ((srcval >> *dstreg) & 1) break;
         } else {
-            u16 srcval, *dstreg;
 
             dstreg = DECODE_RM_WORD_REGISTER(rh);
             TRACE_AND_STEP();
@@ -1489,7 +1439,6 @@ func x86emuOp2_bsf(_ u8) {
         }
     } else {             /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 srcval, *dstreg;
 
             srcval = *DECODE_RM_LONG_REGISTER(rl);
             DECODE_PRINTF(",");
@@ -1499,7 +1448,6 @@ func x86emuOp2_bsf(_ u8) {
             for (*dstreg = 0; *dstreg < 32; (*dstreg)++)
                 if ((srcval >> *dstreg) & 1) break;
         } else {
-            u16 srcval, *dstreg;
 
             srcval = *DECODE_RM_WORD_REGISTER(rl);
             DECODE_PRINTF(",");
@@ -1529,7 +1477,6 @@ func x86emuOp2_bsr(_ u8) {
         srcoffset = decode_rmXX_address(mod, rl);
         DECODE_PRINTF(",");
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 srcval, *dstreg;
 
             dstreg = DECODE_RM_LONG_REGISTER(rh);
             TRACE_AND_STEP();
@@ -1538,7 +1485,6 @@ func x86emuOp2_bsr(_ u8) {
             for (*dstreg = 31; *dstreg > 0; (*dstreg)--)
                 if ((srcval >> *dstreg) & 1) break;
         } else {
-            u16 srcval, *dstreg;
 
             dstreg = DECODE_RM_WORD_REGISTER(rh);
             TRACE_AND_STEP();
@@ -1549,7 +1495,6 @@ func x86emuOp2_bsr(_ u8) {
         }
     } else {             /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 srcval, *dstreg;
 
             srcval = *DECODE_RM_LONG_REGISTER(rl);
             DECODE_PRINTF(",");
@@ -1559,7 +1504,6 @@ func x86emuOp2_bsr(_ u8) {
             for (*dstreg = 31; *dstreg > 0; (*dstreg)--)
                 if ((srcval >> *dstreg) & 1) break;
         } else {
-            u16 srcval, *dstreg;
 
             srcval = *DECODE_RM_WORD_REGISTER(rl);
             DECODE_PRINTF(",");
@@ -1587,7 +1531,6 @@ func x86emuOp2_movsx_byte_R_RM(_ u8) {
     FETCH_DECODE_MODRM(mod, rh, rl);
     if (mod < 3) {
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *destreg;
             u32 srcval;
 
             destreg = DECODE_RM_LONG_REGISTER(rh);
@@ -1598,7 +1541,6 @@ func x86emuOp2_movsx_byte_R_RM(_ u8) {
             TRACE_AND_STEP();
             *destreg = srcval;
         } else {
-            u16 *destreg;
             u16 srcval;
 
             destreg = DECODE_RM_WORD_REGISTER(rh);
@@ -1611,7 +1553,6 @@ func x86emuOp2_movsx_byte_R_RM(_ u8) {
         }
     } else {                     /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
-            u32 *destreg;
             u8  *srcreg;
 
             destreg = DECODE_RM_LONG_REGISTER(rh);
@@ -1621,7 +1562,6 @@ func x86emuOp2_movsx_byte_R_RM(_ u8) {
             TRACE_AND_STEP();
             *destreg = int32(((s8)*srcreg))
         } else {
-            u16 *destreg;
             u8  *srcreg;
 
             destreg = DECODE_RM_WORD_REGISTER(rh);
@@ -1643,9 +1583,7 @@ Handles opcode 0x0f,0xbf
 func x86emuOp2_movsx_word_R_RM(_ u8) {
     int mod, rl, rh;
     uint srcoffset;
-    u32 *destreg;
     u32 srcval;
-    u16 *srcreg;
 
     START_OF_INSTR();
     DECODE_PRINTF("MOVSX\t");
