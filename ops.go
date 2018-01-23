@@ -456,8 +456,8 @@ REMARKS:
 Handles opcode 0x0f. Escape for two-byte opcode (286 or better)
 ****************************************************************************/
 func x86emuOp_two_byte(_ uint8) {
-	op2 := sys_rdb((uint32(M.x86.seg.CS.Get()) << 4) + (M.x86.spc.IP.Get16()))
-	M.x86.sp.IP.Set16(M.x86.spc.IP.Get16()+1)
+	op2 := sys_rdb((uint32(M.x86.seg.CS.Get()) << 4) + (M.x86.spc.IP.Get32()))
+	M.x86.spc.IP.Set16(M.x86.spc.IP.Get16()+1)
     INC_DECODED_INST_LEN(1);
     x86emu_optab2[op2](op2);
 }
@@ -590,7 +590,7 @@ func x86emuOp_aaa(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("AAA\n");
     TRACE_AND_STEP();
-    M.x86.gen.A.Set16(aaa_word(M.x86.gen.A.Get16()))
+    M.x86.gen.A.Set16(aaa_wordz(M.x86.gen.A.Get16()))
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -630,14 +630,12 @@ func x86emuOp_inc_register(op1 uint8) {
     op1 &= 0x7;
     DECODE_PRINTF("INC\t");
     if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-        uint32 *reg;
-        reg := decode_rm_long_register(op1);
+	    reg := decode_rm_long_register(uint32(op1)))
         DECODE_PRINTF("\n");
         TRACE_AND_STEP();
         *reg = inc_long(*reg);
     } else {
-        u16 *reg;
-        reg := decode_rm_word_register(op1);
+	    reg := decode_rm_word_register(uint32(op1))
         DECODE_PRINTF("\n");
         TRACE_AND_STEP();
         *reg = inc_word(*reg);
