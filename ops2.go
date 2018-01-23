@@ -52,7 +52,7 @@ func x86emuOp2_illegal_op(op2 u8) {
     START_OF_INSTR();
     DECODE_PRINTF("ILLEGAL EXTENDED X86 OPCODE\n");
     TRACE_REGS();
-    printf("%04x:%04x: %02X ILLEGAL EXTENDED X86 OPCODE!\n",
+    fmt.Printf("%04x:%04x: %02X ILLEGAL EXTENDED X86 OPCODE!\n",
         M.x86.R_CS, M.x86.R_IP-2, op2);
     HALT_SYS();
     END_OF_INSTR();
@@ -102,7 +102,7 @@ func x86emuOp2_opc_01(op2 u8) {
   default:
     DECODE_PRINTF("ILLEGAL EXTENDED X86 OPCODE IN 0F 01\n");
     TRACE_REGS();
-    printf("%04x:%04x: %02X ILLEGAL EXTENDED X86 OPCODE!\n",
+    fmt.Printf("%04x:%04x: %02X ILLEGAL EXTENDED X86 OPCODE!\n",
         M.x86.R_CS, M.x86.R_IP-2, op2);
     HALT_SYS();
     break;
@@ -281,12 +281,12 @@ func x86emuOp2_long_jump(op2 u8) {
     /* conditional jump to word offset. */
     START_OF_INSTR();
     cond = x86emu_check_jump_condition(op2 & 0xF);
-    target = (s16) fetch_word_imm();
-    target += (s16) M.x86.R_IP;
+    target = int16(fetch_word_imm());
+    target += int16(M.x86.R_IP);
     DECODE_PRINTF2("%04x\n", target);
     TRACE_AND_STEP();
     if (cond) {
-        M.x86.R_IP = (u16)target;
+        M.x86.R_IP = uint16(target);
 	JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.R_CS, M.x86.R_IP, " LONG COND ");
     }
     DECODE_CLEAR_SEGOVR();
@@ -928,7 +928,7 @@ func x86emuOp2_imul_R_RM(_ u8) {
             srcoffset = decode_rmXX_address(mod, rl);
             srcval = fetch_data_long(srcoffset);
             TRACE_AND_STEP();
-            imul_long_direct(&res_lo,&res_hi,(s32)*destreg,(s32)srcval);
+            imul_long_direct(&res_lo,&res_hi,(s32)*destreg,int32(srcval));
             if (res_hi != 0) {
                 SET_FLAG(F_CF);
                 SET_FLAG(F_OF);
@@ -936,7 +936,7 @@ func x86emuOp2_imul_R_RM(_ u8) {
                 CLEAR_FLAG(F_CF);
                 CLEAR_FLAG(F_OF);
             }
-            *destreg = (u32)res_lo;
+            *destreg = uint32(res_lo);
         } else {
             u16 *destreg;
             u16 srcval;
@@ -947,7 +947,7 @@ func x86emuOp2_imul_R_RM(_ u8) {
             srcoffset = decode_rmXX_address(mod, rl);
             srcval = fetch_data_word(srcoffset);
             TRACE_AND_STEP();
-            res = (s16)*destreg * (s16)srcval;
+            res = (s16)*destreg * int16(srcval);
             if (res > 0xFFFF) {
                 SET_FLAG(F_CF);
                 SET_FLAG(F_OF);
@@ -955,7 +955,7 @@ func x86emuOp2_imul_R_RM(_ u8) {
                 CLEAR_FLAG(F_CF);
                 CLEAR_FLAG(F_OF);
             }
-            *destreg = (u16)res;
+            *destreg = uint16(res);
         }
     } else {                     /* register to register */
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
@@ -974,7 +974,7 @@ func x86emuOp2_imul_R_RM(_ u8) {
                 CLEAR_FLAG(F_CF);
                 CLEAR_FLAG(F_OF);
             }
-            *destreg = (u32)res_lo;
+            *destreg = uint32(res_lo);
         } else {
             u16 *destreg,*srcreg;
             u32 res;
@@ -990,7 +990,7 @@ func x86emuOp2_imul_R_RM(_ u8) {
                 CLEAR_FLAG(F_CF);
                 CLEAR_FLAG(F_OF);
             }
-            *destreg = (u16)res;
+            *destreg = uint16(res);
         }
     }
     DECODE_CLEAR_SEGOVR();
@@ -1276,7 +1276,7 @@ func x86emuOp2_btX_I(_ u8) {
     default:
         DECODE_PRINTF("ILLEGAL EXTENDED X86 OPCODE\n");
         TRACE_REGS();
-        printf("%04x:%04x: %02X%02X ILLEGAL EXTENDED X86 OPCODE EXTENSION!\n",
+        fmt.Printf("%04x:%04x: %02X%02X ILLEGAL EXTENDED X86 OPCODE EXTENSION!\n",
                 M.x86.R_CS, M.x86.R_IP-3,op2, (mod<<6)|(rh<<3)|rl);
         HALT_SYS();
     }
@@ -1593,7 +1593,7 @@ func x86emuOp2_movsx_byte_R_RM(_ u8) {
             destreg = DECODE_RM_LONG_REGISTER(rh);
             DECODE_PRINTF(",");
             srcoffset = decode_rmXX_address(mod, rl);
-            srcval = (s32)((s8)fetch_data_byte(srcoffset));
+            srcval = int32((int8(fetch_data_byte)(srcoffset)))
             DECODE_PRINTF("\n");
             TRACE_AND_STEP();
             *destreg = srcval;
@@ -1604,7 +1604,7 @@ func x86emuOp2_movsx_byte_R_RM(_ u8) {
             destreg = DECODE_RM_WORD_REGISTER(rh);
             DECODE_PRINTF(",");
             srcoffset = decode_rmXX_address(mod, rl);
-            srcval = (s16)((s8)fetch_data_byte(srcoffset));
+            srcval = (s16)(int8(fetch_data_byte)(srcoffset));
             DECODE_PRINTF("\n");
             TRACE_AND_STEP();
             *destreg = srcval;
@@ -1619,7 +1619,7 @@ func x86emuOp2_movsx_byte_R_RM(_ u8) {
             srcreg = DECODE_RM_BYTE_REGISTER(rl);
             DECODE_PRINTF("\n");
             TRACE_AND_STEP();
-            *destreg = (s32)((s8)*srcreg);
+            *destreg = int32(((s8)*srcreg))
         } else {
             u16 *destreg;
             u8  *srcreg;
@@ -1654,7 +1654,7 @@ func x86emuOp2_movsx_word_R_RM(_ u8) {
         destreg = DECODE_RM_LONG_REGISTER(rh);
         DECODE_PRINTF(",");
         srcoffset = decode_rmXX_address(mod, rl);
-        srcval = (s32)((s16)fetch_data_word(srcoffset));
+        srcval = int32((int16(fetch_data_word)(srcoffset)))
         DECODE_PRINTF("\n");
         TRACE_AND_STEP();
         *destreg = srcval;
@@ -1664,7 +1664,7 @@ func x86emuOp2_movsx_word_R_RM(_ u8) {
         srcreg = DECODE_RM_WORD_REGISTER(rl);
         DECODE_PRINTF("\n");
         TRACE_AND_STEP();
-        *destreg = (s32)((s16)*srcreg);
+        *destreg = int32(((s16)*srcreg))
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
