@@ -735,9 +735,9 @@ func x86emuOp_push_all(_ uint8) {
         old_sp := uint32(M.x86.spc.SP.Get32())
 
         push_long(M.x86.gen.A.Get32());
-        push_long(M.x86.R_ECX);
-        push_long(M.x86.R_EDX);
-        push_long(M.x86.R_EBX);
+        push_long(M.x86.gen.C.Get32());
+        push_long(M.x86.gen.D.Get32());
+        push_long(M.x86.gen.B.Get32());
         push_long(old_sp);
         push_long(M.x86.R_EBP);
         push_long(M.x86.spc.SI.Get32());
@@ -775,9 +775,9 @@ func x86emuOp_pop_all(_ uint8) {
         M.x86.spc.SI.Set32(pop_long())
         M.x86.R_EBP = pop_long();
         M.x86.spc.SP.Get32() += 4; /* skip ESP */
-        M.x86.R_EBX = pop_long();
-        M.x86.R_EDX = pop_long();
-        M.x86.R_ECX = pop_long();
+        M.x86.gen.B.Set32(pop_long())
+        M.x86.gen.D.Set32(pop_long())
+        M.x86.gen.C.Set32(pop_long())
         M.x86.gen.A.Set32(pop_long())
     } else {
         M.x86.R_DI = pop_word();
@@ -2102,9 +2102,9 @@ func x86emuOp_cwd(_ uint8) {
     TRACE_AND_STEP();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
         if (M.x86.gen.A.Get32() & 0x80000000) {
-            M.x86.R_EDX = 0xffffffff;
+            M.x86.gen.D.Set32(0xffffffff)
         } else {
-            M.x86.R_EDX = 0x0;
+            M.x86.gen.D.Set32(0x0)
         }
     } else {
         if (M.x86.gen.A.Get16() & 0x8000) {
