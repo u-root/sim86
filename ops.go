@@ -732,16 +732,16 @@ func x86emuOp_push_all(_ uint8) {
         push_long(M.x86.gen.D.Get32());
         push_long(M.x86.gen.B.Get32());
         push_long(old_sp);
-        push_long(M.x86.gen.BP.Get32());
+        push_long(M.x86.spc.BP.Get32());
         push_long(M.x86.spc.SI.Get32());
-        push_long(M.x86.gen.DI.Get32());
+        push_long(M.x86.spc.DI.Get32());
     } else {
         old_sp := uint16(M.x86.spc.SP.Get32())
 
         push_word(M.x86.gen.A.Get16());
-        push_word(M.x86.R_CX);
-        push_word(M.x86.R_DX);
-        push_word(M.x86.R_BX);
+        push_word(M.x86.gen.C.Get16());
+        push_word(M.x86.gen.D.Get16());
+        push_word(M.x86.gen.B.Get16());
         push_word(old_sp);
         push_word(M.x86.R_BP);
         push_word(M.x86.R_SI);
@@ -764,9 +764,9 @@ func x86emuOp_pop_all(_ uint8) {
     }
     TRACE_AND_STEP();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-        M.x86.gen.DI.Set32(pop_long())
+        M.x86.spc.DI.Set32(pop_long())
         M.x86.spc.SI.Set32(pop_long())
-        M.x86.gen.BP.Set32(pop_long())
+        M.x86.spc.BP.Set32(pop_long())
         M.x86.spc.SP.Get32() += 4; /* skip ESP */
         M.x86.gen.B.Set32(pop_long())
         M.x86.gen.D.Set32(pop_long())
@@ -777,9 +777,9 @@ func x86emuOp_pop_all(_ uint8) {
         M.x86.R_SI = pop_word();
         M.x86.R_BP = pop_word();
         M.x86.R_SP += 2; /* skip SP */
-        M.x86.R_BX = pop_word();
-        M.x86.R_DX = pop_word();
-        M.x86.R_CX = pop_word();
+        M.x86.gen.B.Set16(pop_word())
+        M.x86.gen.D.Set16(pop_word())
+        M.x86.gen.C.Set16(pop_word())
         M.x86.gen.A.Set16(pop_word())
     }
     DECODE_CLEAR_SEGOVR();
@@ -2079,9 +2079,9 @@ func x86emuOp_cwd(_ uint8) {
         }
     } else {
         if (M.x86.gen.A.Get16() & 0x8000) {
-            M.x86.R_DX = 0xffff;
+            M.x86.gen.D.Set16(0xffff)
         } else {
-            M.x86.R_DX = 0x0;
+            M.x86.gen.D.Set16(0x0)
         }
     }
     DECODE_CLEAR_SEGOVR();
@@ -3716,7 +3716,7 @@ var addr uint16
     START_OF_INSTR();
     DECODE_PRINTF("XLAT\n");
     TRACE_AND_STEP();
- addr = (u16)(M.x86.R_BX + uint8(M.x86.gen.A.Getl8()));
+ addr = (u16)(M.x86.gen.B.Get16() + uint8(M.x86.gen.A.Getl8()));
     M.x86.gen.A.Setl8(fetch_data_byte(addr))
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -3798,7 +3798,7 @@ var target uint16
     target = (u16)(M.x86.spc.IP.Get16() + offset);
     DECODE_PRINTF2("%x\n", target);
     TRACE_AND_STEP();
-    if (M.x86.R_CX == 0) {
+    if (M.x86.gen.C.Get16() == 0) {
         M.x86.spc.IP.Set16(target)
  JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get(), M.x86.spc.IP.Get16(), " CXZ ");
     }
@@ -4001,7 +4001,7 @@ func x86emuOp_in_byte_AL_DX(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("IN\tAL,DX\n");
     TRACE_AND_STEP();
-    M.x86.gen.A.Setl8(sys_inb(M.x86.R_DX))
+    M.x86.gen.A.Setl8(sys_inb(M.x86.gen.D.Get16()))
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -4019,9 +4019,9 @@ func x86emuOp_in_word_AX_DX(_ uint8) {
     }
     TRACE_AND_STEP();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-        M.x86.gen.A.Set32(sys_inl(M.x86.R_DX))
+        M.x86.gen.A.Set32(sys_inl(M.x86.gen.D.Get16()))
     } else {
-        M.x86.gen.A.Set16(sys_inw(M.x86.R_DX))
+        M.x86.gen.A.Set16(sys_inw(M.x86.gen.D.Get16()))
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -4035,7 +4035,7 @@ func x86emuOp_out_byte_DX_AL(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("OUT\tDX,AL\n");
     TRACE_AND_STEP();
-    sys_outb(M.x86.R_DX, M.x86.gen.A.Getl8());
+    sys_outb(M.x86.gen.D.Get16(), M.x86.gen.A.Getl8());
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -4053,9 +4053,9 @@ func x86emuOp_out_word_DX_AX(_ uint8) {
     }
     TRACE_AND_STEP();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-        sys_outl(M.x86.R_DX, M.x86.gen.A.Get32());
+        sys_outl(M.x86.gen.D.Get16(), M.x86.gen.A.Get32());
     } else {
-        sys_outw(M.x86.R_DX, M.x86.gen.A.Get16());
+        sys_outw(M.x86.gen.D.Get16(), M.x86.gen.A.Get16());
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
