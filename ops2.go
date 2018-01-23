@@ -64,7 +64,7 @@ func x86emuOp2_illegal_op(op2 u8) {
  * ****************************************************************************/
 
 func x86emuOp2_opc_01(op2 u8) {
-  uint destoffset;
+	const SMSW_INITIAL_VALUE	= 0x10
 
   START_OF_INSTR();
   mod, rh, rl := fetch_decode_modrm();
@@ -73,7 +73,6 @@ func x86emuOp2_opc_01(op2 u8) {
   case 4: // SMSW (Store Machine Status Word)
           // Decode the mod byte to find the addressing
           // Dummy implementation: Always returns 0x10 (initial value as per intel manual volume 3, figure 8-1)
-#define SMSW_INITIAL_VALUE	0x10
     DECODE_PRINTF("SMSW\t");
     switch (mod) {
     case 0:
@@ -151,14 +150,9 @@ func x86emuOp2_wrmsr(op2 u8) {
 REMARKS:
 Handles opcode 0x0f,0x31
 ****************************************************************************/
+var counter uint64
 func x86emuOp2_rdtsc(_ u8) {
-#ifdef __HAS_LONG_LONG__
-  static u64 counter = 0;
-#else
-  static u32 counter = 0;
-#endif
-
-  counter += 0x10000;
+  counter += 0x10000
 
   /* read timestamp counter */
   /*
@@ -169,13 +163,8 @@ func x86emuOp2_rdtsc(_ u8) {
   START_OF_INSTR();
   DECODE_PRINTF("RDTSC\n");
   TRACE_AND_STEP();
-#ifdef __HAS_LONG_LONG__
   M.x86.gen.A.Set32(counter & 0xffffffff)
   M.x86.gen.D.Set32(counter >> 32)
-#else
-  M.x86.gen.A.Set32(counter)
-  M.x86.gen.D.Set32(0)
-#endif
   DECODE_CLEAR_SEGOVR();
   END_OF_INSTR();
 }
@@ -273,13 +262,11 @@ int x86emu_check_jump_condition(u8 op)
 }
 
 func x86emuOp2_long_jump(op2 u8) {
-    s32 target;
-    int cond;
 
     /* conditional jump to word offset. */
     START_OF_INSTR();
-    cond = x86emu_check_jump_condition(op2 & 0xF);
-    target = int16(fetch_word_imm());
+    cond := x86emu_check_jump_condition(op2 & 0xF);
+    target := int16(fetch_word_imm());
     target += int16(M.x86.spc.IP.Get16());
     DECODE_PRINTF2("%04x\n", target);
     TRACE_AND_STEP();
@@ -298,7 +285,7 @@ Handles opcode 0x0f,0xC8-0xCF
 static s32 x86emu_bswap(s32 reg)
 {
    // perform the byte swap
-   s32 temp = reg;
+   temp := reg
    reg = (temp & 0xFF000000) >> 24 |
          (temp & 0xFF0000) >> 8 |
          (temp & 0xFF00) << 8 |
@@ -354,10 +341,9 @@ REMARKS:
 Handles opcode 0x0f,0x90-0x9F
 ****************************************************************************/
 func x86emuOp2_set_byte(op2 u8) {
-    uint destoffset;
-    u8  *destreg;
-    const char *X86EMU_DEBUG_ONLY(name) = NULL;
-    int cond = 0;
+    var destreg register8
+    var name string
+    var cond bool
 
     START_OF_INSTR();
     switch (op2) {
@@ -437,7 +423,7 @@ func x86emuOp2_set_byte(op2 u8) {
     } else {                     /* register to register */
         destreg := DECODE_RM_BYTE_REGISTER(rl);
         TRACE_AND_STEP();
-        *destreg = cond ? 0x01 : 0x00;
+        destreg.Set8( = cond ? 0x01 : 0x00;
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
