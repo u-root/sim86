@@ -470,7 +470,7 @@ func x86emuOp_push_SS(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("PUSH\tSS\n");
     TRACE_AND_STEP();
-    push_word(M.x86.R_SS);
+    push_word(M.x86.seg.SS.Get());
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -483,7 +483,7 @@ func x86emuOp_pop_SS(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("POP\tSS\n");
     TRACE_AND_STEP();
-    M.x86.R_SS = pop_word();
+    M.x86.seg.SS.Set(pop_word())
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -496,7 +496,7 @@ func x86emuOp_push_DS(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("PUSH\tDS\n");
     TRACE_AND_STEP();
-    push_word(M.x86.R_DS);
+    push_word(M.x86.seg.DS.Get());
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -509,7 +509,7 @@ func x86emuOp_pop_DS(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("POP\tDS\n");
     TRACE_AND_STEP();
-    M.x86.R_DS = pop_word();
+    M.x86.seg.DS.Set(pop_word())
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -3126,7 +3126,7 @@ func x86emuOp_lds_R_IMM(_ uint8) {
         DECODE_PRINTF("\n");
         TRACE_AND_STEP();
         *dstreg = fetch_data_word(uint16((srcoffset)));
-        M.x86.R_DS = fetch_data_word((srcoffset + 2));
+        M.x86.seg.DS.Set(fetch_data_word((srcoffset + 2)))
     }
     /* else UNDEFINED! */
     DECODE_CLEAR_SEGOVR();
@@ -3235,7 +3235,7 @@ func x86emuOp_enter(_ uint8) {
     if (nesting > 0) {
         for i := 1; i < nesting; i++ {
 		M.x86.BP.Change(-2)
-            push_word(fetch_data_word_abs(M.x86.R_SS, M.x86.R_BP));
+            push_word(fetch_data_word_abs(M.x86.seg.SS.Get(), M.x86.R_BP));
             }
         push_word(frame_pointer);
         }
