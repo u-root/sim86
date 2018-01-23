@@ -51,7 +51,7 @@ op1 - Instruction op code
 REMARKS:
 Handles illegal opcodes.
 ****************************************************************************/
-func x86emuOp2_illegal_op(op2 u8) {
+func x86emuOp2_illegal_op(op2 uint8) {
 	START_OF_INSTR()
 	DECODE_PRINTF("ILLEGAL EXTENDED X86 OPCODE\n")
 	TRACE_REGS()
@@ -66,7 +66,7 @@ func x86emuOp2_illegal_op(op2 u8) {
  * Handles opcode 0x0f,0x01
  * ****************************************************************************/
 
-func x86emuOp2_opc_01(op2 u8) {
+func x86emuOp2_opc_01(op2 uint8) {
 	const SMSW_INITIAL_VALUE = 0x10
 
 	START_OF_INSTR()
@@ -115,7 +115,7 @@ func x86emuOp2_opc_01(op2 u8) {
  * REMARKS:
  * Handles opcode 0x0f,0x08
  * ****************************************************************************/
-func x86emuOp2_invd(op2 u8) {
+func x86emuOp2_invd(op2 uint8) {
 	START_OF_INSTR()
 	DECODE_PRINTF("INVD\n")
 	TRACE_AND_STEP()
@@ -127,7 +127,7 @@ func x86emuOp2_invd(op2 u8) {
  * REMARKS:
  * Handles opcode 0x0f,0x09
  * ****************************************************************************/
-func x86emuOp2_wbinvd(op2 u8) {
+func x86emuOp2_wbinvd(op2 uint8) {
 	START_OF_INSTR()
 	DECODE_PRINTF("WBINVD\n")
 	TRACE_AND_STEP()
@@ -139,7 +139,7 @@ func x86emuOp2_wbinvd(op2 u8) {
  * REMARKS:
  * Handles opcode 0x0f,0x30
  * ****************************************************************************/
-func x86emuOp2_wrmsr(op2 u8) {
+func x86emuOp2_wrmsr(op2 uint8) {
 	/* dummy implementation, does nothing */
 
 	START_OF_INSTR()
@@ -155,7 +155,7 @@ Handles opcode 0x0f,0x31
 ****************************************************************************/
 var counter uint64
 
-func x86emuOp2_rdtsc(_ u8) {
+func x86emuOp2_rdtsc(_ uint8) {
 	counter += 0x10000
 
 	/* read timestamp counter */
@@ -177,7 +177,7 @@ func x86emuOp2_rdtsc(_ u8) {
  * REMARKS:
  * Handles opcode 0x0f,0x32
  * ****************************************************************************/
-func x86emuOp2_rdmsr(op2 u8) {
+func x86emuOp2_rdmsr(op2 uint8) {
 	/* dummy implementation, always return 0 */
 
 	START_OF_INSTR()
@@ -197,7 +197,7 @@ func xorl(a, b uint32) bool {
 REMARKS:
 Handles opcode 0x0f,0x80-0x8F
 ****************************************************************************/
-func x86emu_check_jump_condition(u8 op) uint32 {
+func x86emu_check_jump_condition(op uint8) bool {
 	switch op {
 	case 0x0:
 		DECODE_PRINTF("JO\t")
@@ -266,7 +266,7 @@ func x86emu_check_jump_condition(u8 op) uint32 {
 	}
 }
 
-func x86emuOp2_long_jump(op2 u8) {
+func x86emuOp2_long_jump(op2 uint8) {
 
 	/* conditional jump to word offset. */
 	START_OF_INSTR()
@@ -297,7 +297,7 @@ func x86emu_bswap(reg int32) int32 {
 	return reg
 }
 
-func x86emuOp2_bswap(op2 u8) {
+func x86emuOp2_bswap(op2 uint8) {
 	/* byte swap 32 bit register */
 	START_OF_INSTR()
 	DECODE_PRINTF("BSWAP\t")
@@ -344,7 +344,7 @@ func x86emuOp2_bswap(op2 u8) {
 REMARKS:
 Handles opcode 0x0f,0x90-0x9F
 ****************************************************************************/
-func x86emuOp2_set_byte(op2 u8) {
+func x86emuOp2_set_byte(op2 uint8) {
 	var destreg register8
 	var name string
 	var cond bool
@@ -445,7 +445,7 @@ func x86emuOp2_set_byte(op2 u8) {
 REMARKS:
 Handles opcode 0x0f,0xa0
 ****************************************************************************/
-func x86emuOp2_push_FS(_ u8) {
+func x86emuOp2_push_FS(_ uint8) {
 	START_OF_INSTR()
 	DECODE_PRINTF("PUSH\tFS\n")
 	TRACE_AND_STEP()
@@ -458,7 +458,7 @@ func x86emuOp2_push_FS(_ u8) {
 REMARKS:
 Handles opcode 0x0f,0xa1
 ****************************************************************************/
-func x86emuOp2_pop_FS(_ u8) {
+func x86emuOp2_pop_FS(_ uint8) {
 	START_OF_INSTR()
 	DECODE_PRINTF("POP\tFS\n")
 	TRACE_AND_STEP()
@@ -471,7 +471,7 @@ func x86emuOp2_pop_FS(_ u8) {
 REMARKS: CPUID takes EAX/ECX as inputs, writes EAX/EBX/ECX/EDX as output
 Handles opcode 0x0f,0xa2
 ****************************************************************************/
-func x86emuOp2_cpuid(_ u8) {
+func x86emuOp2_cpuid(_ uint8) {
 	START_OF_INSTR()
 	DECODE_PRINTF("CPUID\n")
 	TRACE_AND_STEP()
@@ -484,7 +484,7 @@ func x86emuOp2_cpuid(_ u8) {
 REMARKS:
 Handles opcode 0x0f,0xa3
 ****************************************************************************/
-func x86emuOp2_bt_R(_ u8) {
+func x86emuOp2_bt_R(_ uint8) {
 
 	START_OF_INSTR()
 	DECODE_PRINTF("BT\t")
@@ -537,7 +537,7 @@ func x86emuOp2_bt_R(_ u8) {
 REMARKS:
 Handles opcode 0x0f,0xa4
 ****************************************************************************/
-func x86emuOp2_shld_IMM(_ u8) {
+func x86emuOp2_shld_IMM(_ uint8) {
 
 	START_OF_INSTR()
 	DECODE_PRINTF("SHLD\t")
@@ -553,7 +553,7 @@ func x86emuOp2_shld_IMM(_ u8) {
 			DECODE_PRINTF2("%d\n", shift)
 			TRACE_AND_STEP()
 			destval := fetch_data_long(destoffset)
-			destval := shld_long(destval, *shiftreg, shift)
+			destval = shld_long(destval, *shiftreg, shift)
 			store_data_long(destoffset, destval)
 		} else {
 
@@ -564,7 +564,7 @@ func x86emuOp2_shld_IMM(_ u8) {
 			DECODE_PRINTF2("%d\n", shift)
 			TRACE_AND_STEP()
 			destval := fetch_data_word(destoffset)
-			destval := shld_word(destval, *shiftreg, shift)
+			destval = shld_word(destval, *shiftreg, shift)
 			store_data_word(destoffset, destval)
 		}
 	} else { /* register to register */
@@ -598,7 +598,7 @@ func x86emuOp2_shld_IMM(_ u8) {
 REMARKS:
 Handles opcode 0x0f,0xa5
 ****************************************************************************/
-func x86emuOp2_shld_CL(_ u8) {
+func x86emuOp2_shld_CL(_ uint8) {
 
 	START_OF_INSTR()
 	DECODE_PRINTF("SHLD\t")
@@ -612,7 +612,7 @@ func x86emuOp2_shld_CL(_ u8) {
 			DECODE_PRINTF(",CL\n")
 			TRACE_AND_STEP()
 			destval := fetch_data_long(destoffset)
-			destval := shld_long(destval, *shiftreg, M.x86.R_CL)
+			destval = shld_long(destval, *shiftreg, M.x86.R_CL)
 			store_data_long(destoffset, destval)
 		} else {
 
@@ -621,7 +621,7 @@ func x86emuOp2_shld_CL(_ u8) {
 			DECODE_PRINTF(",CL\n")
 			TRACE_AND_STEP()
 			destval := fetch_data_word(destoffset)
-			destval := shld_word(destval, *shiftreg, M.x86.R_CL)
+			destval = shld_word(destval, *shiftreg, M.x86.R_CL)
 			store_data_word(destoffset, destval)
 		}
 	} else { /* register to register */
@@ -651,7 +651,7 @@ func x86emuOp2_shld_CL(_ u8) {
 REMARKS:
 Handles opcode 0x0f,0xa8
 ****************************************************************************/
-func x86emuOp2_push_GS(_ u8) {
+func x86emuOp2_push_GS(_ uint8) {
 	START_OF_INSTR()
 	DECODE_PRINTF("PUSH\tGS\n")
 	TRACE_AND_STEP()
@@ -664,7 +664,7 @@ func x86emuOp2_push_GS(_ u8) {
 REMARKS:
 Handles opcode 0x0f,0xa9
 ****************************************************************************/
-func x86emuOp2_pop_GS(_ u8) {
+func x86emuOp2_pop_GS(_ uint8) {
 	START_OF_INSTR()
 	DECODE_PRINTF("POP\tGS\n")
 	TRACE_AND_STEP()
@@ -677,7 +677,7 @@ func x86emuOp2_pop_GS(_ u8) {
 REMARKS:
 Handles opcode 0x0f,0xab
 ****************************************************************************/
-func x86emuOp2_bts_R(_ u8) {
+func x86emuOp2_bts_R(_ uint8) {
 
 	START_OF_INSTR()
 	DECODE_PRINTF("BTS\t")
@@ -738,7 +738,7 @@ func x86emuOp2_bts_R(_ u8) {
 REMARKS:
 Handles opcode 0x0f,0xac
 ****************************************************************************/
-func x86emuOp2_shrd_IMM(_ u8) {
+func x86emuOp2_shrd_IMM(_ uint8) {
 
 	START_OF_INSTR()
 	DECODE_PRINTF("SHLD\t")
@@ -754,7 +754,7 @@ func x86emuOp2_shrd_IMM(_ u8) {
 			DECODE_PRINTF2("%d\n", shift)
 			TRACE_AND_STEP()
 			destval := fetch_data_long(destoffset)
-			destval := shrd_long(destval, *shiftreg, shift)
+			destval = shrd_long(destval, *shiftreg, shift)
 			store_data_long(destoffset, destval)
 		} else {
 
@@ -765,7 +765,7 @@ func x86emuOp2_shrd_IMM(_ u8) {
 			DECODE_PRINTF2("%d\n", shift)
 			TRACE_AND_STEP()
 			destval := fetch_data_word(destoffset)
-			destval := shrd_word(destval, *shiftreg, shift)
+			destval = shrd_word(destval, *shiftreg, shift)
 			store_data_word(destoffset, destval)
 		}
 	} else { /* register to register */
@@ -799,7 +799,7 @@ func x86emuOp2_shrd_IMM(_ u8) {
 REMARKS:
 Handles opcode 0x0f,0xad
 ****************************************************************************/
-func x86emuOp2_shrd_CL(_ u8) {
+func x86emuOp2_shrd_CL(_ uint8) {
 
 	START_OF_INSTR()
 	DECODE_PRINTF("SHLD\t")
@@ -813,7 +813,7 @@ func x86emuOp2_shrd_CL(_ u8) {
 			DECODE_PRINTF(",CL\n")
 			TRACE_AND_STEP()
 			destval := fetch_data_long(destoffset)
-			destval := shrd_long(destval, *shiftreg, M.x86.R_CL)
+			destval = shrd_long(destval, *shiftreg, M.x86.R_CL)
 			store_data_long(destoffset, destval)
 		} else {
 
@@ -821,7 +821,7 @@ func x86emuOp2_shrd_CL(_ u8) {
 			DECODE_PRINTF(",CL\n")
 			TRACE_AND_STEP()
 			destval := fetch_data_word(destoffset)
-			destval := shrd_word(destval, *shiftreg, M.x86.R_CL)
+			destval = shrd_word(destval, *shiftreg, M.x86.R_CL)
 			store_data_word(destoffset, destval)
 		}
 	} else { /* register to register */
@@ -851,7 +851,7 @@ func x86emuOp2_shrd_CL(_ u8) {
 REMARKS:
 Handles opcode 0x0f,0xaf
 ****************************************************************************/
-func x86emuOp2_imul_R_RM(_ u8) {
+func x86emuOp2_imul_R_RM(_ uint8) {
 
 	START_OF_INSTR()
 	DECODE_PRINTF("IMUL\t")
@@ -930,7 +930,7 @@ func x86emuOp2_imul_R_RM(_ u8) {
 REMARKS:
 Handles opcode 0x0f,0xb2
 ****************************************************************************/
-func x86emuOp2_lss_R_IMM(_ u8) {
+func x86emuOp2_lss_R_IMM(_ uint8) {
 
 	START_OF_INSTR()
 	DECODE_PRINTF("LSS\t")
@@ -941,7 +941,7 @@ func x86emuOp2_lss_R_IMM(_ u8) {
 		srcoffset := decode_rmXX_address(mod, rl)
 		DECODE_PRINTF("\n")
 		TRACE_AND_STEP()
-		*dstreg = fetch_data_word(srcoffset)
+		dstreg.Set(fetch_data_word(srcoffset))
 		M.x86.seg.SS.Set(fetch_data_word(srcoffset + 2))
 	} else { /* register to register */
 		/* UNDEFINED! */
@@ -955,7 +955,7 @@ func x86emuOp2_lss_R_IMM(_ u8) {
 REMARKS:
 Handles opcode 0x0f,0xb3
 ****************************************************************************/
-func x86emuOp2_btr_R(_ u8) {
+func x86emuOp2_btr_R(_ uint8) {
 
 	START_OF_INSTR()
 	DECODE_PRINTF("BTR\t")
@@ -1015,7 +1015,7 @@ func x86emuOp2_btr_R(_ u8) {
 REMARKS:
 Handles opcode 0x0f,0xb4
 ****************************************************************************/
-func x86emuOp2_lfs_R_IMM(_ u8) {
+func x86emuOp2_lfs_R_IMM(_ uint8) {
 
 	START_OF_INSTR()
 	DECODE_PRINTF("LFS\t")
@@ -1026,7 +1026,7 @@ func x86emuOp2_lfs_R_IMM(_ u8) {
 		srcoffset := decode_rmXX_address(mod, rl)
 		DECODE_PRINTF("\n")
 		TRACE_AND_STEP()
-		*dstreg = fetch_data_word(srcoffset)
+		dstreg.Set(fetch_data_word(srcoffset))
 		M.x86.R_FS = fetch_data_word(srcoffset + 2)
 	} else { /* register to register */
 		/* UNDEFINED! */
@@ -1040,7 +1040,7 @@ func x86emuOp2_lfs_R_IMM(_ u8) {
 REMARKS:
 Handles opcode 0x0f,0xb5
 ****************************************************************************/
-func x86emuOp2_lgs_R_IMM(_ u8) {
+func x86emuOp2_lgs_R_IMM(_ uint8) {
 
 	START_OF_INSTR()
 	DECODE_PRINTF("LGS\t")
@@ -1051,7 +1051,7 @@ func x86emuOp2_lgs_R_IMM(_ u8) {
 		srcoffset := decode_rmXX_address(mod, rl)
 		DECODE_PRINTF("\n")
 		TRACE_AND_STEP()
-		*dstreg = fetch_data_word(srcoffset)
+		dstreg.Set(fetch_data_word(srcoffset))
 		M.x86.R_GS = fetch_data_word(srcoffset + 2)
 	} else { /* register to register */
 		/* UNDEFINED! */
@@ -1065,7 +1065,7 @@ func x86emuOp2_lgs_R_IMM(_ u8) {
 REMARKS:
 Handles opcode 0x0f,0xb6
 ****************************************************************************/
-func x86emuOp2_movzx_byte_R_RM(_ u8) {
+func x86emuOp2_movzx_byte_R_RM(_ uint8) {
 
 	START_OF_INSTR()
 	DECODE_PRINTF("MOVZX\t")
@@ -1117,7 +1117,7 @@ func x86emuOp2_movzx_byte_R_RM(_ u8) {
 REMARKS:
 Handles opcode 0x0f,0xb7
 ****************************************************************************/
-func x86emuOp2_movzx_word_R_RM(_ u8) {
+func x86emuOp2_movzx_word_R_RM(_ uint8) {
 
 	START_OF_INSTR()
 	DECODE_PRINTF("MOVZX\t")
@@ -1146,7 +1146,7 @@ func x86emuOp2_movzx_word_R_RM(_ u8) {
 REMARKS:
 Handles opcode 0x0f,0xba
 ****************************************************************************/
-func x86emuOp2_btX_I(_ u8) {
+func x86emuOp2_btX_I(_ uint8) {
 
 	START_OF_INSTR()
 	mod, rh, rl := fetch_decode_modrm()
@@ -1271,7 +1271,7 @@ func x86emuOp2_btX_I(_ u8) {
 REMARKS:
 Handles opcode 0x0f,0xbb
 ****************************************************************************/
-func x86emuOp2_btc_R(_ u8) {
+func x86emuOp2_btc_R(_ uint8) {
 
 	START_OF_INSTR()
 	DECODE_PRINTF("BTC\t")
@@ -1331,7 +1331,7 @@ func x86emuOp2_btc_R(_ u8) {
 REMARKS:
 Handles opcode 0x0f,0xbc
 ****************************************************************************/
-func x86emuOp2_bsf(_ u8) {
+func x86emuOp2_bsf(_ uint8) {
 
 	START_OF_INSTR()
 	DECODE_PRINTF("BSF\t")
@@ -1398,7 +1398,7 @@ func x86emuOp2_bsf(_ u8) {
 REMARKS:
 Handles opcode 0x0f,0xbd
 ****************************************************************************/
-func x86emuOp2_bsr(_ u8) {
+func x86emuOp2_bsr(_ uint8) {
 
 	START_OF_INSTR()
 	DECODE_PRINTF("BSR\t")
@@ -1464,7 +1464,7 @@ func x86emuOp2_bsr(_ u8) {
 REMARKS:
 Handles opcode 0x0f,0xbe
 ****************************************************************************/
-func x86emuOp2_movsx_byte_R_RM(_ u8) {
+func x86emuOp2_movsx_byte_R_RM(_ uint8) {
 
 	START_OF_INSTR()
 	DECODE_PRINTF("MOVSX\t")
@@ -1497,7 +1497,7 @@ func x86emuOp2_movsx_byte_R_RM(_ u8) {
 			srcreg := DECODE_RM_BYTE_REGISTER(rl)
 			DECODE_PRINTF("\n")
 			TRACE_AND_STEP()
-			*destreg = int32(srcreg.Get())
+			destreg.Set(int32(srcreg.Get()))
 		} else {
 
 			destreg := DECODE_RM_WORD_REGISTER(rh)
@@ -1505,7 +1505,7 @@ func x86emuOp2_movsx_byte_R_RM(_ u8) {
 			srcreg := DECODE_RM_BYTE_REGISTER(rl)
 			DECODE_PRINTF("\n")
 			TRACE_AND_STEP()
-			*destreg = int16(srcreg.Get())
+			destreg.Set(int16(srcreg.Get()))
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -1516,7 +1516,7 @@ func x86emuOp2_movsx_byte_R_RM(_ u8) {
 REMARKS:
 Handles opcode 0x0f,0xbf
 ****************************************************************************/
-func x86emuOp2_movsx_word_R_RM(_ u8) {
+func x86emuOp2_movsx_word_R_RM(_ uint8) {
 
 	START_OF_INSTR()
 	DECODE_PRINTF("MOVSX\t")
@@ -1535,7 +1535,7 @@ func x86emuOp2_movsx_word_R_RM(_ u8) {
 		srcreg := DECODE_RM_WORD_REGISTER(rl)
 		DECODE_PRINTF("\n")
 		TRACE_AND_STEP()
-		*destreg = int32(srcreg.Get())
+		destreg.Set(int32(srcreg.Get()))
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()

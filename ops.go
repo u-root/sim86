@@ -1145,17 +1145,15 @@ REMARKS:
 Handles opcode 0x70 - 0x7F
 ****************************************************************************/
 func x86emuOp_jump_near_cond(op1 uint8) {
-var target uint16
-var cond int32
 
     /* jump to byte offset if overflow flag is set */
     START_OF_INSTR();
-    cond = x86emu_check_jump_condition(op1 & 0xF);
-    offset := int8(fetch_byte_imm);
-    target = (u16)(M.x86.spc.IP.Get16() + int16(offset));
+    cond := x86emu_check_jump_condition(op1 & 0xF);
+	offset := int8(fetch_byte_imm());
+    target := M.x86.spc.IP.Get16() + uint16(offset)
     DECODE_PRINTF2("%x\n", target);
     TRACE_AND_STEP();
-    if (cond) {
+    if cond {
         M.x86.spc.IP.Set16(target)
  JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get(), M.x86.spc.IP.Get16(), " NEAR COND ");
     }
@@ -1218,11 +1216,11 @@ var imm uint8
         DECODE_PRINTF("BYTE PTR ");
         destoffset := decode_rmXX_address(mod, rl);
         DECODE_PRINTF(",");
-        destval = fetch_data_byte(destoffset);
+	    destval := fetch_data_byte(uint16(destoffset))
         imm := fetch_byte_imm();
         DECODE_PRINTF2("%x\n", imm);
         TRACE_AND_STEP();
-        destval = (*genop_byte_operation[rh]) (destval, imm);
+        destval = genop_byte_operation[rh] (destval, imm);
         if (rh != 7){
 		store_data_byte(destoffset, destval);
 	}
@@ -1232,7 +1230,7 @@ var imm uint8
         imm := fetch_byte_imm();
         DECODE_PRINTF2("%x\n", imm);
         TRACE_AND_STEP();
-        *destreg = (*genop_byte_operation[rh]) (destreg.Get(), imm);
+	    destreg.Set(genop_byte_operation[rh] (destreg.Get(), imm))
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -1301,17 +1299,17 @@ func x86emuOp_opc81_word_RM_IMM(_ uint8) {
             imm := fetch_long_imm();
             DECODE_PRINTF2("%x\n", imm);
             TRACE_AND_STEP();
-            destval = (*genop_long_operation[rh]) (destval, imm);
+            destval = genop_long_operation[rh] (destval, imm)
             if (rh != 7) {
 		    store_data_long(destoffset, destval);
 	    }
         } else {
             DECODE_PRINTF(",");
-            destval := fetch_data_word(destoffset);
+		destval := fetch_data_word(uint16(destoffset))
             imm := fetch_word_imm();
             DECODE_PRINTF2("%x\n", imm);
             TRACE_AND_STEP();
-            destval = (*genop_word_operation[rh]) (destval, imm);
+            destval = genop_word_operation[rh] (destval, imm);
             if (rh != 7) {
 		    store_data_word(destoffset, destval);
 	    }
@@ -1323,14 +1321,14 @@ func x86emuOp_opc81_word_RM_IMM(_ uint8) {
             imm := fetch_long_imm();
             DECODE_PRINTF2("%x\n", imm);
             TRACE_AND_STEP();
-            *destreg = (*genop_long_operation[rh]) (destreg.Get(), imm);
+		destreg.Set(genop_long_operation[rh] (destreg.Get(), imm))
         } else {
             destreg := decode_rm_word_register(uint32(rl));
             DECODE_PRINTF(",");
             imm := fetch_word_imm();
             DECODE_PRINTF2("%x\n", imm);
             TRACE_AND_STEP();
-		*destreg = (*genop_word_operation[rh]) (destreg.Get(), imm);
+		destreg.Set( genop_word_operation[rh] (destreg.Get(), imm))
         }
     }
     DECODE_CLEAR_SEGOVR();
@@ -1342,7 +1340,7 @@ REMARKS:
 Handles opcode 0x82
 ****************************************************************************/
 func x86emuOp_opc82_byte_RM_IMM(_ uint8) {
-var imm uint8
+
 
     /*
      * Weirdo special case instruction format.  Part of the opcode
@@ -1391,11 +1389,11 @@ var imm uint8
     if (mod < 3) {
         DECODE_PRINTF("BYTE PTR ");
         destoffset := decode_rmXX_address(mod, rl);
-        destval = fetch_data_byte(destoffset);
+	    destval := fetch_data_byte(uint16(destoffset))
         imm := fetch_byte_imm();
         DECODE_PRINTF2(",%x\n", imm);
         TRACE_AND_STEP();
-        destval = (*genop_byte_operation[rh]) (destval, imm);
+        destval = genop_byte_operation[rh] (destval, imm)
         if (rh != 7) {
 		store_data_byte(destoffset, destval)
 	}
@@ -1404,7 +1402,7 @@ var imm uint8
         imm := fetch_byte_imm();
         DECODE_PRINTF2(",%x\n", imm);
         TRACE_AND_STEP();
-        *destreg = (*genop_byte_operation[rh]) (destreg.Get(), imm);
+	    destreg.Set(genop_byte_operation[rh] (destreg.Get(), imm))
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -1465,10 +1463,8 @@ func x86emuOp_opc83_word_RM_IMM(_ uint8) {
         destoffset := decode_rmXX_address(mod,rl);
 
         if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-var destval,imm uint32
-
-            destval = fetch_data_long(uint16(destoffset));
-            imm = int8(fetch_byte_imm);
+            destval := fetch_data_long(uint16(destoffset));
+            imm := int8(fetch_byte_imm);
             DECODE_PRINTF2(",%x\n", imm);
             TRACE_AND_STEP();
             destval = (*genop_long_operation[rh]) (destval, imm);
@@ -1476,13 +1472,11 @@ var destval,imm uint32
 		    store_data_long(destoffset, destval);
 	    }
         } else {
-var destval,imm uint16
-
-            destval = fetch_data_word(destoffset);
-            imm = int8(fetch_byte_imm);
+            destval := fetch_data_word(destoffset);
+            imm := int8(fetch_byte_imm);
             DECODE_PRINTF2(",%x\n", imm);
             TRACE_AND_STEP();
-            destval = (*genop_word_operation[rh]) (destval, imm);
+            destval = genop_word_operation[rh] (destval, imm);
             if (rh != 7){
 		    store_data_word(destoffset, destval);
 	    }
