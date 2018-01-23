@@ -198,8 +198,7 @@ var bc uint32
 REMARKS:
 Implements the AAA instruction and side effects.
 ****************************************************************************/
-func aaa_word(d uint16) {
-var res uint16
+func aaa_word(d uint16) uint16 {
     if ((d & 0xf) > 0x9 || ACCESS_FLAG(F_AF)) {
         d += 0x6;
         d += 0x100;
@@ -209,7 +208,7 @@ var res uint16
         CLEAR_FLAG(F_CF);
         CLEAR_FLAG(F_AF);
     }
-    res = uint16((d & 0xFF0F))
+    res := uint16((d & 0xFF0F))
     set_szp_flags_16(res);
     return res;
 }
@@ -218,8 +217,7 @@ var res uint16
 REMARKS:
 Implements the AAA instruction and side effects.
 ****************************************************************************/
-func aas_word(d uint16){
-var res uint16
+func aas_word(d uint16) uint16 {
     if ((d & 0xf) > 0x9 || ACCESS_FLAG(F_AF)) {
         d -= 0x6;
         d -= 0x100;
@@ -229,7 +227,7 @@ var res uint16
         CLEAR_FLAG(F_CF);
         CLEAR_FLAG(F_AF);
     }
-    res = uint16((d & 0xFF0F))
+    res := uint16((d & 0xFF0F))
     set_szp_flags_16(res);
     return res;
 }
