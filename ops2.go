@@ -64,11 +64,10 @@ func x86emuOp2_illegal_op(op2 u8) {
  * ****************************************************************************/
 
 func x86emuOp2_opc_01(op2 u8) {
-  int mod, rl, rh;
   uint destoffset;
 
   START_OF_INSTR();
-  FETCH_DECODE_MODRM(mod, rh, rl);
+  mod, rh, rl := fetch_decode_modrm();
 
   switch(rh) {
   case 4: // SMSW (Store Machine Status Word)
@@ -355,7 +354,6 @@ REMARKS:
 Handles opcode 0x0f,0x90-0x9F
 ****************************************************************************/
 func x86emuOp2_set_byte(op2 u8) {
-    int mod, rl, rh;
     uint destoffset;
     u8  *destreg;
     const char *X86EMU_DEBUG_ONLY(name) = NULL;
@@ -431,7 +429,7 @@ func x86emuOp2_set_byte(op2 u8) {
         break;
     }
     DECODE_PRINTF(name);
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl := fetch_decode_modrm();
     if (mod < 3) {
         destoffset := decode_rmXX_address(mod, rl);
         TRACE_AND_STEP();
@@ -489,13 +487,12 @@ REMARKS:
 Handles opcode 0x0f,0xa3
 ****************************************************************************/
 func x86emuOp2_bt_R(_ u8) {
-    int mod, rl, rh;
     uint srcoffset;
     int bit,disp;
 
     START_OF_INSTR();
     DECODE_PRINTF("BT\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl := fetch_decode_modrm();
     if (mod < 3) {
         srcoffset := decode_rmXX_address(mod, rl);
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
@@ -547,13 +544,12 @@ REMARKS:
 Handles opcode 0x0f,0xa4
 ****************************************************************************/
 func x86emuOp2_shld_IMM(_ u8) {
-    int mod, rl, rh;
     uint destoffset;
     u8 shift;
 
     START_OF_INSTR();
     DECODE_PRINTF("SHLD\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl := fetch_decode_modrm();
     if (mod < 3) {
         destoffset := decode_rmXX_address(mod, rl);
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
@@ -613,12 +609,11 @@ REMARKS:
 Handles opcode 0x0f,0xa5
 ****************************************************************************/
 func x86emuOp2_shld_CL(_ u8) {
-    int mod, rl, rh;
     uint destoffset;
 
     START_OF_INSTR();
     DECODE_PRINTF("SHLD\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl := fetch_decode_modrm();
     if (mod < 3) {
         destoffset := decode_rmXX_address(mod, rl);
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
@@ -696,13 +691,12 @@ REMARKS:
 Handles opcode 0x0f,0xab
 ****************************************************************************/
 func x86emuOp2_bts_R(_ u8) {
-    int mod, rl, rh;
     uint srcoffset;
     int bit,disp;
 
     START_OF_INSTR();
     DECODE_PRINTF("BTS\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl := fetch_decode_modrm();
     if (mod < 3) {
         srcoffset := decode_rmXX_address(mod, rl);
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
@@ -764,13 +758,12 @@ REMARKS:
 Handles opcode 0x0f,0xac
 ****************************************************************************/
 func x86emuOp2_shrd_IMM(_ u8) {
-    int mod, rl, rh;
     uint destoffset;
     u8 shift;
 
     START_OF_INSTR();
     DECODE_PRINTF("SHLD\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl := fetch_decode_modrm();
     if (mod < 3) {
         destoffset := decode_rmXX_address(mod, rl);
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
@@ -830,12 +823,11 @@ REMARKS:
 Handles opcode 0x0f,0xad
 ****************************************************************************/
 func x86emuOp2_shrd_CL(_ u8) {
-    int mod, rl, rh;
     uint destoffset;
 
     START_OF_INSTR();
     DECODE_PRINTF("SHLD\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl := fetch_decode_modrm();
     if (mod < 3) {
         destoffset := decode_rmXX_address(mod, rl);
         DECODE_PRINTF(",");
@@ -886,12 +878,11 @@ REMARKS:
 Handles opcode 0x0f,0xaf
 ****************************************************************************/
 func x86emuOp2_imul_R_RM(_ u8) {
-    int mod, rl, rh;
     uint srcoffset;
 
     START_OF_INSTR();
     DECODE_PRINTF("IMUL\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl := fetch_decode_modrm();
     if (mod < 3) {
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 srcval;
@@ -978,7 +969,7 @@ func x86emuOp2_lss_R_IMM(_ u8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("LSS\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl := fetch_decode_modrm();
     if (mod < 3) {
         dstreg := DECODE_RM_WORD_REGISTER(rh);
         DECODE_PRINTF(",");
@@ -1000,13 +991,12 @@ REMARKS:
 Handles opcode 0x0f,0xb3
 ****************************************************************************/
 func x86emuOp2_btr_R(_ u8) {
-    int mod, rl, rh;
     uint srcoffset;
     int bit,disp;
 
     START_OF_INSTR();
     DECODE_PRINTF("BTR\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl := fetch_decode_modrm();
     if (mod < 3) {
         srcoffset := decode_rmXX_address(mod, rl);
         DECODE_PRINTF(",");
@@ -1072,7 +1062,7 @@ func x86emuOp2_lfs_R_IMM(_ u8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("LFS\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl := fetch_decode_modrm();
     if (mod < 3) {
         dstreg := DECODE_RM_WORD_REGISTER(rh);
         DECODE_PRINTF(",");
@@ -1099,7 +1089,7 @@ func x86emuOp2_lgs_R_IMM(_ u8) {
 
     START_OF_INSTR();
     DECODE_PRINTF("LGS\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl := fetch_decode_modrm();
     if (mod < 3) {
         dstreg := DECODE_RM_WORD_REGISTER(rh);
         DECODE_PRINTF(",");
@@ -1121,12 +1111,11 @@ REMARKS:
 Handles opcode 0x0f,0xb6
 ****************************************************************************/
 func x86emuOp2_movzx_byte_R_RM(_ u8) {
-    int mod, rl, rh;
     uint srcoffset;
 
     START_OF_INSTR();
     DECODE_PRINTF("MOVZX\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl := fetch_decode_modrm();
     if (mod < 3) {
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 srcval;
@@ -1179,13 +1168,12 @@ REMARKS:
 Handles opcode 0x0f,0xb7
 ****************************************************************************/
 func x86emuOp2_movzx_word_R_RM(_ u8) {
-    int mod, rl, rh;
     uint srcoffset;
     u32 srcval;
 
     START_OF_INSTR();
     DECODE_PRINTF("MOVZX\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl := fetch_decode_modrm();
     if (mod < 3) {
         destreg := DECODE_RM_LONG_REGISTER(rh);
         DECODE_PRINTF(",");
@@ -1211,13 +1199,12 @@ REMARKS:
 Handles opcode 0x0f,0xba
 ****************************************************************************/
 func x86emuOp2_btX_I(_ u8) {
-    int mod, rl, rh;
     uint srcoffset;
     u8 shift;
     int bit;
 
     START_OF_INSTR();
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl := fetch_decode_modrm();
     switch (rh) {
     case 4:
         DECODE_PRINTF("BT\t");
@@ -1344,13 +1331,12 @@ REMARKS:
 Handles opcode 0x0f,0xbb
 ****************************************************************************/
 func x86emuOp2_btc_R(_ u8) {
-    int mod, rl, rh;
     uint srcoffset;
     int bit,disp;
 
     START_OF_INSTR();
     DECODE_PRINTF("BTC\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl := fetch_decode_modrm();
     if (mod < 3) {
         srcoffset := decode_rmXX_address(mod, rl);
         DECODE_PRINTF(",");
@@ -1411,12 +1397,11 @@ REMARKS:
 Handles opcode 0x0f,0xbc
 ****************************************************************************/
 func x86emuOp2_bsf(_ u8) {
-    int mod, rl, rh;
     uint srcoffset;
 
     START_OF_INSTR();
     DECODE_PRINTF("BSF\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl := fetch_decode_modrm();
     if (mod < 3) {
         srcoffset := decode_rmXX_address(mod, rl);
         DECODE_PRINTF(",");
@@ -1467,12 +1452,11 @@ REMARKS:
 Handles opcode 0x0f,0xbd
 ****************************************************************************/
 func x86emuOp2_bsr(_ u8) {
-    int mod, rl, rh;
     uint srcoffset;
 
     START_OF_INSTR();
     DECODE_PRINTF("BSR\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl := fetch_decode_modrm();
     if (mod < 3) {
         srcoffset := decode_rmXX_address(mod, rl);
         DECODE_PRINTF(",");
@@ -1523,12 +1507,11 @@ REMARKS:
 Handles opcode 0x0f,0xbe
 ****************************************************************************/
 func x86emuOp2_movsx_byte_R_RM(_ u8) {
-    int mod, rl, rh;
     uint srcoffset;
 
     START_OF_INSTR();
     DECODE_PRINTF("MOVSX\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl := fetch_decode_modrm();
     if (mod < 3) {
         if (M.x86.mode & SYSMODE_PREFIX_DATA) {
             u32 srcval;
@@ -1581,13 +1564,12 @@ REMARKS:
 Handles opcode 0x0f,0xbf
 ****************************************************************************/
 func x86emuOp2_movsx_word_R_RM(_ u8) {
-    int mod, rl, rh;
     uint srcoffset;
     u32 srcval;
 
     START_OF_INSTR();
     DECODE_PRINTF("MOVSX\t");
-    FETCH_DECODE_MODRM(mod, rh, rl);
+    mod, rh, rl := fetch_decode_modrm();
     if (mod < 3) {
         destreg := DECODE_RM_LONG_REGISTER(rh);
         DECODE_PRINTF(",");
