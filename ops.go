@@ -590,7 +590,7 @@ func x86emuOp_aaa(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("AAA\n");
     TRACE_AND_STEP();
-    M.x86.gen.A.Set16(aaa_wordz(M.x86.gen.A.Get16()))
+    M.x86.gen.A.Set16(aaa_word(M.x86.gen.A.Get16()))
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
@@ -630,15 +630,15 @@ func x86emuOp_inc_register(op1 uint8) {
     op1 &= 0x7;
     DECODE_PRINTF("INC\t");
     if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-	    reg := decode_rm_long_register(uint32(op1)))
+	    reg := decode_rm_long_register(uint32(op1))
         DECODE_PRINTF("\n");
         TRACE_AND_STEP();
-        *reg = inc_long(*reg);
+        *reg = inc_long(reg.Get());
     } else {
 	    reg := decode_rm_word_register(uint32(op1))
         DECODE_PRINTF("\n");
         TRACE_AND_STEP();
-        *reg = inc_word(*reg);
+        *reg = inc_word(reg.Get());
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -657,13 +657,13 @@ func x86emuOp_dec_register(op1 uint8) {
         reg := decode_rm_long_register(op1);
         DECODE_PRINTF("\n");
         TRACE_AND_STEP();
-        *reg = dec_long(*reg);
+        *reg = dec_long(reg.Get());
     } else {
         u16 *reg;
         reg := decode_rm_word_register(op1);
         DECODE_PRINTF("\n");
         TRACE_AND_STEP();
-        *reg = dec_word(*reg);
+        *reg = dec_word(reg.Get());
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -682,13 +682,13 @@ func x86emuOp_push_register(op1 uint8) {
         reg := decode_rm_long_register(op1);
         DECODE_PRINTF("\n");
         TRACE_AND_STEP();
-        push_long(*reg);
+        push_long(reg.Get());
     } else {
         u16 *reg;
         reg := decode_rm_word_register(op1);
         DECODE_PRINTF("\n");
         TRACE_AND_STEP();
-        push_word(*reg);
+        push_word(reg.Get());
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();

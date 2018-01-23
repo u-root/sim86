@@ -209,7 +209,7 @@ var res uint16
         CLEAR_FLAG(F_CF);
         CLEAR_FLAG(F_AF);
     }
-    res = (u16)(d & 0xFF0F);
+    res = uint16((d & 0xFF0F))
     set_szp_flags_16(res);
     return res;
 }
@@ -229,7 +229,7 @@ var res uint16
         CLEAR_FLAG(F_CF);
         CLEAR_FLAG(F_AF);
     }
-    res = (u16)(d & 0xFF0F);
+    res = uint16((d & 0xFF0F))
     set_szp_flags_16(res);
     return res;
 }
@@ -244,7 +244,7 @@ var l uint16
 
     hb = (u8)((d >> 8) & 0xff);
     lb = (u8)((d & 0xff));
-    l = (u16)((lb + 10 * hb) & 0xFF);
+    l = uint16(((lb + 10 * hb) & 0xFF))
 
     no_carry_byte_side_eff(l & 0xFF);
     return l;
@@ -257,9 +257,9 @@ Implements the AAM instruction and side effects.
 func  aam_word(d uint8)  uint16 {
 	var l, h uint16
 
-    h = (u16)(d / 10);
-    l = (u16)(d % 10);
-    l |= (u16)(h << 8);
+    h = uint16((d / 10))
+    l = uint16((d % 10))
+    l |= uint16((h << 8))
 
     no_carry_byte_side_eff(l & 0xFF);
     return l;
@@ -630,7 +630,7 @@ func  neg_word(s uint16)  uint16 {
 var res uint16
 
     CONDITIONAL_SET_FLAG(s != 0, F_CF);
-    res = (u16)-s;
+    res = uint16(-s)
     set_szp_flags_16(uint16(res));
     calc_borrow_chain(16, 0, s, res, 0);
 
@@ -1857,9 +1857,9 @@ REMARKS:
 Implements the IMUL instruction and side effects.
 ****************************************************************************/
 func imul_long(s uint32) {
-    imul_long_direct(&M.x86.R_EAX,&M.x86.R_EDX,M.x86.R_EAX,s);
-    if (((M.x86.R_EAX & 0x80000000) == 0 && M.x86.R_EDX == 0x00000000) ||
-        ((M.x86.R_EAX & 0x80000000) != 0 && M.x86.R_EDX == 0xFFFFFFFF)) {
+    imul_long_direct(&M.x86.gen.A.Get32(),&M.x86.gen.D.Get32(),M.x86.gen.A.Get32(),s);
+    if (((M.x86.gen.A.Get32() & 0x80000000) == 0 && M.x86.gen.D.Get32() == 0x00000000) ||
+        ((M.x86.gen.A.Get32() & 0x80000000) != 0 && M.x86.gen.D.Get32() == 0xFFFFFFFF)) {
         CLEAR_FLAG(F_CF);
         CLEAR_FLAG(F_OF);
     } else {
@@ -1892,8 +1892,8 @@ Implements the MUL instruction and side effects.
 func mul_word(s uint16) {
     var res u32 = M.x86.A.Get16() * s;
 
-    M.x86.R_AX = uint16(res);
-    M.x86.R_DX = (u16)(res >> 16);
+    M.x86.gen.A.Set16(uint16(res))
+    M.x86.R_DX = uint16((res >> 16))
     if (M.x86.D.Get16() == 0) {
         CLEAR_FLAG(F_CF);
         CLEAR_FLAG(F_OF);
@@ -2043,7 +2043,7 @@ func div_word(s uint16) {
     CONDITIONAL_SET_FLAG(div == 0, F_ZF);
     set_parity_flag(mod);
 
-    M.x86.R_AX = uint16(div);
+    M.x86.gen.A.Set16(uint16(div))
     M.x86.R_DX = uint16(mod);
 }
 
@@ -2083,11 +2083,11 @@ Implements the IN string instruction and side effects.
 func single_in(size int) {
 	switch size {
 		case 1:
-		store_data_byte_abs(M.x86.R_ES, M.x86.R_DI,sys_inb(M.x86.D.Get16()));
+		store_data_byte_abs(M.x86.seg.ES.Get(), M.x86.R_DI,sys_inb(M.x86.D.Get16()));
 		case 2:
-        store_data_word_abs(M.x86.R_ES, M.x86.R_DI,sys_inw(M.x86.D.Get16()));
+        store_data_word_abs(M.x86.seg.ES.Get(), M.x86.R_DI,sys_inw(M.x86.D.Get16()));
 		default:
-		store_data_long_abs(M.x86.R_ES, M.x86.R_DI,sys_inl(M.x86.D.Get16()));
+		store_data_long_abs(M.x86.seg.ES.Get(), M.x86.R_DI,sys_inl(M.x86.D.Get16()));
 	}
 }
 
@@ -2120,11 +2120,11 @@ Implements the OUT string instruction and side effects.
 func single_out(size int) {
 	switch size {
 		case 1:
-       sys_outb(M.x86.D.Get16(),fetch_data_byte_abs(M.x86.R_ES, M.x86.R_SI));
+       sys_outb(M.x86.D.Get16(),fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.R_SI));
 		case 2:
-       sys_outw(M.x86.D.Get16(),fetch_data_word_abs(M.x86.R_ES, M.x86.R_SI));
+       sys_outw(M.x86.D.Get16(),fetch_data_word_abs(M.x86.seg.ES.Get(), M.x86.R_SI));
 		default:
-		sys_outl(M.x86.D.Get16(),fetch_data_long_abs(M.x86.R_ES, M.x86.R_SI));
+		sys_outl(M.x86.D.Get16(),fetch_data_long_abs(M.x86.seg.ES.Get(), M.x86.R_SI));
 	}
 }
 
@@ -2238,34 +2238,34 @@ func x86emu_cpuid() {
          * will only support upto feature 1, which we set in register EAX.
          * Registers EBX:EDX:ECX contain a string identifying the CPU.
          */
-        M.x86.R_EAX = 1;
+        M.x86.gen.A.Set32(1)
         /* EBX:EDX:ECX = "GenuineIntel" */
-        M.x86.R_EBX = 0x756e6547;
-        M.x86.R_EDX = 0x49656e69;
-        M.x86.R_ECX = 0x6c65746e;
+        M.x86.gen.B.Set32(0x756e6547)
+        M.x86.gen.D.Set32(0x49656e69)
+        M.x86.gen.C.Set32(0x6c65746e)
         break;
     case 1:
         /* If we don't have x86 compatible hardware, we return values from an
          * Intel 486dx4; which was one of the first processors to have CPUID.
          */
-        M.x86.R_EAX = 0x00000480;
-        M.x86.R_EBX = 0x00000000;
-        M.x86.R_ECX = 0x00000000;
-        M.x86.R_EDX = 0x00000002;       /* VME */
+        M.x86.gen.A.Set32(0x00000480)
+        M.x86.gen.B.Set32(0x00000000)
+        M.x86.gen.C.Set32(0x00000000)
+        M.x86.gen.D.Set32(0x00000002)       /* VME */
         /* In the case that we have hardware CPUID instruction, we make sure
          * that the features reported are limited to TSC and VME.
          */
-        M.x86.R_EDX &= 0x00000012;
+        M.x86.gen.D.Get32() &= 0x00000012;
         break;
     default:
         /* Finally, we don't support any additional features.  Most CPUs
          * return all zeros when queried for invalid or unsupported feature
          * numbers.
          */
-        M.x86.R_EAX = 0;
-        M.x86.R_EBX = 0;
-        M.x86.R_ECX = 0;
-        M.x86.R_EDX = 0;
+        M.x86.gen.A.Set32(0)
+        M.x86.gen.B.Set32(0)
+        M.x86.gen.C.Set32(0)
+        M.x86.gen.D.Set32(0)
         break;
     }
 }
