@@ -732,9 +732,9 @@ func x86emuOp_push_all(_ uint8) {
         push_long(M.x86.gen.D.Get32());
         push_long(M.x86.gen.B.Get32());
         push_long(old_sp);
-        push_long(M.x86.R_EBP);
+        push_long(M.x86.gen.BP.Get32());
         push_long(M.x86.spc.SI.Get32());
-        push_long(M.x86.R_EDI);
+        push_long(M.x86.gen.DI.Get32());
     } else {
         old_sp := uint16(M.x86.spc.SP.Get32())
 
@@ -764,9 +764,9 @@ func x86emuOp_pop_all(_ uint8) {
     }
     TRACE_AND_STEP();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-        M.x86.R_EDI = pop_long();
+        M.x86.gen.DI.Set32(pop_long())
         M.x86.spc.SI.Set32(pop_long())
-        M.x86.R_EBP = pop_long();
+        M.x86.gen.BP.Set32(pop_long())
         M.x86.spc.SP.Get32() += 4; /* skip ESP */
         M.x86.gen.B.Set32(pop_long())
         M.x86.gen.D.Set32(pop_long())
@@ -2156,7 +2156,7 @@ var flags uint32
     TRACE_AND_STEP();
 
     /* clear out *all* bits not representing flags, and turn on real bits */
-    flags = (M.x86.R_EFLG & F_MSK) | F_ALWAYS_ON;
+    flags = (M.x86.gen.FLAGS & F_MSK) | F_ALWAYS_ON;
     if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
         push_long(flags);
     } else {
@@ -2179,7 +2179,7 @@ func x86emuOp_popf_word(_ uint8) {
     }
     TRACE_AND_STEP();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-        M.x86.R_EFLG = pop_long();
+        M.x86.gen.FLAGS = pop_long();
     } else {
         M.x86.R_FLG = pop_word();
     }
