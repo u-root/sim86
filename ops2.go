@@ -1470,7 +1470,7 @@ func x86emuOp2_movsx_byte_R_RM(_ u8) {
             destreg := DECODE_RM_WORD_REGISTER(rh);
             DECODE_PRINTF(",");
             srcoffset := decode_rmXX_address(mod, rl);
-            srcval := (s16)(int8(fetch_data_byte)(srcoffset));
+            srcval := int16((int8(fetch_data_byte)(srcoffset)))
             DECODE_PRINTF("\n");
             TRACE_AND_STEP();
             *destreg = srcval;
@@ -1493,7 +1493,7 @@ func x86emuOp2_movsx_byte_R_RM(_ u8) {
             srcreg := DECODE_RM_BYTE_REGISTER(rl);
             DECODE_PRINTF("\n");
             TRACE_AND_STEP();
-            *destreg = (s16)((s8)*srcreg);
+            *destreg = int16(((s8)*srcreg))
         }
     }
     DECODE_CLEAR_SEGOVR();
