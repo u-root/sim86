@@ -48,8 +48,7 @@ op1 - Instruction op code
 REMARKS:
 Handles illegal opcodes.
 ****************************************************************************/
-static void x86emuOp2_illegal_op(u8 op2)
-{
+func x86emuOp2_illegal_op(op2 u8) {
     START_OF_INSTR();
     DECODE_PRINTF("ILLEGAL EXTENDED X86 OPCODE\n");
     TRACE_REGS();
@@ -64,8 +63,7 @@ static void x86emuOp2_illegal_op(u8 op2)
  * Handles opcode 0x0f,0x01
  * ****************************************************************************/
 
-static void x86emuOp2_opc_01(u8 op2)
-{
+func x86emuOp2_opc_01(op2 u8) {
   int mod, rl, rh;
   u16 *destreg;
   uint destoffset;
@@ -117,8 +115,7 @@ static void x86emuOp2_opc_01(u8 op2)
  * REMARKS:
  * Handles opcode 0x0f,0x08
  * ****************************************************************************/
-static void x86emuOp2_invd(u8 op2)
-{
+func x86emuOp2_invd(op2 u8) {
   START_OF_INSTR();
   DECODE_PRINTF("INVD\n");
   TRACE_AND_STEP();
@@ -130,8 +127,7 @@ static void x86emuOp2_invd(u8 op2)
  * REMARKS:
  * Handles opcode 0x0f,0x09
  * ****************************************************************************/
-static void x86emuOp2_wbinvd(u8 op2)
-{
+func x86emuOp2_wbinvd(op2 u8) {
   START_OF_INSTR();
   DECODE_PRINTF("WBINVD\n");
   TRACE_AND_STEP();
@@ -143,8 +139,7 @@ static void x86emuOp2_wbinvd(u8 op2)
  * REMARKS:
  * Handles opcode 0x0f,0x30
  * ****************************************************************************/
-static void x86emuOp2_wrmsr(u8 op2)
-{
+func x86emuOp2_wrmsr(op2 u8) {
   /* dummy implementation, does nothing */
 
   START_OF_INSTR();
@@ -158,8 +153,7 @@ static void x86emuOp2_wrmsr(u8 op2)
 REMARKS:
 Handles opcode 0x0f,0x31
 ****************************************************************************/
-static void x86emuOp2_rdtsc(u8 X86EMU_UNUSED(op2))
-{
+func x86emuOp2_rdtsc(_ u8) {
 #ifdef __HAS_LONG_LONG__
   static u64 counter = 0;
 #else
@@ -192,8 +186,7 @@ static void x86emuOp2_rdtsc(u8 X86EMU_UNUSED(op2))
  * REMARKS:
  * Handles opcode 0x0f,0x32
  * ****************************************************************************/
-static void x86emuOp2_rdmsr(u8 op2)
-{
+func x86emuOp2_rdmsr(op2 u8) {
   /* dummy implementation, always return 0 */
 
   START_OF_INSTR();
@@ -281,8 +274,7 @@ int x86emu_check_jump_condition(u8 op)
     }
 }
 
-static void x86emuOp2_long_jump(u8 op2)
-{
+func x86emuOp2_long_jump(op2 u8) {
     s32 target;
     int cond;
 
@@ -316,8 +308,7 @@ static s32 x86emu_bswap(s32 reg)
    return reg;
 }
 
-static void x86emuOp2_bswap(u8 op2)
-{
+func x86emuOp2_bswap(op2 u8) {
     /* byte swap 32 bit register */
     START_OF_INSTR();
     DECODE_PRINTF("BSWAP\t");
@@ -364,8 +355,7 @@ static void x86emuOp2_bswap(u8 op2)
 REMARKS:
 Handles opcode 0x0f,0x90-0x9F
 ****************************************************************************/
-static void x86emuOp2_set_byte(u8 op2)
-{
+func x86emuOp2_set_byte(op2 u8) {
     int mod, rl, rh;
     uint destoffset;
     u8  *destreg;
@@ -460,8 +450,7 @@ static void x86emuOp2_set_byte(u8 op2)
 REMARKS:
 Handles opcode 0x0f,0xa0
 ****************************************************************************/
-static void x86emuOp2_push_FS(u8 X86EMU_UNUSED(op2))
-{
+func x86emuOp2_push_FS(_ u8) {
     START_OF_INSTR();
     DECODE_PRINTF("PUSH\tFS\n");
     TRACE_AND_STEP();
@@ -474,8 +463,7 @@ static void x86emuOp2_push_FS(u8 X86EMU_UNUSED(op2))
 REMARKS:
 Handles opcode 0x0f,0xa1
 ****************************************************************************/
-static void x86emuOp2_pop_FS(u8 X86EMU_UNUSED(op2))
-{
+func x86emuOp2_pop_FS(_ u8) {
     START_OF_INSTR();
     DECODE_PRINTF("POP\tFS\n");
     TRACE_AND_STEP();
@@ -488,8 +476,7 @@ static void x86emuOp2_pop_FS(u8 X86EMU_UNUSED(op2))
 REMARKS: CPUID takes EAX/ECX as inputs, writes EAX/EBX/ECX/EDX as output
 Handles opcode 0x0f,0xa2
 ****************************************************************************/
-static void x86emuOp2_cpuid(u8 X86EMU_UNUSED(op2))
-{
+func x86emuOp2_cpuid(_ u8) {
     START_OF_INSTR();
     DECODE_PRINTF("CPUID\n");
     TRACE_AND_STEP();
@@ -502,8 +489,7 @@ static void x86emuOp2_cpuid(u8 X86EMU_UNUSED(op2))
 REMARKS:
 Handles opcode 0x0f,0xa3
 ****************************************************************************/
-static void x86emuOp2_bt_R(u8 X86EMU_UNUSED(op2))
-{
+func x86emuOp2_bt_R(_ u8) {
     int mod, rl, rh;
     uint srcoffset;
     int bit,disp;
@@ -565,8 +551,7 @@ static void x86emuOp2_bt_R(u8 X86EMU_UNUSED(op2))
 REMARKS:
 Handles opcode 0x0f,0xa4
 ****************************************************************************/
-static void x86emuOp2_shld_IMM(u8 X86EMU_UNUSED(op2))
-{
+func x86emuOp2_shld_IMM(_ u8) {
     int mod, rl, rh;
     uint destoffset;
     u8 shift;
@@ -636,8 +621,7 @@ static void x86emuOp2_shld_IMM(u8 X86EMU_UNUSED(op2))
 REMARKS:
 Handles opcode 0x0f,0xa5
 ****************************************************************************/
-static void x86emuOp2_shld_CL(u8 X86EMU_UNUSED(op2))
-{
+func x86emuOp2_shld_CL(_ u8) {
     int mod, rl, rh;
     uint destoffset;
 
@@ -698,8 +682,7 @@ static void x86emuOp2_shld_CL(u8 X86EMU_UNUSED(op2))
 REMARKS:
 Handles opcode 0x0f,0xa8
 ****************************************************************************/
-static void x86emuOp2_push_GS(u8 X86EMU_UNUSED(op2))
-{
+func x86emuOp2_push_GS(_ u8) {
     START_OF_INSTR();
     DECODE_PRINTF("PUSH\tGS\n");
     TRACE_AND_STEP();
@@ -712,8 +695,7 @@ static void x86emuOp2_push_GS(u8 X86EMU_UNUSED(op2))
 REMARKS:
 Handles opcode 0x0f,0xa9
 ****************************************************************************/
-static void x86emuOp2_pop_GS(u8 X86EMU_UNUSED(op2))
-{
+func x86emuOp2_pop_GS(_ u8) {
     START_OF_INSTR();
     DECODE_PRINTF("POP\tGS\n");
     TRACE_AND_STEP();
@@ -726,8 +708,7 @@ static void x86emuOp2_pop_GS(u8 X86EMU_UNUSED(op2))
 REMARKS:
 Handles opcode 0x0f,0xab
 ****************************************************************************/
-static void x86emuOp2_bts_R(u8 X86EMU_UNUSED(op2))
-{
+func x86emuOp2_bts_R(_ u8) {
     int mod, rl, rh;
     uint srcoffset;
     int bit,disp;
@@ -799,8 +780,7 @@ static void x86emuOp2_bts_R(u8 X86EMU_UNUSED(op2))
 REMARKS:
 Handles opcode 0x0f,0xac
 ****************************************************************************/
-static void x86emuOp2_shrd_IMM(u8 X86EMU_UNUSED(op2))
-{
+func x86emuOp2_shrd_IMM(_ u8) {
     int mod, rl, rh;
     uint destoffset;
     u8 shift;
@@ -870,8 +850,7 @@ static void x86emuOp2_shrd_IMM(u8 X86EMU_UNUSED(op2))
 REMARKS:
 Handles opcode 0x0f,0xad
 ****************************************************************************/
-static void x86emuOp2_shrd_CL(u8 X86EMU_UNUSED(op2))
-{
+func x86emuOp2_shrd_CL(_ u8) {
     int mod, rl, rh;
     uint destoffset;
 
@@ -931,8 +910,7 @@ static void x86emuOp2_shrd_CL(u8 X86EMU_UNUSED(op2))
 REMARKS:
 Handles opcode 0x0f,0xaf
 ****************************************************************************/
-static void x86emuOp2_imul_R_RM(u8 X86EMU_UNUSED(op2))
-{
+func x86emuOp2_imul_R_RM(_ u8) {
     int mod, rl, rh;
     uint srcoffset;
 
@@ -1023,8 +1001,7 @@ static void x86emuOp2_imul_R_RM(u8 X86EMU_UNUSED(op2))
 REMARKS:
 Handles opcode 0x0f,0xb2
 ****************************************************************************/
-static void x86emuOp2_lss_R_IMM(u8 X86EMU_UNUSED(op2))
-{
+func x86emuOp2_lss_R_IMM(_ u8) {
     int mod, rh, rl;
     u16 *dstreg;
     uint srcoffset;
@@ -1052,8 +1029,7 @@ static void x86emuOp2_lss_R_IMM(u8 X86EMU_UNUSED(op2))
 REMARKS:
 Handles opcode 0x0f,0xb3
 ****************************************************************************/
-static void x86emuOp2_btr_R(u8 X86EMU_UNUSED(op2))
-{
+func x86emuOp2_btr_R(_ u8) {
     int mod, rl, rh;
     uint srcoffset;
     int bit,disp;
@@ -1124,8 +1100,7 @@ static void x86emuOp2_btr_R(u8 X86EMU_UNUSED(op2))
 REMARKS:
 Handles opcode 0x0f,0xb4
 ****************************************************************************/
-static void x86emuOp2_lfs_R_IMM(u8 X86EMU_UNUSED(op2))
-{
+func x86emuOp2_lfs_R_IMM(_ u8) {
     int mod, rh, rl;
     u16 *dstreg;
     uint srcoffset;
@@ -1153,8 +1128,7 @@ static void x86emuOp2_lfs_R_IMM(u8 X86EMU_UNUSED(op2))
 REMARKS:
 Handles opcode 0x0f,0xb5
 ****************************************************************************/
-static void x86emuOp2_lgs_R_IMM(u8 X86EMU_UNUSED(op2))
-{
+func x86emuOp2_lgs_R_IMM(_ u8) {
     int mod, rh, rl;
     u16 *dstreg;
     uint srcoffset;
@@ -1182,8 +1156,7 @@ static void x86emuOp2_lgs_R_IMM(u8 X86EMU_UNUSED(op2))
 REMARKS:
 Handles opcode 0x0f,0xb6
 ****************************************************************************/
-static void x86emuOp2_movzx_byte_R_RM(u8 X86EMU_UNUSED(op2))
-{
+func x86emuOp2_movzx_byte_R_RM(_ u8) {
     int mod, rl, rh;
     uint srcoffset;
 
@@ -1245,8 +1218,7 @@ static void x86emuOp2_movzx_byte_R_RM(u8 X86EMU_UNUSED(op2))
 REMARKS:
 Handles opcode 0x0f,0xb7
 ****************************************************************************/
-static void x86emuOp2_movzx_word_R_RM(u8 X86EMU_UNUSED(op2))
-{
+func x86emuOp2_movzx_word_R_RM(_ u8) {
     int mod, rl, rh;
     uint srcoffset;
     u32 *destreg;
@@ -1280,8 +1252,7 @@ static void x86emuOp2_movzx_word_R_RM(u8 X86EMU_UNUSED(op2))
 REMARKS:
 Handles opcode 0x0f,0xba
 ****************************************************************************/
-static void x86emuOp2_btX_I(u8 X86EMU_UNUSED(op2))
-{
+func x86emuOp2_btX_I(_ u8) {
     int mod, rl, rh;
     uint srcoffset;
     u8 shift;
@@ -1416,8 +1387,7 @@ static void x86emuOp2_btX_I(u8 X86EMU_UNUSED(op2))
 REMARKS:
 Handles opcode 0x0f,0xbb
 ****************************************************************************/
-static void x86emuOp2_btc_R(u8 X86EMU_UNUSED(op2))
-{
+func x86emuOp2_btc_R(_ u8) {
     int mod, rl, rh;
     uint srcoffset;
     int bit,disp;
@@ -1488,8 +1458,7 @@ static void x86emuOp2_btc_R(u8 X86EMU_UNUSED(op2))
 REMARKS:
 Handles opcode 0x0f,0xbc
 ****************************************************************************/
-static void x86emuOp2_bsf(u8 X86EMU_UNUSED(op2))
-{
+func x86emuOp2_bsf(_ u8) {
     int mod, rl, rh;
     uint srcoffset;
 
@@ -1549,8 +1518,7 @@ static void x86emuOp2_bsf(u8 X86EMU_UNUSED(op2))
 REMARKS:
 Handles opcode 0x0f,0xbd
 ****************************************************************************/
-static void x86emuOp2_bsr(u8 X86EMU_UNUSED(op2))
-{
+func x86emuOp2_bsr(_ u8) {
     int mod, rl, rh;
     uint srcoffset;
 
@@ -1610,8 +1578,7 @@ static void x86emuOp2_bsr(u8 X86EMU_UNUSED(op2))
 REMARKS:
 Handles opcode 0x0f,0xbe
 ****************************************************************************/
-static void x86emuOp2_movsx_byte_R_RM(u8 X86EMU_UNUSED(op2))
-{
+func x86emuOp2_movsx_byte_R_RM(_ u8) {
     int mod, rl, rh;
     uint srcoffset;
 
@@ -1673,8 +1640,7 @@ static void x86emuOp2_movsx_byte_R_RM(u8 X86EMU_UNUSED(op2))
 REMARKS:
 Handles opcode 0x0f,0xbf
 ****************************************************************************/
-static void x86emuOp2_movsx_word_R_RM(u8 X86EMU_UNUSED(op2))
-{
+func x86emuOp2_movsx_word_R_RM(_ u8) {
     int mod, rl, rh;
     uint srcoffset;
     u32 *destreg;
@@ -1707,7 +1673,7 @@ static void x86emuOp2_movsx_word_R_RM(u8 X86EMU_UNUSED(op2))
 /***************************************************************************
  * Double byte operation code table:
  **************************************************************************/
-void (*x86emu_optab2[256])(u8) =
+void x86emu_optab2[256] =
 {
 /*  0x00 */ x86emuOp2_illegal_op,  /* Group F (ring 0 PM)      */
 /*  0x01 */ x86emuOp2_opc_01,      /* Group G (ring 0 PM)      */
