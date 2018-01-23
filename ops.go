@@ -970,16 +970,15 @@ REMARKS:
 Handles opcode 0x6a
 ****************************************************************************/
 func x86emuOp_push_byte_IMM(_ uint8) {
-    var imm int16
 
     START_OF_INSTR();
-    imm = int8(fetch_byte_imm);
+    imm := fetch_byte_imm()
     DECODE_PRINTF2("PUSH\t%d\n", imm);
     TRACE_AND_STEP();
     if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-        push_long(imm);
+        push_long(uint32(imm));
     } else {
-        push_word(imm);
+        push_word(uint16(imm));
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -1006,7 +1005,7 @@ func x86emuOp_imul_byte_IMM(_ uint8) {
             imm := fetch_byte_imm();
             DECODE_PRINTF2(",%d\n", int32(imm));
             TRACE_AND_STEP();
-            imul_long_direct(&res_lo,&res_hi,int32(srcval),int32(imm));
+            imul_long_direct(&res_lo,&res_hi,uint32(srcval),uint32(imm));
             if ((((res_lo & 0x80000000) == 0) && (res_hi == 0x00000000)) ||
                 (((res_lo & 0x80000000) != 0) && (res_hi == 0xFFFFFFFF))) {
                 CLEAR_FLAG(F_CF);
@@ -1017,7 +1016,6 @@ func x86emuOp_imul_byte_IMM(_ uint8) {
             }
             destreg.Set32(uint32(res_lo))
         } else {
-            var res uint32
 
             destreg := decode_rm_word_register(uint32(rh));
             DECODE_PRINTF(",");
@@ -1025,7 +1023,7 @@ func x86emuOp_imul_byte_IMM(_ uint8) {
             imm := fetch_byte_imm();
             DECODE_PRINTF2(",%d\n", int32(imm));
             TRACE_AND_STEP();
-            res = int16(srcval) * int16(imm);
+	    res := uint32(srcval) * uint32(imm);
             if ((((res & 0x8000) == 0) && ((res >> 16) == 0x0000)) ||
                 (((res & 0x8000) != 0) && ((res >> 16) == 0xFFFF))) {
                 CLEAR_FLAG(F_CF);
@@ -1046,7 +1044,7 @@ func x86emuOp_imul_byte_IMM(_ uint8) {
             imm := fetch_byte_imm();
             DECODE_PRINTF2(",%d\n", int32(imm));
             TRACE_AND_STEP();
-            imul_long_direct(&res_lo,&res_hi,(s32)*srcreg,int32(imm));
+            imul_long_direct(&res_lo,&res_hi,srcreg.Get32(),uint32(imm));
             if ((((res_lo & 0x80000000) == 0) && (res_hi == 0x00000000)) ||
                 (((res_lo & 0x80000000) != 0) && (res_hi == 0xFFFFFFFF))) {
                 CLEAR_FLAG(F_CF);
@@ -1057,7 +1055,6 @@ func x86emuOp_imul_byte_IMM(_ uint8) {
             }
             destreg.Set32(uint32(res_lo))
         } else {
-            var res uint32
 
             destreg := decode_rm_word_register(uint32(rh));
             DECODE_PRINTF(",");
@@ -1065,7 +1062,7 @@ func x86emuOp_imul_byte_IMM(_ uint8) {
             imm := fetch_byte_imm();
             DECODE_PRINTF2(",%d\n", int32(imm));
             TRACE_AND_STEP();
-		res = srcreg.Get16() * int16(imm);
+	    res := srcreg.Get16() * uint16(imm);
             if ((((res & 0x8000) == 0) && ((res >> 16) == 0x0000)) ||
                 (((res & 0x8000) != 0) && ((res >> 16) == 0xFFFF))) {
                 CLEAR_FLAG(F_CF);
@@ -1074,7 +1071,7 @@ func x86emuOp_imul_byte_IMM(_ uint8) {
                 SET_FLAG(F_CF);
                 SET_FLAG(F_OF);
             }
-            destreg.Set16(uint16(res))
+            destreg.Set16(res)
         }
     }
     DECODE_CLEAR_SEGOVR();
