@@ -1,0 +1,4 @@
+sed -i 's/decode_rm_long_register(\([^)][^)]*\))/decode_rm_long_register(uint32(\1))/' $1
+sed -i 's/decode_rm_word_register(\([^)][^)]*\))/decode_rm_word_register(uint32(\1))/' $1
+sed -i 's/decode_rm_byte_register(\([^)][^)]*\))/decode_rm_byte_register(uint32(\1))/' $1
+
