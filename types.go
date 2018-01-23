@@ -94,7 +94,7 @@ func (r reg8) Seth8(i uint8) {
 	r.reg = (r.reg & 0xfff00ff) | uint32(i)<<8
 }
 func (r reg8) Geth8() uint8 {
-	return uint8(r.reg>>8)
+	return uint8(r.reg >> 8)
 }
 
 func (r reg32) Seth8(i uint8) {
@@ -112,25 +112,33 @@ func (r reg32) Getl8() uint8 {
 
 func (r reg32) Set(v interface{}) {
 	switch i := v.(type) {
-	case uint32: r.Set32(i)
-	case uint16: r.Set16(i)
-	case uint8: r.Setl8(i)
-	default: log.Fatalf("Can't set register with %v", v)
+	case uint32:
+		r.Set32(i)
+	case uint16:
+		r.Set16(i)
+	case uint8:
+		r.Setl8(i)
+	default:
+		log.Fatalf("Can't set register with %v", v)
 	}
 }
 
 func (r reg32) Add(v interface{}) {
 	switch i := v.(type) {
-	case uint32: r.Set32(r.Get32() + i)
-	case uint16: r.Set16(r.Get16() + i)
-	case uint8: r.Setl8(r.Getl8() + i)
-	default: log.Fatalf("Can't add register with %v", v)
+	case uint32:
+		r.Set32(r.Get32() + i)
+	case uint16:
+		r.Set16(r.Get16() + i)
+	case uint8:
+		r.Setl8(r.Getl8() + i)
+	default:
+		log.Fatalf("Can't add register with %v", v)
 	}
 }
 
 // Get gets the register as uint32. The amount of data depends on the SYSMODE.
 func (r reg32) Get() uint32 {
-	if M.x86.mode & SYSMODE_32BIT_REP != 0 {
+	if M.x86.mode&SYSMODE_32BIT_REP != 0 {
 		return r.Get32()
 	}
 	return r.Get16()
@@ -140,7 +148,7 @@ func (r reg32) Get() uint32 {
 // In this case, due to the mode, we use the ability to override
 // the number of bits in the register.
 func (r reg32) Change(i int) {
-	if M.x86.mode & SYSMODE_32BIT_REP != 0 {
+	if M.x86.mode&SYSMODE_32BIT_REP != 0 {
 		r.Set32(r.Get32() + uint32(i))
 	} else {
 		r.Set16(r.Get16() + uint16(i))
@@ -212,4 +220,4 @@ type __int128_t int64
 type __uint128_t uint64
 type __builtin_ms_va_list []byte
 
-type optab func (uint8)
+type optab func(uint8)

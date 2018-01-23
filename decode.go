@@ -117,12 +117,12 @@ func X86EMU_exec() {
 				}
 				return
 			}
-			if ((M.x86.intr & INTR_SYNCH != 0 ) && ((M.x86.intno == 0) || M.x86.intno == 2)) || !ACCESS_FLAG(F_IF) {
+			if ((M.x86.intr&INTR_SYNCH != 0) && ((M.x86.intno == 0) || M.x86.intno == 2)) || !ACCESS_FLAG(F_IF) {
 				x86emu_intr_handle()
 			}
 		}
 		ip := M.x86.spc.IP.Get16()
-		op1 = sys_rdb((uint32(M.x86.seg.CS.Get()) << 4 + uint32(ip)))
+		op1 = sys_rdb((uint32(M.x86.seg.CS.Get())<<4 + uint32(ip)))
 		M.x86.spc.IP.Set16(ip + 1)
 		x86emu_optab[op1](op1)
 		//if (M.x86.debug & DEBUG_EXIT) {
@@ -160,7 +160,7 @@ func fetch_decode_modrm() (uint32, uint32, uint32) {
 	}
 
 	ip := M.x86.spc.IP.Get16()
-	fetched = sys_rdb(uint32(M.x86.seg.CS.Get()) << 4 + uint32(ip))
+	fetched = sys_rdb(uint32(M.x86.seg.CS.Get())<<4 + uint32(ip))
 	M.x86.spc.IP.Set16(ip + 1)
 	INC_DECODED_INST_LEN(1)
 	mod := uint32((fetched >> 6) & 0x03)
@@ -211,7 +211,7 @@ func fetch_word_imm() uint16 {
 	}
 	ip := M.x86.spc.IP.Get16()
 	fetched = sys_rdw((uint32(M.x86.seg.CS.Get()) << 4) + uint32(ip))
-	M.x86.spc.IP.Set16(ip+2)
+	M.x86.spc.IP.Set16(ip + 2)
 	INC_DECODED_INST_LEN(2)
 	return fetched
 }
@@ -234,7 +234,7 @@ func fetch_long_imm() uint32 {
 	}
 	ip := M.x86.spc.IP.Get16()
 	fetched = sys_rdl((uint32(M.x86.seg.CS.Get()) << 4) + uint32(ip))
-	M.x86.spc.IP.Set16(ip+4)
+	M.x86.spc.IP.Set16(ip + 4)
 	INC_DECODED_INST_LEN(4)
 	return fetched
 }
@@ -311,8 +311,7 @@ NOTE: Do not inline this function as sys_rdX is already inline!
 ****************************************************************************/
 func fetch_data_byte(offset uint16) uint8 {
 
-
-	return sys_rdb(uint32(get_data_segment() << 4) + uint32(offset));
+	return sys_rdb(uint32(get_data_segment()<<4) + uint32(offset))
 }
 
 /****************************************************************************
@@ -325,7 +324,7 @@ Word value read from the absolute memory location.
 NOTE: Do not inline this function as sys_rdX is already inline!
 ****************************************************************************/
 func fetch_data_word(offset uint16) uint16 {
-	return sys_rdw(uint32(get_data_segment() << 4) + uint32(offset));
+	return sys_rdw(uint32(get_data_segment()<<4) + uint32(offset))
 }
 
 /****************************************************************************
@@ -339,7 +338,7 @@ NOTE: Do not inline this function as sys_rdX is already inline!
 ****************************************************************************/
 func fetch_data_long(offset uint16) uint32 {
 
-	return sys_rdl(uint32(get_data_segment() << 4) + uint32(offset))
+	return sys_rdl(uint32(get_data_segment()<<4) + uint32(offset))
 }
 
 /****************************************************************************
@@ -354,7 +353,7 @@ NOTE: Do not inline this function as sys_rdX is already inline!
 ****************************************************************************/
 func fetch_data_byte_abs(segment uint16, offset uint16) uint8 {
 
-	return sys_rdb(uint32(segment << 4 + offset))
+	return sys_rdb(uint32(segment<<4 + offset))
 }
 
 /****************************************************************************
@@ -811,7 +810,7 @@ NOTE:   The code which specifies the corresponding segment (ds vs ss)
 func decode_rm00_address(rm uint32) uint32 {
 	var offset uint32
 
-	if M.x86.mode & SYSMODE_PREFIX_ADDR != 0 {
+	if M.x86.mode&SYSMODE_PREFIX_ADDR != 0 {
 		/* 32-bit addressing */
 		switch rm {
 		case 0:
@@ -889,7 +888,7 @@ decoding of instructions.
 func decode_rm01_address(rm uint32) uint32 {
 	var displacement uint32
 
-	if M.x86.mode & SYSMODE_PREFIX_ADDR != 0{
+	if M.x86.mode&SYSMODE_PREFIX_ADDR != 0 {
 		/* 32-bit addressing */
 		if rm != 4 {
 			displacement = uint32(fetch_byte_imm())
@@ -974,7 +973,7 @@ Return the offset given by mod=10 addressing.  Also enables the
 decoding of instructions.
 ****************************************************************************/
 func decode_rm10_address(rm uint32) uint32 {
-	if M.x86.mode & SYSMODE_PREFIX_ADDR != 0{
+	if M.x86.mode&SYSMODE_PREFIX_ADDR != 0 {
 		var displacement uint32
 
 		/* 32-bit addressing */
@@ -1074,7 +1073,7 @@ func decode_rmXX_address(mod uint32, rm uint32) uint32 {
 }
 
 func INC_DECODED_INST_LEN(amt uint16) {
-	if (DEBUG_DECODE())  	       {
+	if DEBUG_DECODE() {
 		x86emu_inc_decoded_inst_len(uint32(amt))
 	}
 }
@@ -1089,14 +1088,14 @@ func HALT_SYS() {
 	os.Exit(0)
 }
 
-func DECODE_PRINTF(x string, y...interface{}) {
-     	if (DEBUG_DECODE()) {
+func DECODE_PRINTF(x string, y ...interface{}) {
+	if DEBUG_DECODE() {
 		x86emu_decode_printf(x, y...)
 	}
 }
 
-func DECODE_PRINTF2(x string, y...interface{}) {
-     	if (DEBUG_DECODE()) {
+func DECODE_PRINTF2(x string, y ...interface{}) {
+	if DEBUG_DECODE() {
 		x86emu_decode_printf(x, y...)
 	}
 }

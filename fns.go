@@ -1,6 +1,7 @@
 package main
 
 import "fmt"
+
 var notyet = `
 # define CHECK_IP_FETCH()              	(M.x86.check & CHECK_IP_FETCH_F)
 # define CHECK_SP_ACCESS()             	(M.x86.check & CHECK_SP_ACCESS_F)
@@ -225,10 +226,10 @@ func sys_rdb(ip uint32) byte {
 	return 0
 }
 func SAVE_IP_CS(cs, ip uint16) {
-	if (DEBUG_DECODE() || DEBUG_TRACECALL() || DEBUG_BREAK() || DEBUG_IO_TRACE() || DEBUG_SAVE_IP_CS()) {
+	if DEBUG_DECODE() || DEBUG_TRACECALL() || DEBUG_BREAK() || DEBUG_IO_TRACE() || DEBUG_SAVE_IP_CS() {
 		M.x86.saved_cs = cs
 		M.x86.saved_ip = ip
-	      }
+	}
 }
 
 func labs(i int64) int64 {
@@ -254,14 +255,14 @@ func END_OF_INSTR() {
 func TRACE_REGS() {
 	fmt.Printf("Trace regs\n")
 }
-func SINGLE_STEP (){
-	if (DEBUG_STEP())  {
-	x86emu_single_step()
-}
+func SINGLE_STEP() {
+	if DEBUG_STEP() {
+		x86emu_single_step()
+	}
 }
 func TRACE_AND_STEP() {
-TRACE_REGS()
-SINGLE_STEP()
+	TRACE_REGS()
+	SINGLE_STEP()
 }
 
 func DECODE_CLEAR_SEGOVR() {
