@@ -1467,7 +1467,7 @@ func x86emuOp_opc83_word_RM_IMM(_ uint8) {
             imm := int8(fetch_byte_imm);
             DECODE_PRINTF2(",%x\n", imm);
             TRACE_AND_STEP();
-            destval = (*genop_long_operation[rh]) (destval, imm);
+            destval = genop_long_operation[rh] (destval, imm);
             if (rh != 7){
 		    store_data_long(destoffset, destval);
 	    }
@@ -1487,14 +1487,14 @@ func x86emuOp_opc83_word_RM_IMM(_ uint8) {
             imm := int8(fetch_byte_imm);
             DECODE_PRINTF2(",%x\n", imm);
             TRACE_AND_STEP();
-            *destreg = (*genop_long_operation[rh]) (destreg.Get(), imm);
+            *destreg = genop_long_operation[rh] (destreg.Get(), imm);
         } else {
 
             destreg := decode_rm_word_register(uint32(rl));
             imm := int8(fetch_byte_imm);
             DECODE_PRINTF2(",%x\n", imm);
             TRACE_AND_STEP();
-            *destreg = (*genop_word_operation[rh]) (destreg.Get(), imm);
+            *destreg = genop_word_operation[rh] (destreg.Get(), imm);
         }
     }
     DECODE_CLEAR_SEGOVR();
