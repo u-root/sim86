@@ -38,5 +38,9 @@ sed -i 's/(\*reg)/(reg.Get())/' $1
 sed -i 's/\*reg =\(.*\);/reg.Set(\1)/' $1
 
 
-sed -i 's/M.x86.R_BP = \(.*\);/M.x86.gen.BP.Set16(\2)/' $1
-sed -i 's/M.x86.R_BP/M.x86.gen.BP.Get16()/' $1
+sed -i 's/M.x86.R_BP = \(.*\);/M.x86.spc.BP.Set16(\1)/' $1
+sed -i 's/M.x86.R_BP/M.x86.spc.BP.Get16()/' $1
+sed -i 's/M.x86.R_SI = \(.*\);/M.x86.spc.SI.Set16(\1)/' $1
+sed -i 's/M.x86.R_SI/M.x86.spc.SI.Get16()/' $1
+sed -i 's/M.x86.R_DI = \(.*\);/M.x86.spc.DI.Set16(\1)/' $1
+sed -i 's/M.x86.R_DI/M.x86.spc.DI.Get16()/' $1

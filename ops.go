@@ -743,9 +743,9 @@ func x86emuOp_push_all(_ uint8) {
         push_word(M.x86.gen.D.Get16());
         push_word(M.x86.gen.B.Get16());
         push_word(old_sp);
-        push_word(M.x86.R_BP);
-        push_word(M.x86.R_SI);
-        push_word(M.x86.R_DI);
+        push_word(M.x86.spc.BP.Get16());
+        push_word(M.x86.spc.SI.Get16());
+        push_word(M.x86.spc.DI.Get16());
     }
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
@@ -767,16 +767,16 @@ func x86emuOp_pop_all(_ uint8) {
         M.x86.spc.DI.Set32(pop_long())
         M.x86.spc.SI.Set32(pop_long())
         M.x86.spc.BP.Set32(pop_long())
-        M.x86.spc.SP.Get32() += 4; /* skip ESP */
+        M.x86.spc.SP.Set32(M.x86.spc.SP.Get32() + 4) /* skip ESP */
         M.x86.gen.B.Set32(pop_long())
         M.x86.gen.D.Set32(pop_long())
         M.x86.gen.C.Set32(pop_long())
         M.x86.gen.A.Set32(pop_long())
     } else {
-        M.x86.R_DI = pop_word();
-        M.x86.R_SI = pop_word();
-        M.x86.R_BP = pop_word();
-        M.x86.R_SP += 2; /* skip SP */
+        M.x86.spc.DI.Set16(pop_word())
+        M.x86.spc.SI.Set16(pop_word())
+        M.x86.spc.BP.Set16(pop_word())
+        M.x86.spc.SP.Set16(M.x86.spc.SP.Get16()+2) /* skip SP */
         M.x86.gen.B.Set16(pop_word())
         M.x86.gen.D.Set16(pop_word())
         M.x86.gen.C.Set16(pop_word())
@@ -891,7 +891,7 @@ func x86emuOp_imul_word_IMM(_ uint8) {
             imm := fetch_long_imm();
             DECODE_PRINTF2(",%d\n", int32(imm));
             TRACE_AND_STEP();
-            imul_long_direct(&res_lo,&res_hi,int32(srcval),int32(imm));
+            imul_long_direct(&res_lo,&res_hi,uint32(srcval),uint32(imm));
             if ((((res_lo & 0x80000000) == 0) && (res_hi == 0x00000000)) ||
                 (((res_lo & 0x80000000) != 0) && (res_hi == 0xFFFFFFFF))) {
                 CLEAR_FLAG(F_CF);
@@ -910,7 +910,7 @@ func x86emuOp_imul_word_IMM(_ uint8) {
             imm := fetch_word_imm();
             DECODE_PRINTF2(",%d\n", int32(imm));
             TRACE_AND_STEP();
-            res = int16(srcval) * int16(imm);
+            res = uint32(srcval) * uint32(imm);
             if ((((res & 0x8000) == 0) && ((res >> 16) == 0x0000)) ||
                 (((res & 0x8000) != 0) && ((res >> 16) == 0xFFFF))) {
                 CLEAR_FLAG(F_CF);
@@ -931,7 +931,7 @@ func x86emuOp_imul_word_IMM(_ uint8) {
             imm := fetch_long_imm();
             DECODE_PRINTF2(",%d\n", int32(imm));
             TRACE_AND_STEP();
-            imul_long_direct(&res_lo,&res_hi,(s32)*srcreg,int32(imm));
+            imul_long_direct(&res_lo,&res_hi,srcreg.Get32(),uint32(imm));
             if ((((res_lo & 0x80000000) == 0) && (res_hi == 0x00000000)) ||
                 (((res_lo & 0x80000000) != 0) && (res_hi == 0xFFFFFFFF))) {
                 CLEAR_FLAG(F_CF);
@@ -942,14 +942,14 @@ func x86emuOp_imul_word_IMM(_ uint8) {
             }
             destreg.Set32(uint32(res_lo))
         } else {
-            var res uint32
+            var res uint16
 
             destreg := decode_rm_word_register(uint32(rh));
             DECODE_PRINTF(",");
             srcreg := decode_rm_word_register(uint32(rl));
             imm := fetch_word_imm();
             DECODE_PRINTF2(",%d\n", int32(imm));
-		res = srcreg.Get16() * int16(imm);
+		res = srcreg.Get() * uint16(imm);
             if ((((res & 0x8000) == 0) && ((res >> 16) == 0x0000)) ||
                 (((res & 0x8000) != 0) && ((res >> 16) == 0xFFFF))) {
                 CLEAR_FLAG(F_CF);
@@ -2329,8 +2329,8 @@ var count uint32
     }
 	for count > 0 {
 		cont--
-        val = fetch_data_byte(M.x86.R_SI);
-        store_data_byte_abs(M.x86.seg.ES.Get(), M.x86.R_DI, val);
+        val = fetch_data_byte(M.x86.spc.SI.Get16());
+        store_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16(), val);
         M.x86.SI.Change(inc)
         M.x86.DI.Change(inc)
         if (M.x86.intr & INTR_HALTED) {
@@ -2391,11 +2391,11 @@ var count uint32
 	for count > 0 {
 		count--
         if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-            val := fetch_data_long(M.x86.R_SI);
-            store_data_long_abs(M.x86.seg.ES.Get(), M.x86.R_DI, val);
+            val := fetch_data_long(M.x86.spc.SI.Get16());
+            store_data_long_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16(), val);
         } else {
-            val := fetch_data_word(M.x86.R_SI);
-            store_data_word_abs(M.x86.seg.ES.Get(), M.x86.R_DI, uint16(val));
+            val := fetch_data_word(M.x86.spc.SI.Get16());
+            store_data_word_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16(), uint16(val));
         }
         M.x86.SI.Change(inc)
         M.x86.DI.Change(inc)
@@ -2428,8 +2428,8 @@ var inc int32
         /* REPE  */
         /* move them until (E)CX is ZERO. */
         for cxCount != 0 {
-            val1 = fetch_data_byte(M.x86.R_SI);
-            val2 = fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.R_DI);
+            val1 = fetch_data_byte(M.x86.spc.SI.Get16());
+            val2 = fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16());
 		cmp_byte(val1, val2);
 		M.x86.C.Dec()
             M.x86.SI.Change(inc)
@@ -2444,8 +2444,8 @@ var inc int32
 
         M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
     } else {
-        val1 = fetch_data_byte(M.x86.R_SI);
-        val2 = fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.R_DI);
+        val1 = fetch_data_byte(M.x86.spc.SI.Get16());
+        val2 = fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16());
         cmp_byte(val1, val2);
         M.x86.SI.Change(inc)
         M.x86.DI.Change(inc)
@@ -2480,12 +2480,12 @@ var inc int32
         /* move them until (E)CX is ZERO. */
         for cxCount != 0 {
             if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-                val1 = fetch_data_long(M.x86.R_SI);
-                val2 = fetch_data_long_abs(M.x86.seg.ES.Get(), M.x86.R_DI);
+                val1 = fetch_data_long(M.x86.spc.SI.Get16());
+                val2 = fetch_data_long_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16());
                 cmp_long(val1, val2);
             } else {
-                val1 = fetch_data_word(M.x86.R_SI);
-                val2 = fetch_data_word_abs(M.x86.seg.ES.Get(), M.x86.R_DI);
+                val1 = fetch_data_word(M.x86.spc.SI.Get16());
+                val2 = fetch_data_word_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16());
                 cmp_word(uint16(val1), uint16(val2));
             }
 		M.X86.C.Dec()
@@ -2502,12 +2502,12 @@ var inc int32
         M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
     } else {
         if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-            val1 = fetch_data_long(M.x86.R_SI);
-            val2 = fetch_data_long_abs(M.x86.seg.ES.Get(), M.x86.R_DI);
+            val1 = fetch_data_long(M.x86.spc.SI.Get16());
+            val2 = fetch_data_long_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16());
             cmp_long(val1, val2);
         } else {
-            val1 = fetch_data_word(M.x86.R_SI);
-            val2 = fetch_data_word_abs(M.x86.seg.ES.Get(), M.x86.R_DI);
+            val1 = fetch_data_word(M.x86.spc.SI.Get16());
+            val2 = fetch_data_word_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16());
             cmp_word(uint16(val1), uint16(val2));
         }
         M.x86.SI.Change(inc)
@@ -2572,14 +2572,14 @@ func x86emuOp_stos_byte(_ uint8) {
         /* don't care whether REPE or REPNE */
         /* move them until (E)CX is ZERO. */
         for cxCount != 0 {
-            store_data_byte_abs(M.x86.seg.ES.Get(), M.x86.R_DI, M.x86.gen.A.Getl8());
+            store_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16(), M.x86.gen.A.Getl8());
 M.X86.C.Dec()
             M.x86.DI.Change(inc)
             if (M.x86.intr & INTR_HALTED)                { break;}
         }
         M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
     } else {
-        store_data_byte_abs(M.x86.seg.ES.Get(), M.x86.R_DI, M.x86.gen.A.Getl8());
+        store_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16(), M.x86.gen.A.Getl8());
         M.x86.DI.Change(inc)
     }
     DECODE_CLEAR_SEGOVR();
@@ -2613,9 +2613,9 @@ inc = incamount(2)
 		count--
 
         if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-            store_data_long_abs(M.x86.seg.ES.Get(), M.x86.R_DI, M.x86.gen.A.Get32());
+            store_data_long_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16(), M.x86.gen.A.Get32());
         } else {
-            store_data_word_abs(M.x86.seg.ES.Get(), M.x86.R_DI, M.x86.gen.A.Get16());
+            store_data_word_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16(), M.x86.gen.A.Get16());
         }
         M.x86.DI.Change(inc)
 if Halted() {break;}
@@ -2639,14 +2639,14 @@ inc = incamount(1)
         /* don't care whether REPE or REPNE */
         /* move them until (E)CX is ZERO. */
         for cxCount != 0 {
-            M.x86.gen.A.Setl8(fetch_data_byte(M.x86.R_SI))
+            M.x86.gen.A.Setl8(fetch_data_byte(M.x86.spc.SI.Get16()))
 M.X86.C.Dec()
             M.x86.SI.Change(inc)
 		if Halted()                { break;}
         }
         M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE);
     } else {
-        M.x86.gen.A.Setl8(fetch_data_byte(M.x86.R_SI))
+        M.x86.gen.A.Setl8(fetch_data_byte(M.x86.spc.SI.Get16()))
         M.x86.SI.Change(inc)
     }
     DECODE_CLEAR_SEGOVR();
@@ -2679,9 +2679,9 @@ inc = incamount(2)
 	for count > 0 {
 		count--
         if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-            M.x86.gen.A.Set32(fetch_data_long(M.x86.R_SI))
+            M.x86.gen.A.Set32(fetch_data_long(M.x86.spc.SI.Get16()))
         } else {
-            M.x86.gen.A.Set16(fetch_data_word(M.x86.R_SI))
+            M.x86.gen.A.Set16(fetch_data_word(M.x86.spc.SI.Get16()))
         }
         M.x86.SI.Change(inc)
 if Halted() {break;}
@@ -2706,7 +2706,7 @@ inc = incamount(1)
         /* REPE  */
         /* move them until (E)CX is ZERO. */
         for cxCount != 0 {
-            val2 = fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.R_DI);
+            val2 = fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16());
             cmp_byte(M.x86.gen.A.Getl8(), val2);
 M.X86.C.Dec()
             M.x86.DI.Change(inc)
@@ -2719,7 +2719,7 @@ M.X86.C.Dec()
         /* REPNE  */
         /* move them until (E)CX is ZERO. */
         for cxCount != 0 {
-            val2 = fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.R_DI);
+            val2 = fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16());
             cmp_byte(M.x86.gen.A.Getl8(), val2);
 M.X86.C.Dec()
             M.x86.DI.Change(inc)
@@ -2728,7 +2728,7 @@ M.X86.C.Dec()
         }
         M.x86.mode &= ^SYSMODE_PREFIX_REPNE;
     } else {
-        val2 = fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.R_DI);
+        val2 = fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16());
         cmp_byte(M.x86.gen.A.Getl8(), val2);
         M.x86.DI.Change(inc)
     }
@@ -2758,10 +2758,10 @@ inc = incamount(2)
         /* move them until (E)CX is ZERO. */
         for cxCount != 0 {
             if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-                val = fetch_data_long_abs(M.x86.seg.ES.Get(), M.x86.R_DI);
+                val = fetch_data_long_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16());
                 cmp_long(M.x86.gen.A.Get32(), val);
             } else {
-                val = fetch_data_word_abs(M.x86.seg.ES.Get(), M.x86.R_DI);
+                val = fetch_data_word_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16());
                 cmp_word(M.x86.gen.A.Get16(), uint16(val));
             }
 M.X86.C.Dec()
@@ -2775,10 +2775,10 @@ M.X86.C.Dec()
         /* move them until (E)CX is ZERO. */
         for cxCount != 0 {
             if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-                val = fetch_data_long_abs(M.x86.seg.ES.Get(), M.x86.R_DI);
+                val = fetch_data_long_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16());
                 cmp_long(M.x86.gen.A.Get32(), val);
             } else {
-                val = fetch_data_word_abs(M.x86.seg.ES.Get(), M.x86.R_DI);
+                val = fetch_data_word_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16());
                 cmp_word(M.x86.gen.A.Get16(), uint16(val));
             }
 M.X86.C.Dec()
@@ -2789,10 +2789,10 @@ M.X86.C.Dec()
         M.x86.mode &= ^SYSMODE_PREFIX_REPNE;
     } else {
         if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-            val = fetch_data_long_abs(M.x86.seg.ES.Get(), M.x86.R_DI);
+            val = fetch_data_long_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16());
             cmp_long(M.x86.gen.A.Get32(), val);
         } else {
-            val = fetch_data_word_abs(M.x86.seg.ES.Get(), M.x86.R_DI);
+            val = fetch_data_word_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16());
             cmp_word(M.x86.gen.A.Get16(), uint16(val));
         }
         M.x86.DI.Change(inc)
@@ -3187,12 +3187,12 @@ func x86emuOp_enter(_ uint8) {
     DECODE_PRINTF2("ENTER %x\n", local);
     DECODE_PRINTF2(",%x\n", nesting);
     TRACE_AND_STEP();
-    push_word(M.x86.R_BP);
+    push_word(M.x86.spc.BP.Get16());
 	frame_pointer := M.x86.SP.Get32()
     if (nesting > 0) {
         for i := 1; i < nesting; i++ {
 		M.x86.BP.Change(-2)
-            push_word(fetch_data_word_abs(M.x86.seg.SS.Get(), M.x86.R_BP));
+            push_word(fetch_data_word_abs(M.x86.seg.SS.Get(), M.x86.spc.BP.Get16()));
             }
         push_word(frame_pointer);
         }
@@ -3210,8 +3210,8 @@ func x86emuOp_leave(_ uint8) {
     START_OF_INSTR();
     DECODE_PRINTF("LEAVE\n");
     TRACE_AND_STEP();
-    M.x86.R_SP = M.x86.R_BP;
-    M.x86.R_BP = pop_word();
+    M.x86.R_SP = M.x86.spc.BP.Get16();
+    M.x86.spc.BP.Set16(pop_word())
     DECODE_CLEAR_SEGOVR();
     END_OF_INSTR();
 }
