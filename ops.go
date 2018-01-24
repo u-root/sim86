@@ -4635,7 +4635,7 @@ func x86emuOp_opcFF_word_RM(_ uint8) {
 		switch rh {
 		case 0: /* inc word ptr ... */
 			if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-				destval32 = fetch_data_long(destoffset)
+				destval32 := fetch_data_long(destoffset)
 				TRACE_AND_STEP()
 				destval32 = inc_long(destval32)
 				store_data_long(destoffset, destval32)
@@ -4648,7 +4648,7 @@ func x86emuOp_opcFF_word_RM(_ uint8) {
 			break
 		case 1: /* dec word ptr ... */
 			if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-				destval32 = fetch_data_long(destoffset)
+				destval32 := fetch_data_long(destoffset)
 				TRACE_AND_STEP()
 				destval32 = dec_long(destval32)
 				store_data_long(destoffset, destval32)
@@ -4667,7 +4667,7 @@ func x86emuOp_opcFF_word_RM(_ uint8) {
 			break
 		case 3: /* call far ptr ... */
 			destval := fetch_data_word(destoffset)
-			destval2 = fetch_data_word(destoffset + 2)
+			destval2 := fetch_data_word(destoffset + 2)
 			TRACE_AND_STEP()
 			push_word(M.x86.seg.CS.Get())
 			M.x86.seg.CS.Set(destval2)
@@ -4682,7 +4682,7 @@ func x86emuOp_opcFF_word_RM(_ uint8) {
 			break
 		case 5: /* jmp far ptr ... */
 			destval := fetch_data_word(destoffset)
-			destval2 = fetch_data_word(destoffset + 2)
+			destval2 := fetch_data_word(destoffset + 2)
 			JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, destval2, destval, " FAR ")
 			TRACE_AND_STEP()
 			M.x86.spc.IP.Set16(destval)
@@ -4690,7 +4690,7 @@ func x86emuOp_opcFF_word_RM(_ uint8) {
 			break
 		case 6: /*  push word ptr ... */
 			if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-				destval32 = fetch_data_long(destoffset)
+				destval32 := fetch_data_long(destoffset)
 				TRACE_AND_STEP()
 				push_long(destval32)
 			} else {
@@ -4704,7 +4704,7 @@ func x86emuOp_opcFF_word_RM(_ uint8) {
 		switch rh {
 		case 0:
 			if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-				destreg = decode_rm_long_register(uint32(rl))
+				destreg := decode_rm_long_register(uint32(rl))
 				DECODE_PRINTF("\n")
 				TRACE_AND_STEP()
 				destreg.Set(inc_long(destreg.Get()))
