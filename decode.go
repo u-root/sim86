@@ -309,9 +309,9 @@ Byte value read from the absolute memory location.
 
 NOTE: Do not inline this function as sys_rdX is already inline!
 ****************************************************************************/
-func fetch_data_byte(offset uint16) uint8 {
+func fetch_data_byte(offset uint32) uint8 {
 
-	return sys_rdb(uint32(get_data_segment()<<4) + uint32(offset))
+	return sys_rdb(uint32(get_data_segment()<<4) + offset)
 }
 
 /****************************************************************************
@@ -323,7 +323,7 @@ Word value read from the absolute memory location.
 
 NOTE: Do not inline this function as sys_rdX is already inline!
 ****************************************************************************/
-func fetch_data_word(offset uint16) uint16 {
+func fetch_data_word(offset uint32) uint16 {
 	return sys_rdw(uint32(get_data_segment()<<4) + uint32(offset))
 }
 
@@ -336,9 +336,9 @@ Long value read from the absolute memory location.
 
 NOTE: Do not inline this function as sys_rdX is already inline!
 ****************************************************************************/
-func fetch_data_long(offset uint16) uint32 {
+func fetch_data_long(offset uint32) uint32 {
 
-	return sys_rdl(uint32(get_data_segment()<<4) + uint32(offset))
+	return sys_rdl(uint32(get_data_segment()<<4) + offset)
 }
 
 /****************************************************************************
@@ -352,7 +352,6 @@ Byte value read from the absolute memory location.
 NOTE: Do not inline this function as sys_rdX is already inline!
 ****************************************************************************/
 func fetch_data_byte_abs(segment uint16, offset uint16) uint8 {
-
 	return sys_rdb(uint32(segment<<4 + offset))
 }
 

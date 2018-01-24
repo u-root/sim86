@@ -268,3 +268,11 @@ func TRACE_AND_STEP() {
 func DECODE_CLEAR_SEGOVR() {
 	M.x86.mode &= ^SYSMODE_CLRMASK
 }
+func JMP_TRACE(u, v, w, x uint16, s string) {
+	if DEBUG_TRACEJMPREGS() {
+		x86emu_dump_regs()
+	}
+	if DEBUG_TRACEJMP() {
+		fmt.Printf("%04x:%04x: JMP %s%04x:%04x\n", u, v, s, w, x)
+	}
+}
