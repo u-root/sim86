@@ -382,11 +382,10 @@ Long value read from the absolute memory location.
 
 NOTE: Do not inline this function as sys_rdX is already inline!
 ****************************************************************************/
-func fetch_data_long_abs(segment uint, offset uint) uint32 {
-
-	panic("fix me")
-
-	return 0 //sys_rdl((uint32(segment) << 4) + offset);
+func fetch_data_long_abs(segment uint16, offset uint32) uint32 {
+	var i uint32
+	sysr((uint32(segment) << 4) + offset, &i);
+	return i
 }
 
 /****************************************************************************
@@ -400,10 +399,8 @@ the current 'default' segment, which may have been overridden.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-func store_data_byte(offset uint32, val uint8) byte {
-
-	panic("fix me")
-	return 0 //(*sys_wrb)((get_data_segment() << 4) + offset, val);
+func store_data_byte(offset uint32, val uint8) {
+	sysw(uint32(get_data_segment() << 4) + offset, val);
 }
 
 /****************************************************************************
@@ -417,10 +414,8 @@ the current 'default' segment, which may have been overridden.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-func store_data_word(offset uint32, val uint16) uint16 {
-
-	panic("fix me")
-	return 0 // (*sys_wrw)((get_data_segment() << 4) + offset, val);
+func store_data_word(offset uint32, val uint16) {
+	sysw(uint32(get_data_segment() << 4) + offset, val);
 }
 
 /****************************************************************************
@@ -434,11 +429,8 @@ the current 'default' segment, which may have been overridden.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-func store_data_long(offset uint32, val uint32) uint32 {
-
-	panic("fix me")
-
-	return 0 // (*sys_wrl)((get_data_segment() << 4) + offset, val);
+func store_data_long(offset uint32, val uint32){
+	sysw(uint32(get_data_segment() << 4) + offset, val);
 }
 
 /****************************************************************************
@@ -452,9 +444,8 @@ Writes a byte value to an absolute memory location.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-func store_data_byte_abs(segment uint32, offset uint32, val uint8) {
-
-	panic("fix me")
+func store_data_byte_abs(segment uint16, offset uint32, val uint8) {
+	sysw((uint32(segment)<<4+uint32(offset)), val)
 }
 
 /****************************************************************************
@@ -468,11 +459,8 @@ Writes a word value to an absolute memory location.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-func store_data_word_abs(segment uint, offset uint32, val uint16) {
-
-	panic("fix me")
-
-	//(*sys_wrw)((uint32(segment)<<4)+offset, val)
+func store_data_word_abs(segment uint16, offset uint16, val uint16) {
+	sysw((uint32(segment)<<4+uint32(offset)), val)
 }
 
 /****************************************************************************
@@ -486,11 +474,9 @@ Writes a long value to an absolute memory location.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-func store_data_long_abs(segment uint, offset uint32, val uint32) {
+func store_data_long_abs(segment uint16, offset uint16, val uint32) {
 
-	panic("fix me")
-
-	//(*sys_wrl)((uint32(segment) << 4) + offset, val);
+	sysw((uint32(segment) << 4) + uint32(offset), val);
 }
 
 /****************************************************************************

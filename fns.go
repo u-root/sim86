@@ -286,6 +286,13 @@ func CALL_TRACE(u,v,w,x uint16,s string){
 	}
 }
 
-func halted() {
+func halted() bool {
 	return M.x86.intr & INTR_HALTED != 0
+}
+
+func sysw(addr uint32, i interface{}) {
+	panic("sysw")
+}
+func sysr(addr uint32, i interface{}) {
+	panic("sysr")
 }

@@ -2281,7 +2281,7 @@ Handles opcode 0xa4
 ****************************************************************************/
 func x86emuOp_movs_byte(_ uint8) {
 	var count uint32
-	var inc = int32(1)
+	var inc = 1
 
 	START_OF_INSTR()
 	DECODE_PRINTF("MOVS\tBYTE\n")
@@ -2337,7 +2337,7 @@ Handles opcode 0xa5
 ****************************************************************************/
 func x86emuOp_movs_word(_ uint8) {
 	var val uint32
-	var inc int32
+	var inc int
 	var count uint32
 
 	START_OF_INSTR()
@@ -2359,7 +2359,7 @@ func x86emuOp_movs_word(_ uint8) {
 	TRACE_AND_STEP()
 	count = 1
 	if M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE) != 0{
-		count = Count()
+		count = Count(SYSMODE_32BIT_REP)
 		M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)
 		/* don't care whether REPE or REPNE */
 		/* move them until (E)CX is ZERO. */
@@ -2367,15 +2367,15 @@ func x86emuOp_movs_word(_ uint8) {
 	for count > 0 {
 		count--
 		if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-			val := fetch_data_long(M.x86.spc.SI.Get16())
+			val := fetch_data_long(uint32(M.x86.spc.SI.Get16()))
 			store_data_long_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16(), val)
 		} else {
-			val := fetch_data_word(M.x86.spc.SI.Get16())
+			val := fetch_data_word(uint32(M.x86.spc.SI.Get16()))
 			store_data_word_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16(), val)
 		}
-		M.x86.SI.Change(inc)
-		M.x86.DI.Change(inc)
-		if M.x86.intr & INTR_HALTED {
+		M.x86.spc.SI.Change(inc)
+		M.x86.spc.DI.Change(inc)
+		if halted() {
 			break
 		}
 	}
@@ -2388,8 +2388,7 @@ REMARKS:
 Handles opcode 0xa6
 ****************************************************************************/
 func x86emuOp_cmps_byte(_ uint8) {
-	var val1, val2 int8
-	var inc int32
+	var inc int
 
 	START_OF_INSTR()
 	DECODE_PRINTF("CMPS\tBYTE\n")
@@ -2400,17 +2399,18 @@ func x86emuOp_cmps_byte(_ uint8) {
 		inc = 1
 	}
 
-	if M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE) {
+	if M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE) != 0{
 		/* REPE  */
 		/* move them until (E)CX is ZERO. */
-		for cxCount != 0 {
-			val1 = fetch_data_byte(M.x86.spc.SI.Get16())
-			val2 = fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16())
+		for Count(SYSMODE_32BIT_REP) != 0 {
+			val1 := fetch_data_byte(uint32(M.x86.spc.SI.Get16()))
+			val2 := fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16())
 			cmp_byte(val1, val2)
 			M.x86.gen.C.Dec()
-			M.x86.SI.Change(inc)
-			M.x86.DI.Change(inc)
-			if ((M.x86.mode&SYSMODE_PREFIX_REPE != 0) && (ACCESS_FLAG(F_ZF) == 0)) ||
+			M.x86.spc.SI.Change(inc)
+			M.x86.spc.DI.Change(inc)
+			if ((M.x86.mode&SYSMODE_PREFIX_REPE != 0) &&
+				(! ACCESS_FLAG(F_ZF))) ||
 				((M.x86.mode&SYSMODE_PREFIX_REPNE != 0) && ACCESS_FLAG(F_ZF)) ||
 				((M.x86.intr & INTR_HALTED) != 0) {
 
@@ -2420,11 +2420,11 @@ func x86emuOp_cmps_byte(_ uint8) {
 
 		M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)
 	} else {
-		val1 = fetch_data_byte(M.x86.spc.SI.Get16())
-		val2 = fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16())
+		val1 := fetch_data_byte(uint32(M.x86.spc.SI.Get16()))
+		val2 := fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16())
 		cmp_byte(val1, val2)
-		M.x86.SI.Change(inc)
-		M.x86.DI.Change(inc)
+		M.x86.spc.SI.Change(inc)
+		M.x86.spc.DI.Change(inc)
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -2435,8 +2435,7 @@ REMARKS:
 Handles opcode 0xa7
 ****************************************************************************/
 func x86emuOp_cmps_word(_ uint8) {
-	var val1, val2 uint32
-	var inc int32
+	var inc int
 
 	START_OF_INSTR()
 	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
@@ -2451,23 +2450,24 @@ func x86emuOp_cmps_word(_ uint8) {
 	}
 
 	TRACE_AND_STEP()
-	if M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE) {
+	if M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE) != 0{
 		/* REPE  */
 		/* move them until (E)CX is ZERO. */
-		for cxCount != 0 {
+		for Count(SYSMODE_32BIT_REP) != 0 {
 			if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-				val1 = fetch_data_long(M.x86.spc.SI.Get16())
-				val2 = fetch_data_long_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16())
+				val1 := fetch_data_long(uint32(M.x86.spc.SI.Get16()))
+				val2 := fetch_data_long_abs(M.x86.seg.ES.Get(), uint32(M.x86.spc.DI.Get16()))
 				cmp_long(val1, val2)
 			} else {
-				val1 = fetch_data_word(M.x86.spc.SI.Get16())
-				val2 = fetch_data_word_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16())
+				val1 := fetch_data_word(uint32(M.x86.spc.SI.Get16()))
+				val2 := fetch_data_word_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16())
 				cmp_word(uint16(val1), uint16(val2))
 			}
-			M.X86.C.Dec()
-			M.x86.SI.Change(inc)
-			M.x86.DI.Change(inc)
-			if ((M.x86.mode&SYSMODE_PREFIX_REPE != 0) && (ACCESS_FLAG(F_ZF) == 0)) ||
+			M.x86.gen.C.Dec()
+			M.x86.spc.SI.Change(inc)
+			M.x86.spc.DI.Change(inc)
+			if ((M.x86.mode&SYSMODE_PREFIX_REPE != 0) &&
+				(! ACCESS_FLAG(F_ZF))) ||
 				((M.x86.mode&SYSMODE_PREFIX_REPNE != 0) && ACCESS_FLAG(F_ZF)) ||
 				((M.x86.intr & INTR_HALTED) != 0) {
 
@@ -2478,16 +2478,16 @@ func x86emuOp_cmps_word(_ uint8) {
 		M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)
 	} else {
 		if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-			val1 = fetch_data_long(M.x86.spc.SI.Get16())
-			val2 = fetch_data_long_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16())
+			val1 := fetch_data_long(uint32(M.x86.spc.SI.Get16()))
+			val2 := fetch_data_long_abs(M.x86.seg.ES.Get(), uint32(M.x86.spc.DI.Get16()))
 			cmp_long(val1, val2)
 		} else {
-			val1 = fetch_data_word(M.x86.spc.SI.Get16())
-			val2 = fetch_data_word_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16())
+			val1 := fetch_data_word(uint32(M.x86.spc.SI.Get16()))
+			val2 := fetch_data_word_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16())
 			cmp_word(uint16(val1), uint16(val2))
 		}
-		M.x86.SI.Change(inc)
-		M.x86.DI.Change(inc)
+		M.x86.spc.SI.Change(inc)
+		M.x86.spc.DI.Change(inc)
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -2504,7 +2504,7 @@ func x86emuOp_test_AL_IMM(_ uint8) {
 	imm := fetch_byte_imm()
 	DECODE_PRINTF2("%04x\n", imm)
 	TRACE_AND_STEP()
-	test_byte(M.x86.gen.A.Get8l(), uint8(imm))
+	test_byte(M.x86.gen.A.Getl8(), uint8(imm))
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -2544,13 +2544,13 @@ func x86emuOp_stos_byte(_ uint8) {
 	DECODE_PRINTF("STOS\tBYTE\n")
 	inc := incamount(1)
 	TRACE_AND_STEP()
-	if M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE) {
+	if M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE) != 0{
 		/* don't care whether REPE or REPNE */
 		/* move them until (E)CX is ZERO. */
-		for cxCount != 0 {
+		for Count(SYSMODE_32BIT_REP) != 0 {
 			store_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16(), M.x86.gen.A.Getl8())
 			M.X86.C.Dec()
-			M.x86.DI.Change(inc)
+			M.x86.spc.DI.Change(inc)
 			if M.x86.intr & INTR_HALTED {
 				break
 			}
@@ -2558,7 +2558,7 @@ func x86emuOp_stos_byte(_ uint8) {
 		M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)
 	} else {
 		store_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16(), M.x86.gen.A.Getl8())
-		M.x86.DI.Change(inc)
+		M.x86.spc.DI.Change(inc)
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -2595,7 +2595,7 @@ func x86emuOp_stos_word(_ uint8) {
 		} else {
 			store_data_word_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16(), M.x86.gen.A.Get16())
 		}
-		M.x86.DI.Change(inc)
+		M.x86.spc.DI.Change(inc)
 		if Halted() {
 			break
 		}
@@ -2618,10 +2618,10 @@ func x86emuOp_lods_byte(_ uint8) {
 	if M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE) {
 		/* don't care whether REPE or REPNE */
 		/* move them until (E)CX is ZERO. */
-		for cxCount != 0 {
+		for Count(SYSMODE_32BIT_REP) != 0 {
 			M.x86.gen.A.Setl8(fetch_data_byte(M.x86.spc.SI.Get16()))
 			M.X86.C.Dec()
-			M.x86.SI.Change(inc)
+			M.x86.spc.SI.Change(inc)
 			if Halted() {
 				break
 			}
@@ -2629,7 +2629,7 @@ func x86emuOp_lods_byte(_ uint8) {
 		M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)
 	} else {
 		M.x86.gen.A.Setl8(fetch_data_byte(M.x86.spc.SI.Get16()))
-		M.x86.SI.Change(inc)
+		M.x86.spc.SI.Change(inc)
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -2661,11 +2661,11 @@ func x86emuOp_lods_word(_ uint8) {
 	for count > 0 {
 		count--
 		if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-			M.x86.gen.A.Set32(fetch_data_long(M.x86.spc.SI.Get16()))
+			M.x86.gen.A.Set32(fetch_data_long(uint32(M.x86.spc.SI.Get16())))
 		} else {
-			M.x86.gen.A.Set16(fetch_data_word(M.x86.spc.SI.Get16()))
+			M.x86.gen.A.Set16(fetch_data_word(uint32(M.x86.spc.SI.Get16())))
 		}
-		M.x86.SI.Change(inc)
+		M.x86.spc.SI.Change(inc)
 		if Halted() {
 			break
 		}
@@ -2689,11 +2689,11 @@ func x86emuOp_scas_byte(_ uint8) {
 	if M.x86.mode & SYSMODE_PREFIX_REPE {
 		/* REPE  */
 		/* move them until (E)CX is ZERO. */
-		for cxCount != 0 {
-			val2 = fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16())
+		for Count(SYSMODE_32BIT_REP) != 0 {
+			val2 = fetch_data_byte_abs(M.x86.seg.ES.Get(), uint32(M.x86.spc.DI.Get16()))
 			cmp_byte(M.x86.gen.A.Getl8(), val2)
 			M.X86.C.Dec()
-			M.x86.DI.Change(inc)
+			M.x86.spc.DI.Change(inc)
 			if ACCESS_FLAG(F_ZF) == 0 {
 				break
 			}
@@ -2706,11 +2706,11 @@ func x86emuOp_scas_byte(_ uint8) {
 	} else if M.x86.mode & SYSMODE_PREFIX_REPNE {
 		/* REPNE  */
 		/* move them until (E)CX is ZERO. */
-		for cxCount != 0 {
-			val2 = fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16())
+		for Count(SYSMODE_32BIT_REP) != 0 {
+			val2 = fetch_data_byte_abs(M.x86.seg.ES.Get(), uint32(M.x86.spc.DI.Get16()))
 			cmp_byte(M.x86.gen.A.Getl8(), val2)
 			M.X86.C.Dec()
-			M.x86.DI.Change(inc)
+			M.x86.spc.DI.Change(inc)
 			if ACCESS_FLAG(F_ZF) {
 				break
 			} /* zero flag set means equal */
@@ -2720,9 +2720,9 @@ func x86emuOp_scas_byte(_ uint8) {
 		}
 		M.x86.mode &= ^SYSMODE_PREFIX_REPNE
 	} else {
-		val2 = fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16())
+		val2 = fetch_data_byte_abs(M.x86.seg.ES.Get(), uint32(M.x86.spc.DI.Get16()))
 		cmp_byte(M.x86.gen.A.Getl8(), val2)
-		M.x86.DI.Change(inc)
+		M.x86.spc.DI.Change(inc)
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -2748,16 +2748,16 @@ func x86emuOp_scas_word(_ uint8) {
 	if M.x86.mode & SYSMODE_PREFIX_REPE {
 		/* REPE  */
 		/* move them until (E)CX is ZERO. */
-		for cxCount != 0 {
+		for Count(SYSMODE_32BIT_REP) != 0 {
 			if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-				val = fetch_data_long_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16())
+				val = fetch_data_long_abs(M.x86.seg.ES.Get(), uint32(M.x86.spc.DI.Get16()))
 				cmp_long(M.x86.gen.A.Get32(), val)
 			} else {
-				val = fetch_data_word_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16())
+				val = fetch_data_word_abs(M.x86.seg.ES.Get(), uint32(M.x86.spc.DI.Get16()))
 				cmp_word(M.x86.gen.A.Get16(), uint16(val))
 			}
 			M.X86.C.Dec()
-			M.x86.DI.Change(inc)
+			M.x86.spc.DI.Change(inc)
 			if ACCESS_FLAG(F_ZF) == 0 {
 				break
 			}
@@ -2769,16 +2769,16 @@ func x86emuOp_scas_word(_ uint8) {
 	} else if M.x86.mode & SYSMODE_PREFIX_REPNE {
 		/* REPNE  */
 		/* move them until (E)CX is ZERO. */
-		for cxCount != 0 {
+		for Count(SYSMODE_32BIT_REP) != 0 {
 			if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-				val = fetch_data_long_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16())
+				val = fetch_data_long_abs(M.x86.seg.ES.Get(), uint32(M.x86.spc.DI.Get16()))
 				cmp_long(M.x86.gen.A.Get32(), val)
 			} else {
-				val = fetch_data_word_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16())
+				val = fetch_data_word_abs(M.x86.seg.ES.Get(), uint32(M.x86.spc.DI.Get16()))
 				cmp_word(M.x86.gen.A.Get16(), uint16(val))
 			}
 			M.X86.C.Dec()
-			M.x86.DI.Change(inc)
+			M.x86.spc.DI.Change(inc)
 			if ACCESS_FLAG(F_ZF) {
 				break
 			} /* zero flag set means equal */
@@ -2789,13 +2789,13 @@ func x86emuOp_scas_word(_ uint8) {
 		M.x86.mode &= ^SYSMODE_PREFIX_REPNE
 	} else {
 		if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-			val = fetch_data_long_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16())
+			val = fetch_data_long_abs(M.x86.seg.ES.Get(), uint32(M.x86.spc.DI.Get16()))
 			cmp_long(M.x86.gen.A.Get32(), val)
 		} else {
-			val = fetch_data_word_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16())
+			val = fetch_data_word_abs(M.x86.seg.ES.Get(), uint32(M.x86.spc.DI.Get16()))
 			cmp_word(M.x86.gen.A.Get16(), uint16(val))
 		}
-		M.x86.DI.Change(inc)
+		M.x86.spc.DI.Change(inc)
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
