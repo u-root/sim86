@@ -262,14 +262,12 @@ REMARKS:
 Implements the ADC instruction and side effects.
 ****************************************************************************/
 func adc_byte(d uint8, s uint8) uint8 {
-	var res uint32 /* all operands in native machine order */
-
-	res = d + s
+	res := uint32(d) + uint32(s)
 	if ACCESS_FLAG(F_CF) {
 		res++
 	}
 
-	set_szp_flags_8(res)
+	set_szp_flags_8(uint8(res))
 	calc_carry_chain(8, uint32(s), uint32(d), res, 1)
 
 	return uint8(res)
@@ -282,7 +280,7 @@ Implements the ADC instruction and side effects.
 func adc_word(d uint16, s uint16) uint16 {
 	var res uint32 /* all operands in native machine order */
 
-	res = d + s
+	res = uint32(d) + uint32(s)
 	if ACCESS_FLAG(F_CF) {
 		res++
 	}
@@ -303,7 +301,7 @@ func adc_long(d uint32, s uint32) uint32 {
 	var res uint32
 
 	lo = (d & 0xFFFF) + (s & 0xFFFF)
-	res = d + s
+	res = uint32(d) + uint32(s)
 
 	if ACCESS_FLAG(F_CF) {
 		lo++
@@ -327,7 +325,7 @@ Implements the ADD instruction and side effects.
 func add_byte(d uint8, s uint8) uint8 {
 	var res uint32 /* all operands in native machine order */
 
-	res = d + s
+	res = uint32(d) + uint32(s)
 	set_szp_flags_8(uint8(res))
 	calc_carry_chain(8, s, d, res, 1)
 
@@ -341,7 +339,7 @@ Implements the ADD instruction and side effects.
 func add_word(d uint16, s uint16) uint16 {
 	var res uint32 /* all operands in native machine order */
 
-	res = d + s
+	res = uint32(d) + uint32(s)
 	set_szp_flags_16(uint16(res))
 	calc_carry_chain(16, s, d, res, 1)
 
@@ -355,7 +353,7 @@ Implements the ADD instruction and side effects.
 func add_long(d uint32, s uint32) uint32 {
 	var res uint32
 
-	res = d + s
+	res = uint32(d) + uint32(s)
 	set_szp_flags_32(res)
 	calc_carry_chain(32, s, d, res, 0)
 
