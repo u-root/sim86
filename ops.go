@@ -2557,7 +2557,7 @@ func x86emuOp_stos_byte(_ uint8) {
 		}
 		M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)
 	} else {
-		store_data_byte_abs(uint32(M.x86.seg.ES.Get()), M.x86.spc.DI.Get16(), M.x86.gen.A.Getl8())
+		store_data_byte_abs(M.x86.seg.ES.Get(), uint32(M.x86.spc.DI.Get16()), M.x86.gen.A.Getl8())
 		M.x86.spc.DI.Change(inc)
 	}
 	DECODE_CLEAR_SEGOVR()
