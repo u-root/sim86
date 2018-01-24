@@ -39,7 +39,7 @@ sed -i 's/M.x86.R_DS/M.x86.seg.DS.Get()/' $1
 sed -i 's/(\*reg)/(reg.Get())/' $1
 sed -i 's/\*reg =\(.*\);/reg.Set(\1)/' $1
 
-sed -i 's/M.x86.R_GS = \(.*\);/M.x86.seg.GS.Set(\1)/' $1
+sed -i 's/M.x86.R_GS = \(.*\);*/M.x86.seg.GS.Set(\1)/' $1
 sed -i 's/M.x86.R_GS/M.x86.seg.GS.Get()/' $1
 
 sed -i 's/M.x86.R_BP = \(.*\);/M.x86.spc.BP.Set16(\1)/' $1
