@@ -296,3 +296,11 @@ func sysw(addr uint32, i interface{}) {
 func sysr(addr uint32, i interface{}) {
 	panic("sysr")
 }
+func RETURN_TRACE(u,v,w,x uint16, s string) {
+	if DEBUG_TRACECALLREGS() {
+		x86emu_dump_regs()
+	} 
+	if DEBUG_TRACECALL() {
+		fmt.Printf("%04x:%04x: RET %s %04x:%04x\n",u,v,s,w,x)
+	}
+}

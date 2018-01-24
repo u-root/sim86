@@ -282,7 +282,6 @@ Handles opcodes 0x02, 0x0a, 0x12, 0x1a, 0x22, 0x2a, 0x32, 0x3a
 func x86emuOp_genop_byte_R_RM(op1 uint8) {
 
 	var srcreg register8
-	var srcval uint8
 	op1 = (op1 >> 3) & 0x7
 
 	START_OF_INSTR()
@@ -290,13 +289,14 @@ func x86emuOp_genop_byte_R_RM(op1 uint8) {
 	DECODE_PRINTF("\t")
 	mod, rh, rl := fetch_decode_modrm()
 	destreg := decode_rm_byte_register(uint32(rh))
+	var srcval uint8
 	if mod < 3 {
 		DECODE_PRINTF(",")
 		srcoffset := decode_rmXX_address(mod, rl)
 		srcval = fetch_data_byte(srcoffset)
 	} else { /* register to register */
 		DECODE_PRINTF(",")
-		srcreg = decode_rm_byte_register(uint32(rl))
+		srcreg := decode_rm_byte_register(uint32(rl))
 		srcval = srcreg.Get()
 	}
 	DECODE_PRINTF("\n")
@@ -381,7 +381,6 @@ REMARKS:
 Handles opcodes 0x05, 0x0d, 0x15, 0x1d, 0x25, 0x2d, 0x35, 0x3d
 ****************************************************************************/
 func x86emuOp_genop_word_AX_IMM(op1 uint8) {
-	var srcval uint32
 
 	op1 = (op1 >> 3) & 0x7
 
@@ -390,18 +389,18 @@ func x86emuOp_genop_word_AX_IMM(op1 uint8) {
 		DECODE_PRINTF(x86emu_GenOpName[op1])
 		DECODE_PRINTF("\tEAX,")
 		srcval := fetch_long_imm()
+		DECODE_PRINTF2("%x\n", srcval)
+		TRACE_AND_STEP()
+		M.x86.gen.A.Set32(genop_long_operation[op1](M.x86.gen.A.Get32(), srcval))
 	} else {
 		DECODE_PRINTF(x86emu_GenOpName[op1])
 		DECODE_PRINTF("\tAX,")
 		srcval := fetch_word_imm()
-	}
-	DECODE_PRINTF2("%x\n", srcval)
-	TRACE_AND_STEP()
-	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-		M.x86.gen.A.Set32(genop_long_operation[op1](M.x86.gen.A.Get32(), srcval))
-	} else {
+		DECODE_PRINTF2("%x\n", srcval)
+		TRACE_AND_STEP()
 		M.x86.gen.A.Set16(genop_word_operation[op1](M.x86.gen.A.Get16(), uint16(srcval)))
 	}
+
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -1935,11 +1934,9 @@ func x86emuOp_pop_RM(_ uint8) {
 	if mod < 3 {
 		destoffset := decode_rmXX_address(mod, rl)
 		if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-			var destval uint32
-
 			DECODE_PRINTF("\n")
 			TRACE_AND_STEP()
-			destval = pop_long()
+			destval := pop_long()
 			store_data_long(destoffset, destval)
 		} else {
 			DECODE_PRINTF("\n")
@@ -2513,21 +2510,19 @@ REMARKS:
 Handles opcode 0xa9
 ****************************************************************************/
 func x86emuOp_test_AX_IMM(_ uint8) {
-	var srcval uint32
 
 	START_OF_INSTR()
 	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
 		DECODE_PRINTF("TEST\tEAX,")
 		srcval := fetch_long_imm()
+		DECODE_PRINTF2("%x\n", srcval)
+		TRACE_AND_STEP()
+		test_long(M.x86.gen.A.Get32(), srcval)
 	} else {
 		DECODE_PRINTF("TEST\tAX,")
 		srcval := fetch_word_imm()
-	}
-	DECODE_PRINTF2("%x\n", srcval)
-	TRACE_AND_STEP()
-	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-		test_long(M.x86.gen.A.Get32(), srcval)
-	} else {
+		DECODE_PRINTF2("%x\n", srcval)
+		TRACE_AND_STEP()
 		test_word(M.x86.gen.A.Get16(), uint16(srcval))
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -2829,13 +2824,13 @@ func x86emuOp_mov_word_register_IMM(op1 uint8) {
 		srcval := fetch_long_imm()
 		DECODE_PRINTF2(",%x\n", srcval)
 		TRACE_AND_STEP()
-		*reg = srcval
+		reg.Set( srcval)
 	} else {
 		reg := decode_rm_word_register(uint32(op1))
 		srcval := fetch_word_imm()
 		DECODE_PRINTF2(",%x\n", srcval)
 		TRACE_AND_STEP()
-		*reg = uint16(srcval)
+		reg.Set( uint16(srcval))
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -2964,7 +2959,6 @@ func x86emuOp_opcC1_word_RM_MEM(_ uint8) {
 	   mode. */
 	if mod < 3 {
 		if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-			var destval uint32
 
 			DECODE_PRINTF("DWORD PTR ")
 			destoffset := decode_rmXX_address(mod, rl)
@@ -2972,10 +2966,9 @@ func x86emuOp_opcC1_word_RM_MEM(_ uint8) {
 			DECODE_PRINTF2(",%x\n", amt)
 			destval := fetch_data_long(destoffset)
 			TRACE_AND_STEP()
-			destval = (*opcD1_long_operation[rh])(destval, amt)
+			destval = opcD1_long_operation[rh](destval, amt)
 			store_data_long(destoffset, destval)
 		} else {
-			var destval u16
 
 			DECODE_PRINTF("WORD PTR ")
 			destoffset := decode_rmXX_address(mod, rl)
@@ -2983,7 +2976,7 @@ func x86emuOp_opcC1_word_RM_MEM(_ uint8) {
 			DECODE_PRINTF2(",%x\n", amt)
 			destval := fetch_data_word(destoffset)
 			TRACE_AND_STEP()
-			destval = (*opcD1_word_operation[rh])(destval, amt)
+			destval = opcD1_word_operation[rh](destval, amt)
 			store_data_word(destoffset, destval)
 		}
 	} else { /* register to register */
@@ -2993,14 +2986,14 @@ func x86emuOp_opcC1_word_RM_MEM(_ uint8) {
 			amt := fetch_byte_imm()
 			DECODE_PRINTF2(",%x\n", amt)
 			TRACE_AND_STEP()
-			destreg.Set((*opcD1_long_operation[rh])(destreg.Get(), amt))
+			destreg.Set(opcD1_long_operation[rh](destreg.Get(), amt))
 		} else {
 
 			destreg := decode_rm_word_register(uint32(rl))
 			amt := fetch_byte_imm()
 			DECODE_PRINTF2(",%x\n", amt)
 			TRACE_AND_STEP()
-			destreg.Set((*opcD1_word_operation[rh])(destreg.Get(), amt))
+			destreg.Set(opcD1_word_operation[rh](destreg.Get(), amt))
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -3018,9 +3011,9 @@ func x86emuOp_ret_near_IMM(_ uint8) {
 	imm := fetch_word_imm()
 	DECODE_PRINTF2("%x\n", imm)
 	TRACE_AND_STEP()
-	M.x86.IP.Set(pop_word())
+	M.x86.spc.IP.Set(pop_word())
 	RETURN_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get(), M.x86.spc.IP.Get16(), "NEAR")
-	M.x86.SP.Add(imm)
+	M.x86.spc.SP.Add(imm)
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -3181,16 +3174,16 @@ func x86emuOp_enter(_ uint8) {
 	DECODE_PRINTF2(",%x\n", nesting)
 	TRACE_AND_STEP()
 	push_word(M.x86.spc.BP.Get16())
-	frame_pointer := M.x86.SP.Get32()
+	frame_pointer := M.x86.spc.SP.Get16()
 	if nesting > 0 {
-		for i := 1; i < nesting; i++ {
-			M.x86.BP.Change(-2)
+		for i := uint8(1); i < nesting; i++ {
+			M.x86.spc.BP.Change(-2)
 			push_word(fetch_data_word_abs(M.x86.seg.SS.Get(), M.x86.spc.BP.Get16()))
 		}
 		push_word(frame_pointer)
 	}
-	M.x86.BP.Set(frame_pointer)
-	M.x86.SP.Set(uint16((M.x86.R_SP - local)))
+	M.x86.spc.BP.Set(frame_pointer)
+	M.x86.spc.SP.Set(uint16((M.x86.spc.SP.Get16() - local)))
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -3203,7 +3196,7 @@ func x86emuOp_leave(_ uint8) {
 	START_OF_INSTR()
 	DECODE_PRINTF("LEAVE\n")
 	TRACE_AND_STEP()
-	M.x86.R_SP = M.x86.spc.BP.Get16()
+	M.x86.spc.SP.Set16(M.x86.spc.BP.Get16())
 	M.x86.spc.BP.Set16(pop_word())
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -3458,24 +3451,22 @@ func x86emuOp_opcD1_word_RM_1(_ uint8) {
 	   mode. */
 	if mod < 3 {
 		if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-			var destval uint32
 
 			DECODE_PRINTF("DWORD PTR ")
 			destoffset := decode_rmXX_address(mod, rl)
 			DECODE_PRINTF(",1\n")
 			destval := fetch_data_long(destoffset)
 			TRACE_AND_STEP()
-			destval = (*opcD1_long_operation[rh])(destval, 1)
+			destval = opcD1_long_operation[rh](destval, 1)
 			store_data_long(destoffset, destval)
 		} else {
-			var destval u16
 
 			DECODE_PRINTF("WORD PTR ")
 			destoffset := decode_rmXX_address(mod, rl)
 			DECODE_PRINTF(",1\n")
 			destval := fetch_data_word(destoffset)
 			TRACE_AND_STEP()
-			destval = (*opcD1_word_operation[rh])(destval, 1)
+			destval = opcD1_word_operation[rh](destval, 1)
 			store_data_word(destoffset, destval)
 		}
 	} else { /* register to register */
@@ -3484,13 +3475,13 @@ func x86emuOp_opcD1_word_RM_1(_ uint8) {
 			destreg := decode_rm_long_register(uint32(rl))
 			DECODE_PRINTF(",1\n")
 			TRACE_AND_STEP()
-			destval := (*opcD1_long_operation[rh])(destreg.Get(), 1)
+			destval := opcD1_long_operation[rh](destreg.Get(), 1)
 			destreg.Set(destval)
 		} else {
 			destreg := decode_rm_word_register(uint32(rl))
 			DECODE_PRINTF(",1\n")
 			TRACE_AND_STEP()
-			destval := (*opcD1_word_operation[rh])(destreg.Get(), 1)
+			destval := opcD1_word_operation[rh](destreg.Get(), 1)
 			destreg.Set(destval)
 		}
 	}
@@ -3621,24 +3612,22 @@ func x86emuOp_opcD3_word_RM_CL(_ uint8) {
 	amt = M.x86.R_CL
 	if mod < 3 {
 		if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-			var destval uint32
 
 			DECODE_PRINTF("DWORD PTR ")
 			destoffset := decode_rmXX_address(mod, rl)
 			DECODE_PRINTF(",CL\n")
 			destval := fetch_data_long(destoffset)
 			TRACE_AND_STEP()
-			destval = (*opcD1_long_operation[rh])(destval, amt)
+			destval = opcD1_long_operation[rh](destval, amt)
 			store_data_long(destoffset, destval)
 		} else {
-			var destval u16
 
 			DECODE_PRINTF("WORD PTR ")
 			destoffset := decode_rmXX_address(mod, rl)
 			DECODE_PRINTF(",CL\n")
 			destval := fetch_data_word(destoffset)
 			TRACE_AND_STEP()
-			destval = (*opcD1_word_operation[rh])(destval, amt)
+			destval = opcD1_word_operation[rh](destval, amt)
 			store_data_word(destoffset, destval)
 		}
 	} else { /* register to register */
@@ -3647,13 +3636,13 @@ func x86emuOp_opcD3_word_RM_CL(_ uint8) {
 			destreg := decode_rm_long_register(uint32(rl))
 			DECODE_PRINTF(",CL\n")
 			TRACE_AND_STEP()
-			destreg.Set((*opcD1_long_operation[rh])(destreg.Get(), amt))
+			destreg.Set(opcD1_long_operation[rh](destreg.Get(), amt))
 		} else {
 
 			destreg := decode_rm_word_register(uint32(rl))
 			DECODE_PRINTF(",CL\n")
 			TRACE_AND_STEP()
-			destreg.Set((*opcD1_word_operation[rh])(destreg.Get(), amt))
+			destreg.Set(opcD1_word_operation[rh](destreg.Get(), amt))
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -4131,7 +4120,6 @@ REMARKS:
 Handles opcode 0xf6
 ****************************************************************************/
 func x86emuOp_opcF6_byte_RM(_ uint8) {
-	var destval, srcval uint8
 
 	/* long, drawn out code follows.  Double switch for a total
 	   of 32 cases.  */
@@ -4250,7 +4238,6 @@ func x86emuOp_opcF7_word_RM(_ uint8) {
 	if mod < 3 {
 
 		if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-			var destval, srcval uint32
 
 			DECODE_PRINTF("DWORD PTR ")
 			destoffset := decode_rmXX_address(mod, rl)
@@ -4302,7 +4289,6 @@ func x86emuOp_opcF7_word_RM(_ uint8) {
 				break
 			}
 		} else {
-			var destval, srcval uint16
 
 			DECODE_PRINTF("WORD PTR ")
 			destoffset := decode_rmXX_address(mod, rl)
@@ -4608,8 +4594,6 @@ Handles opcode 0xff
 ****************************************************************************/
 func x86emuOp_opcFF_word_RM(_ uint8) {
 	var destreg *u16
-	var destval, destval2 uint16
-	var destval32 uint32
 
 	/* Yet another special case instruction. */
 	START_OF_INSTR()
