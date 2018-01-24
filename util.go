@@ -51,3 +51,8 @@ func GetClrCount() uint32 {
 func Halted() bool {
 	return M.x86.intr&INTR_HALTED != 0
 }
+
+func Counting() bool {
+	return M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE) != 0
+}
+	

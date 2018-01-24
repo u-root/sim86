@@ -2336,7 +2336,6 @@ REMARKS:
 Handles opcode 0xa5
 ****************************************************************************/
 func x86emuOp_movs_word(_ uint8) {
-	var val uint32
 	var inc int
 	var count uint32
 
@@ -2582,7 +2581,7 @@ func x86emuOp_stos_word(_ uint8) {
 	}
 	TRACE_AND_STEP()
 	count = 1
-	if M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE) {
+	if Counting() {
 		/* don't care whether REPE or REPNE */
 		/* move them until (E)CX is ZERO. */
 		count = GetClrCount()
@@ -2615,11 +2614,11 @@ func x86emuOp_lods_byte(_ uint8) {
 	DECODE_PRINTF("LODS\tBYTE\n")
 	TRACE_AND_STEP()
 	inc = incamount(1)
-	if M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE) {
+	if Counting() {
 		/* don't care whether REPE or REPNE */
 		/* move them until (E)CX is ZERO. */
 		for Count(SYSMODE_32BIT_REP) != 0 {
-			M.x86.gen.A.Setl8(fetch_data_byte(M.x86.spc.SI.Get16()))
+			M.x86.gen.A.Setl8(fetch_data_byte(uint32(M.x86.spc.SI.Get16())))
 			M.x86.gen.C.Dec()
 			M.x86.spc.SI.Change(inc)
 			if Halted() {
@@ -2628,7 +2627,7 @@ func x86emuOp_lods_byte(_ uint8) {
 		}
 		M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)
 	} else {
-		M.x86.gen.A.Setl8(fetch_data_byte(M.x86.spc.SI.Get16()))
+		M.x86.gen.A.Setl8(fetch_data_byte(uint32(M.x86.spc.SI.Get16())))
 		M.x86.spc.SI.Change(inc)
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -2653,7 +2652,7 @@ func x86emuOp_lods_word(_ uint8) {
 	}
 	TRACE_AND_STEP()
 	count = 1
-	if M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE) {
+	if Counting() {
 		/* don't care whether REPE or REPNE */
 		/* move them until (E)CX is ZERO. */
 		count = GetClrCount()
@@ -2679,22 +2678,21 @@ REMARKS:
 Handles opcode 0xae
 ****************************************************************************/
 func x86emuOp_scas_byte(_ uint8) {
-	var val2 int8
 	var inc int
 
 	START_OF_INSTR()
 	DECODE_PRINTF("SCAS\tBYTE\n")
 	TRACE_AND_STEP()
 	inc = incamount(1)
-	if M.x86.mode & SYSMODE_PREFIX_REPE {
+	if M.x86.mode & SYSMODE_PREFIX_REPE != 0 {
 		/* REPE  */
 		/* move them until (E)CX is ZERO. */
 		for Count(SYSMODE_32BIT_REP) != 0 {
-			val2 = fetch_data_byte_abs(M.x86.seg.ES.Get(), uint32(M.x86.spc.DI.Get16()))
+			val2 := fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16())
 			cmp_byte(M.x86.gen.A.Getl8(), val2)
 			M.x86.gen.C.Dec()
 			M.x86.spc.DI.Change(inc)
-			if ACCESS_FLAG(F_ZF) == 0 {
+			if ACCESS_FLAG(F_ZF) {
 				break
 			}
 
@@ -2703,11 +2701,11 @@ func x86emuOp_scas_byte(_ uint8) {
 			}
 		}
 		M.x86.mode &= ^SYSMODE_PREFIX_REPE
-	} else if M.x86.mode & SYSMODE_PREFIX_REPNE {
+	} else if M.x86.mode & SYSMODE_PREFIX_REPNE != 0{
 		/* REPNE  */
 		/* move them until (E)CX is ZERO. */
 		for Count(SYSMODE_32BIT_REP) != 0 {
-			val2 = fetch_data_byte_abs(M.x86.seg.ES.Get(), uint32(M.x86.spc.DI.Get16()))
+			val2 := fetch_data_byte_abs(M.x86.seg.ES.Get(),(M.x86.spc.DI.Get16())
 			cmp_byte(M.x86.gen.A.Getl8(), val2)
 			M.x86.gen.C.Dec()
 			M.x86.spc.DI.Change(inc)
@@ -2720,7 +2718,7 @@ func x86emuOp_scas_byte(_ uint8) {
 		}
 		M.x86.mode &= ^SYSMODE_PREFIX_REPNE
 	} else {
-		val2 = fetch_data_byte_abs(M.x86.seg.ES.Get(), uint32(M.x86.spc.DI.Get16()))
+		val2 := fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16())
 		cmp_byte(M.x86.gen.A.Getl8(), val2)
 		M.x86.spc.DI.Change(inc)
 	}
@@ -2734,7 +2732,6 @@ Handles opcode 0xaf
 ****************************************************************************/
 func x86emuOp_scas_word(_ uint8) {
 	var inc int
-	var val uint32
 
 	START_OF_INSTR()
 	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
@@ -2745,7 +2742,7 @@ func x86emuOp_scas_word(_ uint8) {
 		inc = incamount(2)
 	}
 	TRACE_AND_STEP()
-	if M.x86.mode & SYSMODE_PREFIX_REPE {
+	if M.x86.mode & SYSMODE_PREFIX_REPE != 0 {
 		/* REPE  */
 		/* move them until (E)CX is ZERO. */
 		for Count(SYSMODE_32BIT_REP) != 0 {
