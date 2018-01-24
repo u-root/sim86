@@ -276,3 +276,16 @@ func JMP_TRACE(u, v, w, x uint16, s string) {
 		fmt.Printf("%04x:%04x: JMP %s%04x:%04x\n", u, v, s, w, x)
 	}
 }
+
+func CALL_TRACE(u,v,w,x uint16,s string){
+	if (DEBUG_TRACECALLREGS()) {
+		x86emu_dump_regs();                                     
+	}
+	if (DEBUG_TRACECALL()) {
+		fmt.Printf("%04x:%04x: CALL %s%04x:%04x\n", u , v, s, w, x);
+	}
+}
+
+func halted() {
+	return M.x86.intr & INTR_HALTED != 0
+}

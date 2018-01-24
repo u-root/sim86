@@ -2027,9 +2027,9 @@ func x86emuOp_cbw(_ uint8) {
 		}
 	} else {
 		if M.x86.gen.A.Getl8() & 0x80 != 0{
-			M.x86.R_AH = 0xff
+			M.x86.gen.A.Seth8(0xff)
 		} else {
-			M.x86.R_AH = 0x0
+			M.x86.gen.A.Seth8(0x0)
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -2050,13 +2050,13 @@ func x86emuOp_cwd(_ uint8) {
 	DECODE_PRINTF("CWD\n")
 	TRACE_AND_STEP()
 	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-		if M.x86.gen.A.Get32() & 0x80000000 {
+		if M.x86.gen.A.Get32() & 0x80000000 != 0{
 			M.x86.gen.D.Set32(0xffffffff)
 		} else {
 			M.x86.gen.D.Set32(0x0)
 		}
 	} else {
-		if M.x86.gen.A.Get16() & 0x8000 {
+		if M.x86.gen.A.Get16() & 0x8000 != 0{
 			M.x86.gen.D.Set16(0xffff)
 		} else {
 			M.x86.gen.D.Set16(0x0)
@@ -2071,7 +2071,7 @@ REMARKS:
 Handles opcode 0x9a
 ****************************************************************************/
 func x86emuOp_call_far_IMM(_ uint8) {
-	var farseg, faroff uint32
+	var farseg, faroff uint16
 
 	START_OF_INSTR()
 	DECODE_PRINTF("CALL\t")
@@ -2100,7 +2100,7 @@ func x86emuOp_call_far_IMM(_ uint8) {
 	} else {
 		push_word(M.x86.spc.IP.Get16())
 	}
-	M.x86.spc.IP.Set32(faroff & 0xffff)
+	M.x86.spc.IP.Set32(uint32(faroff & 0xffff))
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -2134,7 +2134,7 @@ func x86emuOp_pushf_word(_ uint8) {
 	TRACE_AND_STEP()
 
 	/* clear out *all* bits not representing flags, and turn on real bits */
-	flags = (M.x86.gen.FLAGS & F_MSK) | F_ALWAYS_ON
+	flags = (M.x86.spc.FLAGS & F_MSK) | F_ALWAYS_ON
 	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
 		push_long(flags)
 	} else {
@@ -2157,9 +2157,9 @@ func x86emuOp_popf_word(_ uint8) {
 	}
 	TRACE_AND_STEP()
 	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-		M.x86.gen.FLAGS = pop_long()
+		M.x86.spc.FLAGS = pop_long()
 	} else {
-		M.x86.R_FLG = pop_word()
+		M.x86.spc.FLAGS = uint32(pop_word())
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -2174,9 +2174,9 @@ func x86emuOp_sahf(_ uint8) {
 	DECODE_PRINTF("SAHF\n")
 	TRACE_AND_STEP()
 	/* clear the lower bits of the flag register */
-	M.x86.R_FLG &= 0xffffff00
+	M.x86.spc.FLAGS &= 0xffffff00
 	/* or in the AH register into the flags register */
-	M.x86.R_FLG |= M.x86.R_AH
+	M.x86.spc.FLAGS |= uint32(M.x86.gen.A.Geth8())
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -2189,10 +2189,10 @@ func x86emuOp_lahf(_ uint8) {
 	START_OF_INSTR()
 	DECODE_PRINTF("LAHF\n")
 	TRACE_AND_STEP()
-	M.x86.R_AH = (uint8)(M.x86.R_FLG & 0xff)
+	M.x86.gen.A.Seth8((uint8)(M.x86.spc.FLAGS & 0xff))
 	/*undocumented TC++ behavior??? Nope.  It's documented, but
 	  you have too look real hard to notice it. */
-	M.x86.R_AH |= 0x2
+	M.x86.gen.A.Seth8(0x2)
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -2208,7 +2208,7 @@ func x86emuOp_mov_AL_M_IMM(_ uint8) {
 	offset := fetch_word_imm()
 	DECODE_PRINTF2("[%04x]\n", offset)
 	TRACE_AND_STEP()
-	M.x86.A.Set(fetch_data_byte(offset))
+	M.x86.gen.A.Setl8(fetch_data_byte(uint32(offset)))
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -2228,9 +2228,9 @@ func x86emuOp_mov_AX_M_IMM(_ uint8) {
 	}
 	TRACE_AND_STEP()
 	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-		M.x86.A.Set(uint16(fetch_data_long(offset)))
+		M.x86.gen.A.Set(uint16(fetch_data_long(uint32(offset))))
 	} else {
-		M.x86.A.Set(fetch_data_word(offset))
+		M.x86.gen.A.Set16(fetch_data_word(uint32(offset)))
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -2247,7 +2247,7 @@ func x86emuOp_mov_M_AL_IMM(_ uint8) {
 	offset := fetch_word_imm()
 	DECODE_PRINTF2("[%04x],AL\n", offset)
 	TRACE_AND_STEP()
-	store_data_byte(offset, M.x86.gen.A.Getl8())
+	store_data_byte(uint32(offset), M.x86.gen.A.Getl8())
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -2267,9 +2267,9 @@ func x86emuOp_mov_M_AX_IMM(_ uint8) {
 	}
 	TRACE_AND_STEP()
 	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-		store_data_long(offset, M.x86.A.Get32())
+		store_data_long(uint32(offset), M.x86.gen.A.Get32())
 	} else {
-		store_data_word(offset, M.x86.A.Get16())
+		store_data_word(uint32(offset), M.x86.gen.A.Get16())
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -2280,7 +2280,6 @@ REMARKS:
 Handles opcode 0xa4
 ****************************************************************************/
 func x86emuOp_movs_byte(_ uint8) {
-	var val uint8
 	var count uint32
 	var inc = int32(1)
 
@@ -2296,22 +2295,22 @@ func x86emuOp_movs_byte(_ uint8) {
 		/* don't care whether REPE or REPNE */
 		/* move them until (E)CX is ZERO. */
 		if M.x86.mode&SYSMODE_32BIT_REP != 0 {
-			count = M.x86.C.Get32()
-			M.x86.C.Set32(0)
+			count = M.x86.gen.C.Get32()
+			M.x86.gen.C.Set32(0)
 		} else {
-			count = M.x86.C.Get16()
-			M.x86.C.Set16(0)
+			count = uint32(M.x86.gen.C.Get16())
+			M.x86.gen.C.Set16(0)
 		}
 
 		M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)
 	}
 	for count > 0 {
-		cont--
-		val = fetch_data_byte(M.x86.spc.SI.Get16())
-		store_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16(), val)
-		M.x86.SI.Change(inc)
-		M.x86.DI.Change(inc)
-		if M.x86.intr & INTR_HALTED {
+		count--
+		val := fetch_data_byte(uint32(M.x86.spc.SI.Get16()))
+		store_data_byte_abs(uint32(M.x86.seg.ES.Get()), uint32(M.x86.spc.DI.Get16()), val)
+		M.x86.spc.SI.Change(inc)
+		M.x86.spc.DI.Change(inc)
+		if halted() {
 			break
 		}
 	}
@@ -2319,14 +2318,14 @@ func x86emuOp_movs_byte(_ uint8) {
 	END_OF_INSTR()
 }
 
-func cxcount() int {
-	var count int
+func cxcount() uint32 {
+	var count uint32
 	if (M.x86.mode & SYSMODE_32BIT_REP) != 0 {
-		count = M.x86.C.Get32()
-		M.x86.C.Set32(0)
+		count = M.x86.gen.C.Get32()
+		M.x86.gen.C.Set32(0)
 	} else {
-		count = M.x86.C.Get16()
-		M.x86.C.Set16(0)
+		count = uint32(M.x86.gen.C.Get16())
+		M.x86.gen.C.Set16(0)
 	}
 
 	return count
@@ -2342,7 +2341,7 @@ func x86emuOp_movs_word(_ uint8) {
 	var count uint32
 
 	START_OF_INSTR()
-	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 != 0 {
+	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
 		DECODE_PRINTF("MOVS\tDWORD\n")
 		if ACCESS_FLAG(F_DF) { /* down */
 			inc = -4
@@ -2359,8 +2358,8 @@ func x86emuOp_movs_word(_ uint8) {
 	}
 	TRACE_AND_STEP()
 	count = 1
-	if M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE) {
-		count = cxCount()
+	if M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE) != 0{
+		count = Count()
 		M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)
 		/* don't care whether REPE or REPNE */
 		/* move them until (E)CX is ZERO. */
@@ -2372,7 +2371,7 @@ func x86emuOp_movs_word(_ uint8) {
 			store_data_long_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16(), val)
 		} else {
 			val := fetch_data_word(M.x86.spc.SI.Get16())
-			store_data_word_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16(), uint16(val))
+			store_data_word_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16(), val)
 		}
 		M.x86.SI.Change(inc)
 		M.x86.DI.Change(inc)
@@ -2408,7 +2407,7 @@ func x86emuOp_cmps_byte(_ uint8) {
 			val1 = fetch_data_byte(M.x86.spc.SI.Get16())
 			val2 = fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16())
 			cmp_byte(val1, val2)
-			M.x86.C.Dec()
+			M.x86.gen.C.Dec()
 			M.x86.SI.Change(inc)
 			M.x86.DI.Change(inc)
 			if ((M.x86.mode&SYSMODE_PREFIX_REPE != 0) && (ACCESS_FLAG(F_ZF) == 0)) ||
@@ -2505,7 +2504,7 @@ func x86emuOp_test_AL_IMM(_ uint8) {
 	imm := fetch_byte_imm()
 	DECODE_PRINTF2("%04x\n", imm)
 	TRACE_AND_STEP()
-	test_byte(M.x86.A.Get8l(), uint8(imm))
+	test_byte(M.x86.gen.A.Get8l(), uint8(imm))
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -3264,7 +3263,7 @@ func x86emuOp_int3(_ uint8) {
 	if _X86EMU_intrTab[3] {
 		(*_X86EMU_intrTab[3])(3)
 	} else {
-		push_word(uint16(M.x86.R_FLG))
+		push_word(uint16(M.x86.gen.FLAGS))
 		CLEAR_FLAG(F_IF)
 		CLEAR_FLAG(F_TF)
 		push_word(M.x86.seg.CS.Get())
@@ -3291,7 +3290,7 @@ func x86emuOp_int_IMM(_ uint8) {
 	if _X86EMU_intrTab[intnum] {
 		(*_X86EMU_intrTab[intnum])(intnum)
 	} else {
-		push_word(uint16(M.x86.R_FLG))
+		push_word(uint16(M.x86.gen.FLAGS))
 		CLEAR_FLAG(F_IF)
 		CLEAR_FLAG(F_TF)
 		push_word(M.x86.seg.CS.Get())
@@ -3317,7 +3316,7 @@ func x86emuOp_into(_ uint8) {
 		if _X86EMU_intrTab[4] {
 			(*_X86EMU_intrTab[4])(4)
 		} else {
-			push_word(uint16(M.x86.R_FLG))
+			push_word(uint16(M.x86.gen.FLAGS))
 			CLEAR_FLAG(F_IF)
 			CLEAR_FLAG(F_TF)
 			push_word(M.x86.seg.CS.Get())
@@ -3342,7 +3341,7 @@ func x86emuOp_iret(_ uint8) {
 
 	M.x86.spc.IP.Set16(pop_word())
 	M.x86.seg.CS.Set(pop_word())
-	M.x86.R_FLG = pop_word()
+	M.x86.gen.FLAGS = pop_word()
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -3684,7 +3683,7 @@ func x86emuOp_aam(_ uint8) {
 	}
 	TRACE_AND_STEP()
 	/* note the type change here --- returning AL and AH in AX. */
-	M.x86.A.Set(aam_word(M.x86.A.Getl()))
+	M.x86.gen.A.Set(aam_word(M.x86.gen.A.Getl()))
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }

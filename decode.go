@@ -452,7 +452,7 @@ Writes a byte value to an absolute memory location.
 
 NOTE: Do not inline this function as (*sys_wrX) is already inline!
 ****************************************************************************/
-func store_data_byte_abs(segment uint, offset uint32, val uint8) {
+func store_data_byte_abs(segment uint32, offset uint32, val uint8) {
 
 	panic("fix me")
 }
