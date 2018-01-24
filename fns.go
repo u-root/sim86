@@ -277,17 +277,17 @@ func JMP_TRACE(u, v, w, x uint16, s string) {
 	}
 }
 
-func CALL_TRACE(u,v,w,x uint16,s string){
-	if (DEBUG_TRACECALLREGS()) {
-		x86emu_dump_regs();                                     
+func CALL_TRACE(u, v, w, x uint16, s string) {
+	if DEBUG_TRACECALLREGS() {
+		x86emu_dump_regs()
 	}
-	if (DEBUG_TRACECALL()) {
-		fmt.Printf("%04x:%04x: CALL %s%04x:%04x\n", u , v, s, w, x);
+	if DEBUG_TRACECALL() {
+		fmt.Printf("%04x:%04x: CALL %s%04x:%04x\n", u, v, s, w, x)
 	}
 }
 
 func halted() bool {
-	return M.x86.intr & INTR_HALTED != 0
+	return M.x86.intr&INTR_HALTED != 0
 }
 
 func sysw(addr uint32, i interface{}) {
@@ -296,12 +296,12 @@ func sysw(addr uint32, i interface{}) {
 func sysr(addr uint32, i interface{}) {
 	panic("sysr")
 }
-func RETURN_TRACE(u,v,w,x uint16, s string) {
+func RETURN_TRACE(u, v, w, x uint16, s string) {
 	if DEBUG_TRACECALLREGS() {
 		x86emu_dump_regs()
-	} 
+	}
 	if DEBUG_TRACECALL() {
-		fmt.Printf("%04x:%04x: RET %s %04x:%04x\n",u,v,s,w,x)
+		fmt.Printf("%04x:%04x: RET %s %04x:%04x\n", u, v, s, w, x)
 	}
 }
 func sys_inb(i uint16) uint8 {
@@ -324,7 +324,7 @@ func sys_outl(i uint16, v uint32) {
 	panic("io")
 }
 func CONDITIONAL_SET_FLAG_BOOL(cond bool, flag uint32) {
-	if (cond) {
+	if cond {
 		SET_FLAG(flag)
 		return
 	}
@@ -333,9 +333,13 @@ func CONDITIONAL_SET_FLAG_BOOL(cond bool, flag uint32) {
 
 func CONDITIONAL_SET_FLAG(cond interface{}, flag uint32) {
 	switch v := cond.(type) {
-	case bool:CONDITIONAL_SET_FLAG_BOOL(v, flag)
-	case uint32:CONDITIONAL_SET_FLAG_BOOL(v != 0, flag)
-	case uint16:CONDITIONAL_SET_FLAG_BOOL(v != 0, flag)
-	default: panic("CSF")
+	case bool:
+		CONDITIONAL_SET_FLAG_BOOL(v, flag)
+	case uint32:
+		CONDITIONAL_SET_FLAG_BOOL(v != 0, flag)
+	case uint16:
+		CONDITIONAL_SET_FLAG_BOOL(v != 0, flag)
+	default:
+		panic("CSF")
 	}
 }

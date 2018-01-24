@@ -53,6 +53,5 @@ func Halted() bool {
 }
 
 func Counting() bool {
-	return M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE) != 0
+	return M.x86.mode&(SYSMODE_PREFIX_REPE|SYSMODE_PREFIX_REPNE) != 0
 }
-	

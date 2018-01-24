@@ -1862,7 +1862,7 @@ func x86emuOp_lea_word_R_M(_ uint8) {
 	DECODE_PRINTF("LEA\t")
 	mod, rh, rl := fetch_decode_modrm()
 	if mod < 3 {
-		if M.x86.mode & SYSMODE_PREFIX_ADDR != 0{
+		if M.x86.mode&SYSMODE_PREFIX_ADDR != 0 {
 			srcreg := decode_rm_long_register(uint32(rh))
 			DECODE_PRINTF(",")
 			destoffset := decode_rmXX_address(mod, rl)
@@ -2017,13 +2017,13 @@ func x86emuOp_cbw(_ uint8) {
 	}
 	TRACE_AND_STEP()
 	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-		if M.x86.gen.A.Get16() & 0x8000 != 0{
+		if M.x86.gen.A.Get16()&0x8000 != 0 {
 			M.x86.gen.A.Set32(M.x86.gen.A.Get32() | 0xffff0000)
 		} else {
 			M.x86.gen.A.Set32(M.x86.gen.A.Get32() & 0x0000ffff)
 		}
 	} else {
-		if M.x86.gen.A.Getl8() & 0x80 != 0{
+		if M.x86.gen.A.Getl8()&0x80 != 0 {
 			M.x86.gen.A.Seth8(0xff)
 		} else {
 			M.x86.gen.A.Seth8(0x0)
@@ -2047,13 +2047,13 @@ func x86emuOp_cwd(_ uint8) {
 	DECODE_PRINTF("CWD\n")
 	TRACE_AND_STEP()
 	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-		if M.x86.gen.A.Get32() & 0x80000000 != 0{
+		if M.x86.gen.A.Get32()&0x80000000 != 0 {
 			M.x86.gen.D.Set32(0xffffffff)
 		} else {
 			M.x86.gen.D.Set32(0x0)
 		}
 	} else {
-		if M.x86.gen.A.Get16() & 0x8000 != 0{
+		if M.x86.gen.A.Get16()&0x8000 != 0 {
 			M.x86.gen.D.Set16(0xffff)
 		} else {
 			M.x86.gen.D.Set16(0x0)
@@ -2354,7 +2354,7 @@ func x86emuOp_movs_word(_ uint8) {
 	}
 	TRACE_AND_STEP()
 	count = 1
-	if M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE) != 0{
+	if M.x86.mode&(SYSMODE_PREFIX_REPE|SYSMODE_PREFIX_REPNE) != 0 {
 		count = Count(SYSMODE_32BIT_REP)
 		M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)
 		/* don't care whether REPE or REPNE */
@@ -2395,7 +2395,7 @@ func x86emuOp_cmps_byte(_ uint8) {
 		inc = 1
 	}
 
-	if M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE) != 0{
+	if M.x86.mode&(SYSMODE_PREFIX_REPE|SYSMODE_PREFIX_REPNE) != 0 {
 		/* REPE  */
 		/* move them until (E)CX is ZERO. */
 		for Count(SYSMODE_32BIT_REP) != 0 {
@@ -2406,7 +2406,7 @@ func x86emuOp_cmps_byte(_ uint8) {
 			M.x86.spc.SI.Change(inc)
 			M.x86.spc.DI.Change(inc)
 			if ((M.x86.mode&SYSMODE_PREFIX_REPE != 0) &&
-				(! ACCESS_FLAG(F_ZF))) ||
+				(!ACCESS_FLAG(F_ZF))) ||
 				((M.x86.mode&SYSMODE_PREFIX_REPNE != 0) && ACCESS_FLAG(F_ZF)) ||
 				((M.x86.intr & INTR_HALTED) != 0) {
 
@@ -2446,7 +2446,7 @@ func x86emuOp_cmps_word(_ uint8) {
 	}
 
 	TRACE_AND_STEP()
-	if M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE) != 0{
+	if M.x86.mode&(SYSMODE_PREFIX_REPE|SYSMODE_PREFIX_REPNE) != 0 {
 		/* REPE  */
 		/* move them until (E)CX is ZERO. */
 		for Count(SYSMODE_32BIT_REP) != 0 {
@@ -2463,7 +2463,7 @@ func x86emuOp_cmps_word(_ uint8) {
 			M.x86.spc.SI.Change(inc)
 			M.x86.spc.DI.Change(inc)
 			if ((M.x86.mode&SYSMODE_PREFIX_REPE != 0) &&
-				(! ACCESS_FLAG(F_ZF))) ||
+				(!ACCESS_FLAG(F_ZF))) ||
 				((M.x86.mode&SYSMODE_PREFIX_REPNE != 0) && ACCESS_FLAG(F_ZF)) ||
 				((M.x86.intr & INTR_HALTED) != 0) {
 
@@ -2538,7 +2538,7 @@ func x86emuOp_stos_byte(_ uint8) {
 	DECODE_PRINTF("STOS\tBYTE\n")
 	inc := incamount(1)
 	TRACE_AND_STEP()
-	if M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE) != 0{
+	if M.x86.mode&(SYSMODE_PREFIX_REPE|SYSMODE_PREFIX_REPNE) != 0 {
 		/* don't care whether REPE or REPNE */
 		/* move them until (E)CX is ZERO. */
 		for Count(SYSMODE_32BIT_REP) != 0 {
@@ -2679,7 +2679,7 @@ func x86emuOp_scas_byte(_ uint8) {
 	DECODE_PRINTF("SCAS\tBYTE\n")
 	TRACE_AND_STEP()
 	inc = incamount(1)
-	if M.x86.mode & SYSMODE_PREFIX_REPE != 0 {
+	if M.x86.mode&SYSMODE_PREFIX_REPE != 0 {
 		/* REPE  */
 		/* move them until (E)CX is ZERO. */
 		for Count(SYSMODE_32BIT_REP) != 0 {
@@ -2696,11 +2696,11 @@ func x86emuOp_scas_byte(_ uint8) {
 			}
 		}
 		M.x86.mode &= ^SYSMODE_PREFIX_REPE
-	} else if M.x86.mode & SYSMODE_PREFIX_REPNE != 0{
+	} else if M.x86.mode&SYSMODE_PREFIX_REPNE != 0 {
 		/* REPNE  */
 		/* move them until (E)CX is ZERO. */
 		for Count(SYSMODE_32BIT_REP) != 0 {
-			val2 := fetch_data_byte_abs(M.x86.seg.ES.Get(),M.x86.spc.DI.Get16())
+			val2 := fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16())
 			cmp_byte(M.x86.gen.A.Getl8(), val2)
 			M.x86.gen.C.Dec()
 			M.x86.spc.DI.Change(inc)
@@ -2737,7 +2737,7 @@ func x86emuOp_scas_word(_ uint8) {
 		inc = incamount(2)
 	}
 	TRACE_AND_STEP()
-	if M.x86.mode & SYSMODE_PREFIX_REPE != 0 {
+	if M.x86.mode&SYSMODE_PREFIX_REPE != 0 {
 		/* REPE  */
 		/* move them until (E)CX is ZERO. */
 		for Count(SYSMODE_32BIT_REP) != 0 {
@@ -2758,7 +2758,7 @@ func x86emuOp_scas_word(_ uint8) {
 			}
 		}
 		M.x86.mode &= ^SYSMODE_PREFIX_REPE
-	} else if M.x86.mode & SYSMODE_PREFIX_REPNE != 0{
+	} else if M.x86.mode&SYSMODE_PREFIX_REPNE != 0 {
 		/* REPNE  */
 		/* move them until (E)CX is ZERO. */
 		for Count(SYSMODE_32BIT_REP) != 0 {
@@ -2824,13 +2824,13 @@ func x86emuOp_mov_word_register_IMM(op1 uint8) {
 		srcval := fetch_long_imm()
 		DECODE_PRINTF2(",%x\n", srcval)
 		TRACE_AND_STEP()
-		reg.Set( srcval)
+		reg.Set(srcval)
 	} else {
 		reg := decode_rm_word_register(uint32(op1))
 		srcval := fetch_word_imm()
 		DECODE_PRINTF2(",%x\n", srcval)
 		TRACE_AND_STEP()
-		reg.Set( uint16(srcval))
+		reg.Set(uint16(srcval))
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -3216,7 +3216,7 @@ func x86emuOp_ret_far_IMM(_ uint8) {
 	M.x86.spc.IP.Set(pop_word())
 	M.x86.seg.CS.Set(pop_word())
 	RETURN_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get(), M.x86.spc.IP.Get16(), "FAR")
-	M.x86.spc.SP.Add( imm)
+	M.x86.spc.SP.Add(imm)
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -3830,7 +3830,7 @@ Handles opcode 0xe6
 func x86emuOp_out_byte_IMM_AL(_ uint8) {
 	START_OF_INSTR()
 	DECODE_PRINTF("OUT\t")
-	port  := fetch_byte_imm()
+	port := fetch_byte_imm()
 	DECODE_PRINTF2("%x,AL\n", port)
 	TRACE_AND_STEP()
 	sys_outb(uint16(port), M.x86.gen.A.Getl8())
@@ -4054,7 +4054,7 @@ func x86emuOp_repne(_ uint8) {
 	DECODE_PRINTF("REPNE\n")
 	TRACE_AND_STEP()
 	M.x86.mode |= SYSMODE_PREFIX_REPNE
-	if M.x86.mode & SYSMODE_PREFIX_ADDR != 0{
+	if M.x86.mode&SYSMODE_PREFIX_ADDR != 0 {
 		M.x86.mode |= SYSMODE_32BIT_REP
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -4070,7 +4070,7 @@ func x86emuOp_repe(_ uint8) {
 	DECODE_PRINTF("REPE\n")
 	TRACE_AND_STEP()
 	M.x86.mode |= SYSMODE_PREFIX_REPE
-	if M.x86.mode & SYSMODE_PREFIX_ADDR != 0{
+	if M.x86.mode&SYSMODE_PREFIX_ADDR != 0 {
 		M.x86.mode |= SYSMODE_32BIT_REP
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -4356,7 +4356,7 @@ func x86emuOp_opcF7_word_RM(_ uint8) {
 			case 3:
 				DECODE_PRINTF("\n")
 				TRACE_AND_STEP()
-				destreg.Set (neg_long(destreg.Get32()))
+				destreg.Set(neg_long(destreg.Get32()))
 				break
 			case 4:
 				DECODE_PRINTF("\n")

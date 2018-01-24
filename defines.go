@@ -63,7 +63,7 @@ var FB_TF uint32 = 256
 var FB_IF uint32 = 512
 var FB_DF uint32 = 1024
 var FB_OF uint32 = 2048
-var F_MSK uint32 = (FB_CF|FB_PF|FB_AF|FB_ZF|FB_SF|FB_TF|FB_IF|FB_DF|FB_OF)
+var F_MSK uint32 = (FB_CF | FB_PF | FB_AF | FB_ZF | FB_SF | FB_TF | FB_IF | FB_DF | FB_OF)
 
 /* 80286 and above always have bit#1 set */
 var F_ALWAYS_ON uint32 = (0x0002) /* flag bits always on */

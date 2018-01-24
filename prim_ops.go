@@ -115,7 +115,7 @@ func PARITY(x uint32) bool {
 	return ((x86emu_parity_tab[x/32]>>(x%32))&1 == 0)
 }
 
-func XOR2(uint32) uint32 {
+func XOR2(x uint32) uint32 {
 	return (((x) ^ ((x) >> 1)) & 0x1)
 }
 
@@ -135,13 +135,13 @@ func set_parity_flag(res uint32) {
 func set_szp_flags_8(res uint8) {
 	CONDITIONAL_SET_FLAG(res&0x80, F_SF)
 	CONDITIONAL_SET_FLAG(res == 0, F_ZF)
-	set_parity_flag(res)
+	set_parity_flag(uint32(res))
 }
 
 func set_szp_flags_16(res uint16) {
 	CONDITIONAL_SET_FLAG(res&0x8000, F_SF)
 	CONDITIONAL_SET_FLAG(res == 0, F_ZF)
-	set_parity_flag(res)
+	set_parity_flag(uint32(res))
 }
 
 func set_szp_flags_32(res uint32) {
@@ -171,24 +171,22 @@ func no_carry_long_side_eff(res uint32) {
 	set_szp_flags_32(res)
 }
 
-func calc_carry_chain(bits int, d uint32, s uint32, res uint32, set_carry int) {
-	var cc uint32
+func calc_carry_chain(bits uint32, d uint32, s uint32, res uint32, set_carry int) {
 
-	cc = (s & d) | ((^res) & (s | d))
+	cc := (s & d) | ((^res) & (s | d))
 	CONDITIONAL_SET_FLAG(XOR2(cc>>(bits-2)), F_OF)
 	CONDITIONAL_SET_FLAG(cc&0x8, F_AF)
-	if set_carry {
+	if set_carry != 0 {
 		CONDITIONAL_SET_FLAG(res&(1<<bits), F_CF)
 	}
 }
 
-func calc_borrow_chain(bits int, d uint32, s uint32, res uint32, set_carry int) {
-	var bc uint32
+func calc_borrow_chain(bits uint32, d uint32, s uint32, res uint32, set_carry int) {
 
-	bc = (res & (^d | s)) | (^d & s)
+	bc := (res & (^d | s)) | (^d & s)
 	CONDITIONAL_SET_FLAG(XOR2(bc>>(bits-2)), F_OF)
 	CONDITIONAL_SET_FLAG(bc&0x8, F_AF)
-	if set_carry {
+	if set_carry != 0 {
 		CONDITIONAL_SET_FLAG(bc&(1<<(bits-1)), F_CF)
 	}
 }
@@ -236,14 +234,11 @@ REMARKS:
 Implements the AAD instruction and side effects.
 ****************************************************************************/
 func aad_word(d uint16) uint16 {
-	var l uint16
-	var lb, hb uint8
+	hb := uint16((d >> 8) & 0xff)
+	lb := uint16(uint8(d))
+	l := uint16(((lb + 10*hb) & 0xFF))
 
-	hb = (u8)((d >> 8) & 0xff)
-	lb = (u8)((d & 0xff))
-	l = uint16(((lb + 10*hb) & 0xFF))
-
-	no_carry_byte_side_eff(l & 0xFF)
+	no_carry_byte_side_eff(uint8(l))
 	return l
 }
 
@@ -258,7 +253,7 @@ func aam_word(d uint8) uint16 {
 	l = uint16((d % 10))
 	l |= uint16((h << 8))
 
-	no_carry_byte_side_eff(l & 0xFF)
+	no_carry_byte_side_eff(uint8(l))
 	return l
 }
 
@@ -267,7 +262,7 @@ REMARKS:
 Implements the ADC instruction and side effects.
 ****************************************************************************/
 func adc_byte(d uint8, s uint8) uint8 {
-	var res u32 /* all operands in native machine order */
+	var res uint32 /* all operands in native machine order */
 
 	res = d + s
 	if ACCESS_FLAG(F_CF) {
@@ -275,7 +270,7 @@ func adc_byte(d uint8, s uint8) uint8 {
 	}
 
 	set_szp_flags_8(res)
-	calc_carry_chain(8, s, d, res, 1)
+	calc_carry_chain(8, uint32(s), uint32(d), res, 1)
 
 	return uint8(res)
 }
@@ -285,7 +280,7 @@ REMARKS:
 Implements the ADC instruction and side effects.
 ****************************************************************************/
 func adc_word(d uint16, s uint16) uint16 {
-	var res u32 /* all operands in native machine order */
+	var res uint32 /* all operands in native machine order */
 
 	res = d + s
 	if ACCESS_FLAG(F_CF) {
@@ -293,7 +288,7 @@ func adc_word(d uint16, s uint16) uint16 {
 	}
 
 	set_szp_flags_16(uint16(res))
-	calc_carry_chain(16, s, d, res, 1)
+	calc_carry_chain(16, uint32(s), uint32(d), res, 1)
 
 	return uint16(res)
 }
@@ -305,7 +300,7 @@ Implements the ADC instruction and side effects.
 func adc_long(d uint32, s uint32) uint32 {
 	var lo uint32 /* all operands in native machine order */
 	var hi uint32
-	var res u32
+	var res uint32
 
 	lo = (d & 0xFFFF) + (s & 0xFFFF)
 	res = d + s
@@ -330,7 +325,7 @@ REMARKS:
 Implements the ADD instruction and side effects.
 ****************************************************************************/
 func add_byte(d uint8, s uint8) uint8 {
-	var res u32 /* all operands in native machine order */
+	var res uint32 /* all operands in native machine order */
 
 	res = d + s
 	set_szp_flags_8(uint8(res))
@@ -344,7 +339,7 @@ REMARKS:
 Implements the ADD instruction and side effects.
 ****************************************************************************/
 func add_word(d uint16, s uint16) uint16 {
-	var res u32 /* all operands in native machine order */
+	var res uint32 /* all operands in native machine order */
 
 	res = d + s
 	set_szp_flags_16(uint16(res))
@@ -358,7 +353,7 @@ REMARKS:
 Implements the ADD instruction and side effects.
 ****************************************************************************/
 func add_long(d uint32, s uint32) uint32 {
-	var res u32
+	var res uint32
 
 	res = d + s
 	set_szp_flags_32(res)
@@ -400,7 +395,7 @@ REMARKS:
 Implements the AND instruction and side effects.
 ****************************************************************************/
 func and_long(d uint32, s uint32) uint32 {
-	var res u32 /* all operands in native machine order */
+	var res uint32 /* all operands in native machine order */
 
 	res = d & s
 	no_carry_long_side_eff(res)
@@ -412,7 +407,7 @@ REMARKS:
 Implements the CMP instruction and side effects.
 ****************************************************************************/
 func cmp_byte(d uint8, s uint8) uint8 {
-	var res u32 /* all operands in native machine order */
+	var res uint32 /* all operands in native machine order */
 
 	res = d - s
 	set_szp_flags_8(uint8(res))
@@ -426,7 +421,7 @@ REMARKS:
 Implements the CMP instruction and side effects.
 ****************************************************************************/
 func cmp_word(d uint16, s uint16) uint16 {
-	var res u32 /* all operands in native machine order */
+	var res uint32 /* all operands in native machine order */
 
 	res = d - s
 	set_szp_flags_16(uint16(res))
@@ -440,7 +435,7 @@ REMARKS:
 Implements the CMP instruction and side effects.
 ****************************************************************************/
 func cmp_long(d uint32, s uint32) uint32 {
-	var res u32 /* all operands in native machine order */
+	var res uint32 /* all operands in native machine order */
 
 	res = d - s
 	set_szp_flags_32(res)
@@ -454,7 +449,7 @@ REMARKS:
 Implements the DAA instruction and side effects.
 ****************************************************************************/
 func daa_byte(d uint8) uint8 {
-	var res u32 = d
+	var res uint32 = d
 	if (d&0xf) > 9 || ACCESS_FLAG(F_AF) {
 		res += 6
 		SET_FLAG(F_AF)
@@ -489,7 +484,7 @@ REMARKS:
 Implements the DEC instruction and side effects.
 ****************************************************************************/
 func dec_byte(d uint8) uint8 {
-	var res u32 /* all operands in native machine order */
+	var res uint32 /* all operands in native machine order */
 
 	res = d - 1
 	set_szp_flags_8(uint8(res))
@@ -503,7 +498,7 @@ REMARKS:
 Implements the DEC instruction and side effects.
 ****************************************************************************/
 func dec_word(d uint16) uint16 {
-	var res u32 /* all operands in native machine order */
+	var res uint32 /* all operands in native machine order */
 
 	res = d - 1
 	set_szp_flags_16(uint16(res))
@@ -517,7 +512,7 @@ REMARKS:
 Implements the DEC instruction and side effects.
 ****************************************************************************/
 func dec_long(d uint32) uint32 {
-	var res u32 /* all operands in native machine order */
+	var res uint32 /* all operands in native machine order */
 
 	res = d - 1
 
@@ -532,7 +527,7 @@ REMARKS:
 Implements the INC instruction and side effects.
 ****************************************************************************/
 func inc_byte(d uint8) uint8 {
-	var res u32 /* all operands in native machine order */
+	var res uint32 /* all operands in native machine order */
 
 	res = d + 1
 	set_szp_flags_8(uint8(res))
@@ -546,7 +541,7 @@ REMARKS:
 Implements the INC instruction and side effects.
 ****************************************************************************/
 func inc_word(d uint16) uint16 {
-	var res u32 /* all operands in native machine order */
+	var res uint32 /* all operands in native machine order */
 
 	res = d + 1
 	set_szp_flags_16(uint16(res))
@@ -560,7 +555,7 @@ REMARKS:
 Implements the INC instruction and side effects.
 ****************************************************************************/
 func inc_long(d uint32) uint32 {
-	var res u32 /* all operands in native machine order */
+	var res uint32 /* all operands in native machine order */
 
 	res = d + 1
 	set_szp_flags_32(res)
@@ -599,7 +594,7 @@ REMARKS:
 Implements the OR instruction and side effects.
 ****************************************************************************/
 func or_long(d uint32, s uint32) uint32 {
-	var res u32 /* all operands in native machine order */
+	var res uint32 /* all operands in native machine order */
 
 	res = d | s
 	no_carry_long_side_eff(res)
@@ -641,7 +636,7 @@ REMARKS:
 Implements the OR instruction and side effects.
 ****************************************************************************/
 func neg_long(s uint32) uint32 {
-	var res u32
+	var res uint32
 
 	CONDITIONAL_SET_FLAG(s != 0, F_CF)
 	res = (u32) - s
@@ -1600,7 +1595,7 @@ REMARKS:
 Implements the SBB instruction and side effects.
 ****************************************************************************/
 func sbb_byte(d uint8, s uint8) uint8 {
-	var res u32 /* all operands in native machine order */
+	var res uint32 /* all operands in native machine order */
 	var bc uint32
 
 	if ACCESS_FLAG(F_CF) {
@@ -1623,7 +1618,7 @@ REMARKS:
 Implements the SBB instruction and side effects.
 ****************************************************************************/
 func sbb_word(d uint16, s uint16) uint16 {
-	var res u32 /* all operands in native machine order */
+	var res uint32 /* all operands in native machine order */
 	var bc uint32
 
 	if ACCESS_FLAG(F_CF) {
@@ -1646,7 +1641,7 @@ REMARKS:
 Implements the SBB instruction and side effects.
 ****************************************************************************/
 func sbb_long(d uint32, s uint32) uint32 {
-	var res u32 /* all operands in native machine order */
+	var res uint32 /* all operands in native machine order */
 	var bc uint32
 
 	if ACCESS_FLAG(F_CF) {
@@ -1670,7 +1665,7 @@ REMARKS:
 Implements the SUB instruction and side effects.
 ****************************************************************************/
 func sub_byte(d uint8, s uint8) uint8 {
-	var res u32 /* all operands in native machine order */
+	var res uint32 /* all operands in native machine order */
 	var bc uint32
 
 	res = d - s
@@ -1689,7 +1684,7 @@ REMARKS:
 Implements the SUB instruction and side effects.
 ****************************************************************************/
 func sub_word(d uint16, s uint16) uint16 {
-	var res u32 /* all operands in native machine order */
+	var res uint32 /* all operands in native machine order */
 	var bc uint32
 
 	res = d - s
@@ -1708,7 +1703,7 @@ REMARKS:
 Implements the SUB instruction and side effects.
 ****************************************************************************/
 func sub_long(d uint32, s uint32) uint32 {
-	var res u32 /* all operands in native machine order */
+	var res uint32 /* all operands in native machine order */
 	var bc uint32
 
 	res = d - s
@@ -1727,7 +1722,7 @@ REMARKS:
 Implements the TEST instruction and side effects.
 ****************************************************************************/
 func test_byte(d uint8, s uint8) {
-	var res u32 /* all operands in native machine order */
+	var res uint32 /* all operands in native machine order */
 
 	res = d & s
 
@@ -1742,7 +1737,7 @@ REMARKS:
 Implements the TEST instruction and side effects.
 ****************************************************************************/
 func test_word(d uint16, s uint16) {
-	var res u32 /* all operands in native machine order */
+	var res uint32 /* all operands in native machine order */
 
 	res = d & s
 
@@ -1757,7 +1752,7 @@ REMARKS:
 Implements the TEST instruction and side effects.
 ****************************************************************************/
 func test_long(d uint32, s uint32) {
-	var res u32 /* all operands in native machine order */
+	var res uint32 /* all operands in native machine order */
 
 	res = d & s
 
@@ -1796,7 +1791,7 @@ REMARKS:
 Implements the XOR instruction and side effects.
 ****************************************************************************/
 func xor_long(d uint32, s uint32) uint32 {
-	var res u32 /* all operands in native machine order */
+	var res uint32 /* all operands in native machine order */
 
 	res = d ^ s
 	no_carry_long_side_eff(res)
@@ -1889,7 +1884,7 @@ REMARKS:
 Implements the MUL instruction and side effects.
 ****************************************************************************/
 func mul_word(s uint16) {
-	var res u32 = M.x86.A.Get16() * s
+	var res uint32 = M.x86.A.Get16() * s
 
 	M.x86.gen.A.Set16(uint16(res))
 	M.x86.R_DX = uint16((res >> 16))
@@ -2214,7 +2209,7 @@ Pops a long from the stack.
 NOTE: Do not inline this, as (*sys_rdX) is already inline!
 ****************************************************************************/
 func pop_long() uint32 {
-	var res u32
+	var res uint32
 
 	if CHECK_SP_ACCESS() {
 		x86emu_check_sp_access()
