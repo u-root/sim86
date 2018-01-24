@@ -323,3 +323,19 @@ func sys_outw(i uint16, v uint16) {
 func sys_outl(i uint16, v uint32) {
 	panic("io")
 }
+func CONDITIONAL_SET_FLAG_BOOL(cond bool, flag uint32) {
+	if (cond) {
+		SET_FLAG(flag)
+		return
+	}
+	CLEAR_FLAG(flag)
+}
+
+func CONDITIONAL_SET_FLAG(cond interface{}, flag uint32) {
+	switch v := cond.(type) {
+	case bool:CONDITIONAL_SET_FLAG_BOOL(v, flag)
+	case uint32:CONDITIONAL_SET_FLAG_BOOL(v != 0, flag)
+	case uint16:CONDITIONAL_SET_FLAG_BOOL(v != 0, flag)
+	default: panic("CSF")
+	}
+}
