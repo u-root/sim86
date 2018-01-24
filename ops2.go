@@ -499,7 +499,7 @@ func x86emuOp2_bt_R(_ uint8) {
 			TRACE_AND_STEP()
 			bit := shiftreg.Get() & 0x1F
 			disp := shiftreg.Get() >> 5
-			srcval := fetch_data_long(srcoffset + disp)
+			srcval := fetch_data_long(srcoffset + uint32(disp))
 			CONDITIONAL_SET_FLAG(srcval&(0x1<<bit), F_CF)
 		} else {
 
@@ -692,10 +692,10 @@ func x86emuOp2_bts_R(_ uint8) {
 			TRACE_AND_STEP()
 			bit := shiftreg.Get() & 0x1F
 			disp := int16(shiftreg.Get()) >> 5
-			srcval := fetch_data_long(srcoffset + disp)
-			mask := (0x1 << bit)
+			srcval := fetch_data_long(srcoffset + uint32(disp))
+			mask := uint32(0x1 << bit)
 			CONDITIONAL_SET_FLAG(srcval&mask, F_CF)
-			store_data_long(srcoffset+disp, srcval|mask)
+			store_data_long(srcoffset+uint32(disp), srcval|mask)
 		} else {
 
 			DECODE_PRINTF(",")
@@ -703,10 +703,10 @@ func x86emuOp2_bts_R(_ uint8) {
 			TRACE_AND_STEP()
 			bit := shiftreg.Get() & 0xF
 			disp := int16(shiftreg.Get()) >> 4
-			srcval := fetch_data_word(srcoffset + disp)
-			mask := int16(0x1 << bit)
+			srcval := fetch_data_word(srcoffset + uint32(disp))
+			mask := uint16(0x1 << bit)
 			CONDITIONAL_SET_FLAG(srcval&mask, F_CF)
-			store_data_word(srcoffset+disp, srcval|mask)
+			store_data_word(srcoffset+uint32(disp), srcval|mask)
 		}
 	} else { /* register to register */
 		if M.x86.mode & SYSMODE_PREFIX_DATA != 0 {
@@ -716,9 +716,9 @@ func x86emuOp2_bts_R(_ uint8) {
 			shiftreg := decode_rm_long_register(rh)
 			TRACE_AND_STEP()
 			bit := shiftreg.Get() & 0x1F
-			mask := (0x1 << bit)
+			mask := uint32(0x1 << bit)
 			CONDITIONAL_SET_FLAG(srcreg.Get()&mask, F_CF)
-			srcreg.Get() |= mask
+			srcreg.Set(srcreg.Get() | mask)
 		} else {
 
 			srcreg := decode_rm_word_register(rl)
@@ -726,9 +726,9 @@ func x86emuOp2_bts_R(_ uint8) {
 			shiftreg := decode_rm_word_register(rh)
 			TRACE_AND_STEP()
 			bit := shiftreg.Get() & 0xF
-			mask := int16(0x1 << bit)
+			mask := uint16(0x1 << bit)
 			CONDITIONAL_SET_FLAG(srcreg.Get()&mask, F_CF)
-			*srcreg |= mask
+			srcreg.Set(srcreg.Get() | mask)
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -859,13 +859,13 @@ func x86emuOp2_imul_R_RM(_ uint8) {
 	mod, rh, rl := fetch_decode_modrm()
 	if mod < 3 {
 		if M.x86.mode & SYSMODE_PREFIX_DATA != 0 {
-
+			var res_lo, res_hi uint32
 			destreg := decode_rm_long_register(rh)
 			DECODE_PRINTF(",")
 			srcoffset := decode_rmXX_address(mod, rl)
 			srcval := fetch_data_long(srcoffset)
 			TRACE_AND_STEP()
-			imul_long_direct(&res_lo, &res_hi, int32(destreg.Get()), int32(srcval))
+			imul_long_direct(&res_lo, &res_hi, destreg.Get(), srcval)
 			if res_hi != 0 {
 				SET_FLAG(F_CF)
 				SET_FLAG(F_OF)
@@ -881,7 +881,7 @@ func x86emuOp2_imul_R_RM(_ uint8) {
 			srcoffset := decode_rmXX_address(mod, rl)
 			srcval := fetch_data_word(srcoffset)
 			TRACE_AND_STEP()
-			res = int16(destreg.Get()) * int16(srcval)
+			res := uint32(destreg.Get()) * uint32(srcval)
 			if res > 0xFFFF {
 				SET_FLAG(F_CF)
 				SET_FLAG(F_OF)
@@ -893,12 +893,12 @@ func x86emuOp2_imul_R_RM(_ uint8) {
 		}
 	} else { /* register to register */
 		if M.x86.mode & SYSMODE_PREFIX_DATA != 0 {
-
+			var res_lo, res_hi uint32
 			destreg := decode_rm_long_register(rh)
 			DECODE_PRINTF(",")
 			srcreg := decode_rm_long_register(rl)
 			TRACE_AND_STEP()
-			imul_long_direct(&res_lo, &res_hi, int32(destreg.Get()), int32(srcreg.Get()))
+			imul_long_direct(&res_lo, &res_hi, destreg.Get(), srcreg.Get())
 			if res_hi != 0 {
 				SET_FLAG(F_CF)
 				SET_FLAG(F_OF)
@@ -912,7 +912,7 @@ func x86emuOp2_imul_R_RM(_ uint8) {
 			destreg := decode_rm_word_register(rh)
 			DECODE_PRINTF(",")
 			srcreg := decode_rm_word_register(rl)
-			res = int16(destreg.Get()) * int16(srcreg.Get())
+			res := uint32(destreg.Get()) * uint32(srcreg.Get())
 			if res > 0xFFFF {
 				SET_FLAG(F_CF)
 				SET_FLAG(F_OF)
@@ -920,7 +920,7 @@ func x86emuOp2_imul_R_RM(_ uint8) {
 				CLEAR_FLAG(F_CF)
 				CLEAR_FLAG(F_OF)
 			}
-			destreg.Set16(uint16(res))
+			destreg.Set(uint16(res))
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -970,20 +970,20 @@ func x86emuOp2_btr_R(_ uint8) {
 			TRACE_AND_STEP()
 			bit := shiftreg.Get() & 0x1F
 			disp := int16(shiftreg.Get()) >> 5
-			srcval := fetch_data_long(srcoffset + disp)
-			mask := (0x1 << bit)
+			srcval := fetch_data_long(srcoffset + uint32(disp))
+			mask := uint32(0x1 << bit)
 			CONDITIONAL_SET_FLAG(srcval&mask, F_CF)
-			store_data_long(srcoffset+disp, srcval & ^mask)
+			store_data_long(srcoffset+uint32(disp), srcval & ^mask)
 		} else {
 
 			shiftreg := decode_rm_word_register(rh)
 			TRACE_AND_STEP()
 			bit := shiftreg.Get() & 0xF
 			disp := int16(shiftreg.Get()) >> 4
-			srcval := fetch_data_word(srcoffset + disp)
-			mask := int16(0x1 << bit)
+			srcval := fetch_data_word(srcoffset + uint32(disp))
+			mask := uint16(0x1 << bit)
 			CONDITIONAL_SET_FLAG(srcval&mask, F_CF)
-			store_data_word(srcoffset+disp, int16(srcval & ^mask))
+			store_data_word(srcoffset+uint32(disp), int16(srcval & ^mask))
 		}
 	} else { /* register to register */
 		if M.x86.mode & SYSMODE_PREFIX_DATA != 0 {
@@ -993,9 +993,9 @@ func x86emuOp2_btr_R(_ uint8) {
 			shiftreg := decode_rm_long_register(rh)
 			TRACE_AND_STEP()
 			bit := shiftreg.Get() & 0x1F
-			mask := (0x1 << bit)
+			mask := uint32(0x1 << bit)
 			CONDITIONAL_SET_FLAG(srcreg.Get()&mask, F_CF)
-			*srcreg &= ^mask
+			srcreg.Set(srcreg.Get() & ^mask)
 		} else {
 
 			srcreg := decode_rm_word_register(rl)
@@ -1003,9 +1003,9 @@ func x86emuOp2_btr_R(_ uint8) {
 			shiftreg := decode_rm_word_register(rh)
 			TRACE_AND_STEP()
 			bit := shiftreg.Get() & 0xF
-			mask := int16(0x1 << bit)
+			mask := uint16(0x1 << bit)
 			CONDITIONAL_SET_FLAG(srcreg.Get()&mask, F_CF)
-			*srcreg &= ^mask
+			srcreg.Set(srcreg.Set() & ^mask)
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -1182,7 +1182,7 @@ func x86emuOp2_btX_I(_ uint8) {
 
 			bit := shift & 0x1F
 			srcval := fetch_data_long(srcoffset)
-			mask := (0x1 << bit)
+			mask := uint32(0x1 << bit)
 			CONDITIONAL_SET_FLAG(srcval&mask, F_CF)
 			switch rh {
 			case 5:
@@ -1201,7 +1201,7 @@ func x86emuOp2_btX_I(_ uint8) {
 
 			bit := shift & 0xF
 			srcval := fetch_data_word(srcoffset)
-			mask := (0x1 << bit)
+			mask := uint32(0x1 << bit)
 			CONDITIONAL_SET_FLAG(srcval&mask, F_CF)
 			switch rh {
 			case 5:
@@ -1225,7 +1225,7 @@ func x86emuOp2_btX_I(_ uint8) {
 			DECODE_PRINTF2(",%d\n", shift)
 			TRACE_AND_STEP()
 			bit := shift & 0x1F
-			mask := (0x1 << bit)
+			mask := uint32(0x1 << bit)
 			CONDITIONAL_SET_FLAG(srcreg.Get()&mask, F_CF)
 			switch rh {
 			case 5:
@@ -1247,7 +1247,7 @@ func x86emuOp2_btX_I(_ uint8) {
 			DECODE_PRINTF2(",%d\n", shift)
 			TRACE_AND_STEP()
 			bit := shift & 0xF
-			mask := (0x1 << bit)
+			mask := uint32(0x1 << bit)
 			CONDITIONAL_SET_FLAG(srcreg.Get()&mask, F_CF)
 			switch rh {
 			case 5:
@@ -1286,20 +1286,20 @@ func x86emuOp2_btc_R(_ uint8) {
 			TRACE_AND_STEP()
 			bit := shiftreg.Get() & 0x1F
 			disp := int16(shiftreg.Get()) >> 5
-			srcval := fetch_data_long(srcoffset + disp)
-			mask := (0x1 << bit)
+			srcval := fetch_data_long(srcoffset + uint32(disp))
+			mask := uint32(0x1 << bit)
 			CONDITIONAL_SET_FLAG(srcval&mask, F_CF)
-			store_data_long(srcoffset+disp, srcval^mask)
+			store_data_long(srcoffset+uint32(disp), srcval^mask)
 		} else {
 
 			shiftreg := decode_rm_word_register(rh)
 			TRACE_AND_STEP()
 			bit := shiftreg.Get() & 0xF
 			disp := int16(shiftreg.Get()) >> 4
-			srcval := fetch_data_word(srcoffset + disp)
-			mask := int16(0x1 << bit)
+			srcval := fetch_data_word(srcoffset + uint32(disp))
+			mask := uint32(0x1 << bit)
 			CONDITIONAL_SET_FLAG(srcval&mask, F_CF)
-			store_data_word(srcoffset+disp, int16(srcval^mask))
+			store_data_word(srcoffset+uint32(disp), int16(srcval^mask))
 		}
 	} else { /* register to register */
 		if M.x86.mode & SYSMODE_PREFIX_DATA != 0 {
@@ -1309,7 +1309,7 @@ func x86emuOp2_btc_R(_ uint8) {
 			shiftreg := decode_rm_long_register(rh)
 			TRACE_AND_STEP()
 			bit := shiftreg.Get() & 0x1F
-			mask := (0x1 << bit)
+			mask := uint32(0x1 << bit)
 			CONDITIONAL_SET_FLAG(srcreg.Get()&mask, F_CF)
 			*srcreg ^= mask
 		} else {
@@ -1319,7 +1319,7 @@ func x86emuOp2_btc_R(_ uint8) {
 			shiftreg := decode_rm_word_register(rh)
 			TRACE_AND_STEP()
 			bit := shiftreg.Get() & 0xF
-			mask := int16(0x1 << bit)
+			mask := uint32(0x1 << bit)
 			CONDITIONAL_SET_FLAG(srcreg.Get()&mask, F_CF)
 			*srcreg ^= mask
 		}
