@@ -367,7 +367,7 @@ NOTE: Do not inline this function as sys_rdX is already inline!
 ****************************************************************************/
 func fetch_data_word_abs(segment uint16, offset uint16) uint16 {
 
-	panic("fix me")
+	panic("fix mdecoe")
 	return 0
 	//return sys_rdw((uint32(segment) << 4) + offset);
 }
@@ -382,9 +382,9 @@ Long value read from the absolute memory location.
 
 NOTE: Do not inline this function as sys_rdX is already inline!
 ****************************************************************************/
-func fetch_data_long_abs(segment uint16, offset uint32) uint32 {
+func fetch_data_long_abs(segment uint16, offset uint16) uint32 {
 	var i uint32
-	sysr((uint32(segment) << 4) + offset, &i);
+	sysr((uint32(segment) << 4) + uint32(offset), &i);
 	return i
 }
 
