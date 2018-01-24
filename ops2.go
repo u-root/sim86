@@ -983,7 +983,7 @@ func x86emuOp2_btr_R(_ uint8) {
 			srcval := fetch_data_word(srcoffset + uint32(disp))
 			mask := uint16(0x1 << bit)
 			CONDITIONAL_SET_FLAG(srcval&mask, F_CF)
-			store_data_word(srcoffset+uint32(disp), int16(srcval & ^mask))
+			store_data_word(srcoffset+uint32(disp), uint16(srcval & ^mask))
 		}
 	} else { /* register to register */
 		if M.x86.mode & SYSMODE_PREFIX_DATA != 0 {
@@ -1005,7 +1005,7 @@ func x86emuOp2_btr_R(_ uint8) {
 			bit := shiftreg.Get() & 0xF
 			mask := uint16(0x1 << bit)
 			CONDITIONAL_SET_FLAG(srcreg.Get()&mask, F_CF)
-			srcreg.Set(srcreg.Set() & ^mask)
+			srcreg.Set(srcreg.Get() & ^mask)
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -1028,7 +1028,7 @@ func x86emuOp2_lfs_R_IMM(_ uint8) {
 		DECODE_PRINTF("\n")
 		TRACE_AND_STEP()
 		dstreg.Set(fetch_data_word(srcoffset))
-		M.x86.R_FS = fetch_data_word(srcoffset + 2)
+		M.x86.seg.FS.Set(fetch_data_word(srcoffset + 2))
 	} else { /* register to register */
 		/* UNDEFINED! */
 		TRACE_AND_STEP()
@@ -1089,14 +1089,14 @@ func x86emuOp2_movzx_byte_R_RM(_ uint8) {
 			srcval := fetch_data_byte(srcoffset)
 			DECODE_PRINTF("\n")
 			TRACE_AND_STEP()
-			destreg.Set(srcval)
+			destreg.Set(uint16(srcval))
 		}
 	} else { /* register to register */
 		if M.x86.mode & SYSMODE_PREFIX_DATA != 0 {
 
 			destreg := decode_rm_long_register(rh)
 			DECODE_PRINTF(",")
-			srcreg := DECODE_RM_BYTE_REGISTER(rl)
+			srcreg := decode_rm_byte_register(rl)
 			DECODE_PRINTF("\n")
 			TRACE_AND_STEP()
 			destreg.Set(srcreg.Get())
@@ -1104,10 +1104,10 @@ func x86emuOp2_movzx_byte_R_RM(_ uint8) {
 
 			destreg := decode_rm_word_register(rh)
 			DECODE_PRINTF(",")
-			srcreg := DECODE_RM_BYTE_REGISTER(rl)
+			srcreg := decode_rm_byte_register(rl)
 			DECODE_PRINTF("\n")
 			TRACE_AND_STEP()
-			destreg.Set(srcreg.Get())
+			destreg.Set(uint16(srcreg.Get()))
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -1147,7 +1147,7 @@ func x86emuOp2_movzx_word_R_RM(_ uint8) {
 REMARKS:
 Handles opcode 0x0f,0xba
 ****************************************************************************/
-func x86emuOp2_btX_I(_ uint8) {
+func x86emuOp2_btX_I(op2 uint8) {
 
 	START_OF_INSTR()
 	mod, rh, rl := fetch_decode_modrm()
@@ -1201,7 +1201,7 @@ func x86emuOp2_btX_I(_ uint8) {
 
 			bit := shift & 0xF
 			srcval := fetch_data_word(srcoffset)
-			mask := uint32(0x1 << bit)
+			mask := uint16(0x1 << bit)
 			CONDITIONAL_SET_FLAG(srcval&mask, F_CF)
 			switch rh {
 			case 5:
