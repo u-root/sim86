@@ -2,6 +2,8 @@
 set -e
 sed -i 's/M.x86.R_AL = \(.*\);/M.x86.gen.A.Setl8(\1)/' $1
 sed -i 's/M.x86.R_AL/M.x86.gen.A.Getl8()/' $1
+sed -i 's/M.x86.R_AH = \(.*\);/M.x86.gen.A.Seth8(\1)/' $1
+sed -i 's/M.x86.R_AH/M.x86.gen.A.Geth8()/' $1
 sed -i 's/M.x86.R_AX = \(.*\);/M.x86.gen.A.Set16(\1)/' $1
 sed -i 's/M.x86.R_AX/M.x86.gen.A.Get16()/' $1
 

@@ -1992,7 +1992,7 @@ func x86emuOp_xchg_word_AX_register(op1 uint8) {
 		DECODE_PRINTF("\n")
 		TRACE_AND_STEP()
 		tmp := M.x86.gen.A.Get32()
-		M.x86.gen.A.Set32(*reg32)
+		M.x86.gen.A.Set32(reg.Get())
 		reg.Set(tmp)
 	} else {
 		DECODE_PRINTF("XCHG\tAX,")
@@ -2000,7 +2000,7 @@ func x86emuOp_xchg_word_AX_register(op1 uint8) {
 		DECODE_PRINTF("\n")
 		TRACE_AND_STEP()
 		tmp := M.x86.gen.A.Get16()
-		M.x86.gen.A.Set16(*reg16)
+		M.x86.gen.A.Set16(reg.Get())
 		reg.Set(tmp)
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -2020,13 +2020,13 @@ func x86emuOp_cbw(_ uint8) {
 	}
 	TRACE_AND_STEP()
 	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-		if M.x86.gen.A.Get16() & 0x8000 {
-			M.x86.gen.A.Get32() |= 0xffff0000
+		if M.x86.gen.A.Get16() & 0x8000 != 0{
+			M.x86.gen.A.Set32(M.x86.gen.A.Get32() | 0xffff0000)
 		} else {
-			M.x86.gen.A.Get32() &= 0x0000ffff
+			M.x86.gen.A.Set32(M.x86.gen.A.Get32() & 0x0000ffff)
 		}
 	} else {
-		if M.x86.gen.A.Getl8() & 0x80 {
+		if M.x86.gen.A.Getl8() & 0x80 != 0{
 			M.x86.R_AH = 0xff
 		} else {
 			M.x86.R_AH = 0x0
