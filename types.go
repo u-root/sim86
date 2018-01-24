@@ -221,3 +221,4 @@ type __uint128_t uint64
 type __builtin_ms_va_list []byte
 
 type optab func(uint8)
+type intrtab func(uint8)

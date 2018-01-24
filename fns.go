@@ -304,3 +304,22 @@ func RETURN_TRACE(u,v,w,x uint16, s string) {
 		fmt.Printf("%04x:%04x: RET %s %04x:%04x\n",u,v,s,w,x)
 	}
 }
+func sys_inb(i uint16) uint8 {
+	panic("io")
+}
+func sys_inw(i uint16) uint16 {
+	panic("io")
+}
+func sys_inl(i uint16) uint32 {
+	panic("io")
+}
+
+func sys_outb(i uint16, v uint8) {
+	panic("io")
+}
+func sys_outw(i uint16, v uint16) {
+	panic("io")
+}
+func sys_outl(i uint16, v uint32) {
+	panic("io")
+}

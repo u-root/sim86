@@ -3213,10 +3213,10 @@ func x86emuOp_ret_far_IMM(_ uint8) {
 	imm := fetch_word_imm()
 	DECODE_PRINTF2("%x\n", imm)
 	TRACE_AND_STEP()
-	M.x86.IP.Set(pop_word())
-	M.x86.CS.Set(pop_word())
+	M.x86.spc.IP.Set(pop_word())
+	M.x86.seg.CS.Set(pop_word())
 	RETURN_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get(), M.x86.spc.IP.Get16(), "FAR")
-	M.x86.R_SP += imm
+	M.x86.spc.SP.Add( imm)
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -3246,10 +3246,10 @@ func x86emuOp_int3(_ uint8) {
 	tmp := mem_access_word(3*4 + 2)
 	/* access the segment register */
 	TRACE_AND_STEP()
-	if _X86EMU_intrTab[3] {
-		(*_X86EMU_intrTab[3])(3)
+	if _X86EMU_intrTab[3] != nil {
+		_X86EMU_intrTab[3](3)
 	} else {
-		push_word(uint16(M.x86.gen.FLAGS))
+		push_word(uint16(M.x86.spc.FLAGS))
 		CLEAR_FLAG(F_IF)
 		CLEAR_FLAG(F_TF)
 		push_word(M.x86.seg.CS.Get())
@@ -3271,18 +3271,18 @@ func x86emuOp_int_IMM(_ uint8) {
 	DECODE_PRINTF("INT\t")
 	intnum := fetch_byte_imm()
 	DECODE_PRINTF2("%x\n", intnum)
-	tmp = mem_access_word(intnum*4 + 2)
+	tmp := mem_access_word(uint32(intnum)*4 + 2)
 	TRACE_AND_STEP()
-	if _X86EMU_intrTab[intnum] {
-		(*_X86EMU_intrTab[intnum])(intnum)
+	if _X86EMU_intrTab[intnum] != nil {
+		_X86EMU_intrTab[intnum](intnum)
 	} else {
-		push_word(uint16(M.x86.gen.FLAGS))
+		push_word(uint16(M.x86.spc.FLAGS))
 		CLEAR_FLAG(F_IF)
 		CLEAR_FLAG(F_TF)
 		push_word(M.x86.seg.CS.Get())
-		M.x86.seg.CS.Set(mem_access_word(intnum*4 + 2))
+		M.x86.seg.CS.Set(mem_access_word(uint32(intnum)*4 + 2))
 		push_word(M.x86.spc.IP.Get16())
-		M.x86.spc.IP.Set16(mem_access_word(intnum * 4))
+		M.x86.spc.IP.Set16(mem_access_word(uint32(intnum) * 4))
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -3298,11 +3298,11 @@ func x86emuOp_into(_ uint8) {
 	DECODE_PRINTF("INTO\n")
 	TRACE_AND_STEP()
 	if ACCESS_FLAG(F_OF) {
-		tmp = mem_access_word(4*4 + 2)
-		if _X86EMU_intrTab[4] {
-			(*_X86EMU_intrTab[4])(4)
+		tmp := mem_access_word(4*4 + 2)
+		if _X86EMU_intrTab[4] != nil {
+			_X86EMU_intrTab[4](4)
 		} else {
-			push_word(uint16(M.x86.gen.FLAGS))
+			push_word(uint16(M.x86.spc.FLAGS))
 			CLEAR_FLAG(F_IF)
 			CLEAR_FLAG(F_TF)
 			push_word(M.x86.seg.CS.Get())
@@ -3327,7 +3327,7 @@ func x86emuOp_iret(_ uint8) {
 
 	M.x86.spc.IP.Set16(pop_word())
 	M.x86.seg.CS.Set(pop_word())
-	M.x86.gen.FLAGS = pop_word()
+	M.x86.spc.FLAGS = uint32(pop_word())
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -3494,7 +3494,6 @@ REMARKS:
 Handles opcode 0xd2
 ****************************************************************************/
 func x86emuOp_opcD2_byte_RM_CL(_ uint8) {
-	var amt uint8
 
 	/*
 	 * Yet another weirdo special case instruction format.  Part of
@@ -3539,7 +3538,7 @@ func x86emuOp_opcD2_byte_RM_CL(_ uint8) {
 
 	/* know operation, decode the mod byte to find the addressing
 	   mode. */
-	amt = M.x86.R_CL
+	amt := M.x86.gen.C.Getl8()
 	if mod < 3 {
 		DECODE_PRINTF("BYTE PTR ")
 		destoffset := decode_rmXX_address(mod, rl)
@@ -3609,7 +3608,7 @@ func x86emuOp_opcD3_word_RM_CL(_ uint8) {
 
 	/* know operation, decode the mod byte to find the addressing
 	   mode. */
-	amt = M.x86.R_CL
+	amt = M.x86.gen.C.Getl8()
 	if mod < 3 {
 		if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
 
@@ -3665,7 +3664,7 @@ func x86emuOp_aam(_ uint8) {
 	}
 	TRACE_AND_STEP()
 	/* note the type change here --- returning AL and AH in AX. */
-	M.x86.gen.A.Set(aam_word(M.x86.gen.A.Getl()))
+	M.x86.gen.A.Set(aam_word(M.x86.gen.A.Getl8()))
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -3693,12 +3692,10 @@ REMARKS:
 Handles opcode 0xd7
 ****************************************************************************/
 func x86emuOp_xlat(_ uint8) {
-	var addr uint16
-
 	START_OF_INSTR()
 	DECODE_PRINTF("XLAT\n")
 	TRACE_AND_STEP()
-	addr = (u16)(M.x86.gen.B.Get16() + uint8(M.x86.gen.A.Getl8()))
+	addr := uint32(M.x86.gen.B.Get16() + uint16(M.x86.gen.A.Getl8()))
 	M.x86.gen.A.Setl8(fetch_data_byte(addr))
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -3711,17 +3708,15 @@ REMARKS:
 Handles opcode 0xe0
 ****************************************************************************/
 func x86emuOp_loopne(_ uint8) {
-	var ip int16
-
 	START_OF_INSTR()
 	DECODE_PRINTF("LOOPNE\t")
-	ip = int8(fetch_byte_imm)
-	ip += M.x86.IP.Get16()
+	ip := uint16(fetch_byte_imm())
+	ip += M.x86.spc.IP.Get16()
 	DECODE_PRINTF2("%04x\n", ip)
 	TRACE_AND_STEP()
 	DecCount()
 	if Count(SYSMODE_PREFIX_ADDR) != 0 && !ACCESS_FLAG(F_ZF) /* (E)CX != 0 and !ZF */ {
-		M.x86.IP.Set(ip)
+		M.x86.spc.IP.Set(ip)
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -3735,12 +3730,15 @@ func x86emuOp_loope(_ uint8) {
 
 	START_OF_INSTR()
 	DECODE_PRINTF("LOOPE\t")
-	ip := M.x86.IP.Get16() + int16(fetch_byte_imm)
+	// this iwas really weird in the original. The byte can be negative
+	// but he cast the ip to signed and the byte to unsigned? I don't
+	// see it. We'll see if we break looping.
+	ip := uint16(int16(M.x86.spc.IP.Get16()) + int16(fetch_byte_imm()))
 	DECODE_PRINTF2("%04x\n", ip)
 	TRACE_AND_STEP()
 	DecCount()
 	if (Count(SYSMODE_PREFIX_ADDR)) != 0 && ACCESS_FLAG(F_ZF) { /* (E)CX != 0 and ZF */
-		M.x86.IP.Set(ip)
+		M.x86.spc.IP.Set(ip)
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -3754,12 +3752,12 @@ func x86emuOp_loop(_ uint8) {
 
 	START_OF_INSTR()
 	DECODE_PRINTF("LOOP\t")
-	ip := M.x86.IP.Get16() + int16(fetch_byte_imm)
+	ip := uint16(int16(M.x86.spc.IP.Get16()) + int16(fetch_byte_imm()))
 	DECODE_PRINTF2("%04x\n", ip)
 	TRACE_AND_STEP()
 	DecCount()
 	if (Count(SYSMODE_PREFIX_ADDR)) != 0 { /* (E)CX != 0 */
-		M.x86.IP.Set(ip)
+		M.x86.spc.IP.Set(ip)
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -3770,13 +3768,11 @@ REMARKS:
 Handles opcode 0xe3
 ****************************************************************************/
 func x86emuOp_jcxz(_ uint8) {
-	var target uint16
-
 	/* jump to byte offset if overflow flag is set */
 	START_OF_INSTR()
 	DECODE_PRINTF("JCXZ\t")
-	offset := int8(fetch_byte_imm)
-	target = (u16)(M.x86.spc.IP.Get16() + offset)
+	offset := int16(fetch_byte_imm())
+	target := uint16(int16(M.x86.spc.IP.Get16()) + offset)
 	DECODE_PRINTF2("%x\n", target)
 	TRACE_AND_STEP()
 	if M.x86.gen.C.Get16() == 0 {
@@ -3792,14 +3788,12 @@ REMARKS:
 Handles opcode 0xe4
 ****************************************************************************/
 func x86emuOp_in_byte_AL_IMM(_ uint8) {
-	var port uint8
-
 	START_OF_INSTR()
 	DECODE_PRINTF("IN\t")
-	port = uint8(fetch_byte_imm)
+	port := fetch_byte_imm()
 	DECODE_PRINTF2("%x,AL\n", port)
 	TRACE_AND_STEP()
-	M.x86.gen.A.Setl8(sys_inb(port))
+	M.x86.gen.A.Setl8(sys_inb(uint16(port)))
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -3813,7 +3807,7 @@ func x86emuOp_in_word_AX_IMM(_ uint8) {
 
 	START_OF_INSTR()
 	DECODE_PRINTF("IN\t")
-	port = uint8(fetch_byte_imm)
+	port = uint8(fetch_byte_imm())
 	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
 		DECODE_PRINTF2("EAX,%x\n", port)
 	} else {
@@ -3821,9 +3815,9 @@ func x86emuOp_in_word_AX_IMM(_ uint8) {
 	}
 	TRACE_AND_STEP()
 	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-		M.x86.gen.A.Set32(sys_inl(port))
+		M.x86.gen.A.Set32(sys_inl(uint16(port)))
 	} else {
-		M.x86.gen.A.Set16(sys_inw(port))
+		M.x86.gen.A.Set16(sys_inw(uint16(port)))
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -3834,14 +3828,12 @@ REMARKS:
 Handles opcode 0xe6
 ****************************************************************************/
 func x86emuOp_out_byte_IMM_AL(_ uint8) {
-	var port uint8
-
 	START_OF_INSTR()
 	DECODE_PRINTF("OUT\t")
-	port = uint8(fetch_byte_imm)
+	port  := fetch_byte_imm()
 	DECODE_PRINTF2("%x,AL\n", port)
 	TRACE_AND_STEP()
-	sys_outb(port, M.x86.gen.A.Getl8())
+	sys_outb(uint16(port), M.x86.gen.A.Getl8())
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -3851,11 +3843,9 @@ REMARKS:
 Handles opcode 0xe7
 ****************************************************************************/
 func x86emuOp_out_word_IMM_AX(_ uint8) {
-	var port uint8
-
 	START_OF_INSTR()
 	DECODE_PRINTF("OUT\t")
-	port = uint8(fetch_byte_imm)
+	port := fetch_byte_imm()
 	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
 		DECODE_PRINTF2("%x,EAX\n", port)
 	} else {
@@ -3863,9 +3853,9 @@ func x86emuOp_out_word_IMM_AX(_ uint8) {
 	}
 	TRACE_AND_STEP()
 	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-		sys_outl(port, M.x86.gen.A.Get32())
+		sys_outl(uint16(port), M.x86.gen.A.Get32())
 	} else {
-		sys_outw(port, M.x86.gen.A.Get16())
+		sys_outw(uint16(port), M.x86.gen.A.Get16())
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -3881,23 +3871,22 @@ func x86emuOp_call_near_IMM(_ uint8) {
 	START_OF_INSTR()
 	DECODE_PRINTF("CALL\t")
 	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-		ip32 = int32(fetch_long_imm())
-		ip32 += int16(M.x86.spc.IP.Get16()) /* CHECK SIGN */
+		// Again, this is weird. I guess.
+		ip32 := int32(fetch_long_imm())
+		ip32 += int32(M.x86.spc.IP.Get16()) /* CHECK SIGN */
 		DECODE_PRINTF2("%04x\n", uint16(ip32))
-		CALL_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get(), ip32, "")
+		CALL_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get(), uint16(ip32), "")
+		TRACE_AND_STEP()
+		push_long(M.x86.spc.IP.Get32())
+		M.x86.spc.IP.Set32(uint32(ip32))
 	} else {
-		ip16 = int16(fetch_word_imm())
+		ip16 := int16(fetch_word_imm())
 		ip16 += int16(M.x86.spc.IP.Get16()) /* CHECK SIGN */
 		DECODE_PRINTF2("%04x\n", ip16)
-		CALL_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get(), ip16, "")
-	}
-	TRACE_AND_STEP()
-	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-		push_long(M.x86.spc.IP.Get32())
-		M.x86.spc.IP.Set32(ip32 & 0xffff)
-	} else {
+		CALL_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get(), uint16(ip16), "")
+		TRACE_AND_STEP()
 		push_word(M.x86.spc.IP.Get16())
-		M.x86.spc.IP.Set32(ip16)
+		M.x86.spc.IP.Set32(uint32(ip16))
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -3913,17 +3902,17 @@ func x86emuOp_jump_near_IMM(_ uint8) {
 	START_OF_INSTR()
 	DECODE_PRINTF("JMP\t")
 	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-		ip = uint32(fetch_long_imm)()
+		ip := uint32(fetch_long_imm())
 		ip += uint32(M.x86.spc.IP.Get32())
 		DECODE_PRINTF2("%08x\n", uint32(ip))
-		JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get(), ip, " NEAR ")
+		JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get16(), uint16(ip), " NEAR ")
 		TRACE_AND_STEP()
 		M.x86.spc.IP.Set32(uint32(ip))
 	} else {
-		ip = int16(fetch_word_imm)()
+		ip := int16(fetch_word_imm())
 		ip += int16(M.x86.spc.IP.Get16())
 		DECODE_PRINTF2("%04x\n", uint16(ip))
-		JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get(), ip, " NEAR ")
+		JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get(), uint16(ip), " NEAR ")
 		TRACE_AND_STEP()
 		M.x86.spc.IP.Set16(uint16(ip))
 	}
@@ -3947,10 +3936,10 @@ func x86emuOp_jump_far_IMM(_ uint8) {
 	cs := fetch_word_imm()
 	DECODE_PRINTF2("%04x:", cs)
 	DECODE_PRINTF2("%04x\n", ip)
-	JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, cs, ip, " FAR ")
+	JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, cs, uint16(ip), " FAR ")
 	TRACE_AND_STEP()
-	M.x86.IP.Set16(uint16(ip & 0xffff))
-	M.x86.CS.Set(cs)
+	M.x86.spc.IP.Set16(uint16(ip & 0xffff))
+	M.x86.seg.CS.Set(cs)
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -3964,8 +3953,8 @@ func x86emuOp_jump_byte_IMM(_ uint8) {
 
 	START_OF_INSTR()
 	DECODE_PRINTF("JMP\t")
-	offset := int8(fetch_byte_imm)
-	target = (u16)(M.x86.spc.IP.Get16() + offset)
+	offset := int16(fetch_byte_imm())
+	target = uint16(int16(M.x86.spc.IP.Get16()) + offset)
 	DECODE_PRINTF2("%x\n", target)
 	JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get(), target, " BYTE ")
 	TRACE_AND_STEP()
@@ -4065,7 +4054,7 @@ func x86emuOp_repne(_ uint8) {
 	DECODE_PRINTF("REPNE\n")
 	TRACE_AND_STEP()
 	M.x86.mode |= SYSMODE_PREFIX_REPNE
-	if M.x86.mode & SYSMODE_PREFIX_ADDR {
+	if M.x86.mode & SYSMODE_PREFIX_ADDR != 0{
 		M.x86.mode |= SYSMODE_32BIT_REP
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -4081,7 +4070,7 @@ func x86emuOp_repe(_ uint8) {
 	DECODE_PRINTF("REPE\n")
 	TRACE_AND_STEP()
 	M.x86.mode |= SYSMODE_PREFIX_REPE
-	if M.x86.mode & SYSMODE_PREFIX_ADDR {
+	if M.x86.mode & SYSMODE_PREFIX_ADDR != 0{
 		M.x86.mode |= SYSMODE_32BIT_REP
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -4367,7 +4356,7 @@ func x86emuOp_opcF7_word_RM(_ uint8) {
 			case 3:
 				DECODE_PRINTF("\n")
 				TRACE_AND_STEP()
-				destreg.Set = neg_long(destreg.Get32())
+				destreg.Set (neg_long(destreg.Get32()))
 				break
 			case 4:
 				DECODE_PRINTF("\n")
@@ -4424,17 +4413,17 @@ func x86emuOp_opcF7_word_RM(_ uint8) {
 			case 5:
 				DECODE_PRINTF("\n")
 				TRACE_AND_STEP()
-				imul_word(destreg.Get().Get16())
+				imul_word(destreg.Get16())
 				break
 			case 6:
 				DECODE_PRINTF("\n")
 				TRACE_AND_STEP()
-				div_word(destreg.Get().Get16())
+				div_word(destreg.Get16())
 				break
 			case 7:
 				DECODE_PRINTF("\n")
 				TRACE_AND_STEP()
-				idiv_word(destreg.Get().Get16())
+				idiv_word(destreg.Get16())
 				break
 			}
 		}
@@ -4579,9 +4568,9 @@ func x86emuOp_opcFE_byte_RM(_ uint8) {
 		DECODE_PRINTF("\n")
 		TRACE_AND_STEP()
 		if rh == 0 {
-			destreg.Set(inc_byte(destreg.Get16()))
+			destreg.Set(inc_byte(destreg.Get()))
 		} else {
-			destreg.Set(dec_byte(destreg.Get16()))
+			destreg.Set(dec_byte(destreg.Get()))
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -4593,8 +4582,6 @@ REMARKS:
 Handles opcode 0xff
 ****************************************************************************/
 func x86emuOp_opcFF_word_RM(_ uint8) {
-	var destreg *u16
-
 	/* Yet another special case instruction. */
 	START_OF_INSTR()
 	mod, rh, rl := fetch_decode_modrm()
@@ -4745,7 +4732,7 @@ func x86emuOp_opcFF_word_RM(_ uint8) {
 			DECODE_PRINTF("\n")
 			TRACE_AND_STEP()
 			push_word(M.x86.spc.IP.Get16())
-			M.x86.IP.Set(destreg.Get16())
+			M.x86.spc.IP.Set(destreg.Get16())
 		case 3: /* jmp far ptr ... */
 			DECODE_PRINTF("OPERATION UNDEFINED 0XFF\n")
 			TRACE_AND_STEP()
@@ -4755,7 +4742,7 @@ func x86emuOp_opcFF_word_RM(_ uint8) {
 			destreg := decode_rm_word_register(uint32(rl))
 			DECODE_PRINTF("\n")
 			TRACE_AND_STEP()
-			M.x86.IP.Set(destreg.Get16())
+			M.x86.spc.IP.Set(destreg.Get16())
 		case 5: /* jmp far ptr ... */
 			DECODE_PRINTF("OPERATION UNDEFINED 0XFF\n")
 			TRACE_AND_STEP()
