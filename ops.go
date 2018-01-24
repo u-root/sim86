@@ -2307,7 +2307,7 @@ func x86emuOp_movs_byte(_ uint8) {
 	for count > 0 {
 		count--
 		val := fetch_data_byte(uint32(M.x86.spc.SI.Get16()))
-		store_data_byte_abs(uint32(M.x86.seg.ES.Get()), uint32(M.x86.spc.DI.Get16()), val)
+		store_data_byte_abs(M.x86.seg.ES.Get(), uint32(M.x86.spc.DI.Get16()), val)
 		M.x86.spc.SI.Change(inc)
 		M.x86.spc.DI.Change(inc)
 		if halted() {
@@ -2548,16 +2548,16 @@ func x86emuOp_stos_byte(_ uint8) {
 		/* don't care whether REPE or REPNE */
 		/* move them until (E)CX is ZERO. */
 		for Count(SYSMODE_32BIT_REP) != 0 {
-			store_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16(), M.x86.gen.A.Getl8())
-			M.X86.C.Dec()
+			store_data_byte_abs(M.x86.seg.ES.Get(), uint32(M.x86.spc.DI.Get16()), M.x86.gen.A.Getl8())
+			M.x86.gen.C.Dec()
 			M.x86.spc.DI.Change(inc)
-			if M.x86.intr & INTR_HALTED {
+			if halted() {
 				break
 			}
 		}
 		M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)
 	} else {
-		store_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16(), M.x86.gen.A.Getl8())
+		store_data_byte_abs(uint32(M.x86.seg.ES.Get()), M.x86.spc.DI.Get16(), M.x86.gen.A.Getl8())
 		M.x86.spc.DI.Change(inc)
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -2569,7 +2569,7 @@ REMARKS:
 Handles opcode 0xab
 ****************************************************************************/
 func x86emuOp_stos_word(_ uint8) {
-	var inc int32
+	var inc int
 	var count uint32
 
 	START_OF_INSTR()
@@ -2609,7 +2609,7 @@ REMARKS:
 Handles opcode 0xac
 ****************************************************************************/
 func x86emuOp_lods_byte(_ uint8) {
-	var inc int32
+	var inc int
 
 	START_OF_INSTR()
 	DECODE_PRINTF("LODS\tBYTE\n")
@@ -2620,7 +2620,7 @@ func x86emuOp_lods_byte(_ uint8) {
 		/* move them until (E)CX is ZERO. */
 		for Count(SYSMODE_32BIT_REP) != 0 {
 			M.x86.gen.A.Setl8(fetch_data_byte(M.x86.spc.SI.Get16()))
-			M.X86.C.Dec()
+			M.x86.gen.C.Dec()
 			M.x86.spc.SI.Change(inc)
 			if Halted() {
 				break
@@ -2640,7 +2640,7 @@ REMARKS:
 Handles opcode 0xad
 ****************************************************************************/
 func x86emuOp_lods_word(_ uint8) {
-	var inc int32
+	var inc int
 	var count uint32
 
 	START_OF_INSTR()
@@ -2680,7 +2680,7 @@ Handles opcode 0xae
 ****************************************************************************/
 func x86emuOp_scas_byte(_ uint8) {
 	var val2 int8
-	var inc int32
+	var inc int
 
 	START_OF_INSTR()
 	DECODE_PRINTF("SCAS\tBYTE\n")
@@ -2692,7 +2692,7 @@ func x86emuOp_scas_byte(_ uint8) {
 		for Count(SYSMODE_32BIT_REP) != 0 {
 			val2 = fetch_data_byte_abs(M.x86.seg.ES.Get(), uint32(M.x86.spc.DI.Get16()))
 			cmp_byte(M.x86.gen.A.Getl8(), val2)
-			M.X86.C.Dec()
+			M.x86.gen.C.Dec()
 			M.x86.spc.DI.Change(inc)
 			if ACCESS_FLAG(F_ZF) == 0 {
 				break
@@ -2709,12 +2709,12 @@ func x86emuOp_scas_byte(_ uint8) {
 		for Count(SYSMODE_32BIT_REP) != 0 {
 			val2 = fetch_data_byte_abs(M.x86.seg.ES.Get(), uint32(M.x86.spc.DI.Get16()))
 			cmp_byte(M.x86.gen.A.Getl8(), val2)
-			M.X86.C.Dec()
+			M.x86.gen.C.Dec()
 			M.x86.spc.DI.Change(inc)
 			if ACCESS_FLAG(F_ZF) {
 				break
 			} /* zero flag set means equal */
-			if M.x86.intr & INTR_HALTED {
+			if halted() {
 				break
 			}
 		}
@@ -2733,7 +2733,7 @@ REMARKS:
 Handles opcode 0xaf
 ****************************************************************************/
 func x86emuOp_scas_word(_ uint8) {
-	var inc int32
+	var inc int
 	var val uint32
 
 	START_OF_INSTR()
@@ -2756,7 +2756,7 @@ func x86emuOp_scas_word(_ uint8) {
 				val = fetch_data_word_abs(M.x86.seg.ES.Get(), uint32(M.x86.spc.DI.Get16()))
 				cmp_word(M.x86.gen.A.Get16(), uint16(val))
 			}
-			M.X86.C.Dec()
+			M.x86.gen.C.Dec()
 			M.x86.spc.DI.Change(inc)
 			if ACCESS_FLAG(F_ZF) == 0 {
 				break
@@ -2777,12 +2777,12 @@ func x86emuOp_scas_word(_ uint8) {
 				val = fetch_data_word_abs(M.x86.seg.ES.Get(), uint32(M.x86.spc.DI.Get16()))
 				cmp_word(M.x86.gen.A.Get16(), uint16(val))
 			}
-			M.X86.C.Dec()
+			M.x86.gen.C.Dec()
 			M.x86.spc.DI.Change(inc)
 			if ACCESS_FLAG(F_ZF) {
 				break
 			} /* zero flag set means equal */
-			if M.x86.intr & INTR_HALTED {
+			if halted() {
 				break
 			}
 		}
