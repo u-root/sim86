@@ -2050,9 +2050,9 @@ func div_long(s uint32) {
 		x86emu_intr_raise(0)
 		return
 	}
-	div = dvd / uint32(s)
-	mod = dvd % uint32(s)
-	if abs(div) > 0xffffffff {
+	div = dvd / uint64(s)
+	mod = dvd % uint64(s)
+	if abs(int(div)) > 0xffffffff {
 		x86emu_intr_raise(0)
 		return
 	}
@@ -2060,7 +2060,7 @@ func div_long(s uint32) {
 	CLEAR_FLAG(F_AF)
 	CLEAR_FLAG(F_SF)
 	SET_FLAG(F_ZF)
-	set_parity_flag(mod)
+	set_parity_flag(uint32(mod))
 
 	M.x86.gen.A.Set(uint32(div))
 	M.x86.gen.D.Set(uint32(mod))
@@ -2074,11 +2074,11 @@ Implements the IN string instruction and side effects.
 func single_in(size int) {
 	switch size {
 	case 1:
-		store_data_byte_abs(M.x86.seg.ES.Get(), M.x86.R_DI, sys_inb(M.x86.gen.D.Get16()))
+		store_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16(), sys_inb(M.x86.gen.D.Get16()))
 	case 2:
-		store_data_word_abs(M.x86.seg.ES.Get(), M.x86.R_DI, sys_inw(M.x86.gen.D.Get16()))
+		store_data_word_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16(), sys_inw(M.x86.gen.D.Get16()))
 	default:
-		store_data_long_abs(M.x86.seg.ES.Get(), M.x86.R_DI, sys_inl(M.x86.gen.D.Get16()))
+		store_data_long_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16(), sys_inl(M.x86.gen.D.Get16()))
 	}
 }
 
@@ -2088,18 +2088,18 @@ func ins(size int) {
 	if ACCESS_FLAG(F_DF) {
 		inc = -size
 	}
-	if M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE) {
+	if Counting() {
 		/* don't care whether REPE or REPNE */
 		/* in until (E)CX is ZERO. */
 		count := GetClrCount()
 		for count > 0 {
 			count--
 			single_in(size)
-			M.x86.gen.DI.Add(uint32(inc))
+			M.x86.spc.DI.Add(uint32(inc))
 		}
 	} else {
 		single_in(size)
-		M.x86.DI.Add(uint32(inc))
+		M.x86.spc.DI.Add(uint32(inc))
 	}
 }
 
@@ -2111,32 +2111,32 @@ Implements the OUT string instruction and side effects.
 func single_out(size int) {
 	switch size {
 	case 1:
-		sys_outb(M.x86.gen.D.Get16(), fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.R_SI))
+		sys_outb(M.x86.gen.D.Get16(), fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.SI.Get16()))
 	case 2:
-		sys_outw(M.x86.gen.D.Get16(), fetch_data_word_abs(M.x86.seg.ES.Get(), M.x86.R_SI))
+		sys_outw(M.x86.gen.D.Get16(), fetch_data_word_abs(M.x86.seg.ES.Get(), M.x86.spc.SI.Get16()))
 	default:
-		sys_outl(M.x86.gen.D.Get16(), fetch_data_long_abs(M.x86.seg.ES.Get(), M.x86.R_SI))
+		sys_outl(M.x86.gen.D.Get16(), fetch_data_long_abs(M.x86.seg.ES.Get(), M.x86.spc.SI.Get16()))
 	}
 }
 
 func outs(size int) {
-	inc := uint16(size)
+	inc := int16(size)
 
 	if ACCESS_FLAG(F_DF) {
-		inc = -size
+		inc = int16(-size)
 	}
-	if M.x86.mode & (SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE) {
+	if Counting() {
 		/* don't care whether REPE or REPNE */
 		/* out until (E)CX is ZERO. */
 		count := GetClrCount()
 		for count > 0 {
 			count--
 			single_out(size)
-			M.x86.SI.Add(inc)
+			M.x86.spc.SI.Add(inc)
 		}
 	} else {
 		single_out(size)
-		M.x86.SI.Add(inc)
+		M.x86.spc.SI.Add(inc)
 	}
 }
 
@@ -2164,8 +2164,8 @@ func push_word(w uint16) {
 	if CHECK_SP_ACCESS() {
 		x86emu_check_sp_access()
 	}
-	M.x86.SP.Add(int16(-2))
-	sys_wrw(uint32(M.x86.SS.Get16())<<4+M.x86.SP.Get16(), w)
+	M.x86.spc.SP.Add(int16(-2))
+	sysw(uint32(M.x86.seg.SS.Get16())<<4+uint32(M.x86.spc.SP.Get16()), w)
 }
 
 /****************************************************************************
@@ -2178,8 +2178,8 @@ func push_long(w uint32) {
 	if CHECK_SP_ACCESS() {
 		x86emu_check_sp_access()
 	}
-	M.x86.SP.Add(int16(-4))
-	sys_wrl(uint32(M.x86.SS.Get16())<<4+M.x86.SP.Get16(), w)
+	M.x86.spc.SP.Add(int16(-4))
+	sysw(uint32(M.x86.seg.SS.Get16())<<4+uint32(M.x86.spc.SP.Get16()), w)
 }
 
 /****************************************************************************
@@ -2194,7 +2194,8 @@ func pop_word() uint16 {
 	if CHECK_SP_ACCESS() {
 		x86emu_check_sp_access()
 	}
-	res = sys_rdw((uint32(M.x86.SS.Get()) << 4) + M.x86.SP.Get16())
+	FUCK
+	res = sysr((uint32(M.x86.SS.Get()) << 4) + M.x86.SP.Get16())
 	M.x86.SP.Add(int16(2))
 	return res
 }

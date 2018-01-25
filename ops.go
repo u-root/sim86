@@ -2304,7 +2304,7 @@ func x86emuOp_movs_byte(_ uint8) {
 	for count > 0 {
 		count--
 		val := fetch_data_byte(uint32(M.x86.spc.SI.Get16()))
-		store_data_byte_abs(M.x86.seg.ES.Get(), uint32(M.x86.spc.DI.Get16()), val)
+		store_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16(), val)
 		M.x86.spc.SI.Change(inc)
 		M.x86.spc.DI.Change(inc)
 		if halted() {
@@ -2542,7 +2542,7 @@ func x86emuOp_stos_byte(_ uint8) {
 		/* don't care whether REPE or REPNE */
 		/* move them until (E)CX is ZERO. */
 		for Count(SYSMODE_32BIT_REP) != 0 {
-			store_data_byte_abs(M.x86.seg.ES.Get(), uint32(M.x86.spc.DI.Get16()), M.x86.gen.A.Getl8())
+			store_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16(), M.x86.gen.A.Getl8())
 			M.x86.gen.C.Dec()
 			M.x86.spc.DI.Change(inc)
 			if halted() {
@@ -2551,7 +2551,7 @@ func x86emuOp_stos_byte(_ uint8) {
 		}
 		M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)
 	} else {
-		store_data_byte_abs(M.x86.seg.ES.Get(), uint32(M.x86.spc.DI.Get16()), M.x86.gen.A.Getl8())
+		store_data_byte_abs(M.x86.seg.ES.Get(), M.x86.spc.DI.Get16(), M.x86.gen.A.Getl8())
 		M.x86.spc.DI.Change(inc)
 	}
 	DECODE_CLEAR_SEGOVR()
