@@ -55,7 +55,7 @@ func (r reg32) Set32(i uint32) {
 	r.reg = i
 }
 func (r reg32) Get32() uint32 {
-	return r.reg32
+	return r.reg
 }
 
 func (r reg32) Set16(i uint16) {
@@ -137,11 +137,13 @@ func (r reg32) Add(v interface{}) {
 }
 
 // Get gets the register as uint32. The amount of data depends on the SYSMODE.
+// Note you can't just return the u32, always, in the none 32-bit case you have to
+// return the low 16 bits, upper 16 0.
 func (r reg32) Get() uint32 {
 	if M.x86.mode&SYSMODE_32BIT_REP != 0 {
 		return r.Get32()
 	}
-	return r.Get16()
+	return uint32(r.Get16())
 }
 
 // Changes takes a variable and adds it. It can be negative.

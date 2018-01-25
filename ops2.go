@@ -347,7 +347,6 @@ REMARKS:
 Handles opcode 0x0f,0x90-0x9F
 ****************************************************************************/
 func x86emuOp2_set_byte(op2 uint8) {
-	var destreg register8
 	var name string
 	var cond bool
 
@@ -421,7 +420,7 @@ func x86emuOp2_set_byte(op2 uint8) {
 		break
 	}
 	DECODE_PRINTF(name)
-	mod, rh, rl := fetch_decode_modrm()
+	mod, _, rl := fetch_decode_modrm()
 	if mod < 3 {
 		destoffset := decode_rmXX_address(mod, rl)
 		TRACE_AND_STEP()

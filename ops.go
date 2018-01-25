@@ -281,7 +281,6 @@ Handles opcodes 0x02, 0x0a, 0x12, 0x1a, 0x22, 0x2a, 0x32, 0x3a
 ****************************************************************************/
 func x86emuOp_genop_byte_R_RM(op1 uint8) {
 
-	var srcreg register8
 	op1 = (op1 >> 3) & 0x7
 
 	START_OF_INSTR()
@@ -846,20 +845,17 @@ REMARKS:
 Handles opcode 0x68
 ****************************************************************************/
 func x86emuOp_push_word_IMM(_ uint8) {
-	var imm uint32
-
 	START_OF_INSTR()
-	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
+	if Mode(SYSMODE_PREFIX_DATA) {
 		imm := fetch_long_imm()
-	} else {
-		imm := fetch_word_imm()
-	}
-	DECODE_PRINTF2("PUSH\t%x\n", imm)
-	TRACE_AND_STEP()
-	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
+		DECODE_PRINTF2("PUSH\t%x\n", imm)
+		TRACE_AND_STEP()
 		push_long(imm)
 	} else {
-		push_word(uint16(imm))
+		imm := fetch_word_imm()
+		DECODE_PRINTF2("PUSH\t%x\n", imm)
+		TRACE_AND_STEP()
+		push_word(imm)
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -983,7 +979,6 @@ REMARKS:
 Handles opcode 0x6b
 ****************************************************************************/
 func x86emuOp_imul_byte_IMM(_ uint8) {
-	var imm int8
 
 	START_OF_INSTR()
 	DECODE_PRINTF("IMUL\t")
@@ -1160,8 +1155,6 @@ REMARKS:
 Handles opcode 0x80
 ****************************************************************************/
 func x86emuOp_opc80_byte_RM_IMM(_ uint8) {
-	var imm uint8
-
 	/*
 	 * Weirdo special case instruction format.  Part of the opcode
 	 * held below in "RH".  Doubly nested case would result, except
@@ -2072,12 +2065,12 @@ func x86emuOp_call_far_IMM(_ uint8) {
 
 	START_OF_INSTR()
 	DECODE_PRINTF("CALL\t")
-	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-		faroff := fetch_long_imm()
-		farseg := fetch_word_imm()
+	if Mode(SYSMODE_PREFIX_DATA) {
+		faroff = uint16(fetch_long_imm())
+		farseg = fetch_word_imm()
 	} else {
-		faroff := fetch_word_imm()
-		farseg := fetch_word_imm()
+		faroff = fetch_word_imm()
+		farseg = fetch_word_imm()
 	}
 	DECODE_PRINTF2("%04x:", farseg)
 	DECODE_PRINTF2("%04x\n", faroff)
@@ -2092,7 +2085,7 @@ func x86emuOp_call_far_IMM(_ uint8) {
 	TRACE_AND_STEP()
 	push_word(M.x86.seg.CS.Get())
 	M.x86.seg.CS.Set(farseg)
-	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
+	if Mode(SYSMODE_PREFIX_DATA) {
 		push_long(M.x86.spc.IP.Get32())
 	} else {
 		push_word(M.x86.spc.IP.Get16())
@@ -2911,8 +2904,6 @@ REMARKS:
 Handles opcode 0xc1
 ****************************************************************************/
 func x86emuOp_opcC1_word_RM_MEM(_ uint8) {
-	var amt uint8
-
 	/*
 	 * Yet another weirdo special case instruction format.  Part of
 	 * the opcode held below in "RH".  Doubly nested case would
@@ -3084,8 +3075,6 @@ REMARKS:
 Handles opcode 0xc6
 ****************************************************************************/
 func x86emuOp_mov_byte_RM_IMM(_ uint8) {
-	var imm uint8
-
 	START_OF_INSTR()
 	DECODE_PRINTF("MOV\t")
 	mod, rh, rl := fetch_decode_modrm()
@@ -3243,7 +3232,9 @@ Handles opcode 0xcc
 func x86emuOp_int3(_ uint8) {
 	START_OF_INSTR()
 	DECODE_PRINTF("INT 3\n")
-	tmp := mem_access_word(3*4 + 2)
+	// I guess x86 needs this. This is why I did not want to do this from scratch.
+	// There's too much weird x86 foo I don't know.
+	_ = mem_access_word(3*4 + 2)
 	/* access the segment register */
 	TRACE_AND_STEP()
 	if _X86EMU_intrTab[3] != nil {
@@ -3271,7 +3262,7 @@ func x86emuOp_int_IMM(_ uint8) {
 	DECODE_PRINTF("INT\t")
 	intnum := fetch_byte_imm()
 	DECODE_PRINTF2("%x\n", intnum)
-	tmp := mem_access_word(uint32(intnum)*4 + 2)
+	_ = mem_access_word(uint32(intnum)*4 + 2)
 	TRACE_AND_STEP()
 	if _X86EMU_intrTab[intnum] != nil {
 		_X86EMU_intrTab[intnum](intnum)
@@ -3298,7 +3289,7 @@ func x86emuOp_into(_ uint8) {
 	DECODE_PRINTF("INTO\n")
 	TRACE_AND_STEP()
 	if ACCESS_FLAG(F_OF) {
-		tmp := mem_access_word(4*4 + 2)
+		_ = mem_access_word(4*4 + 2)
 		if _X86EMU_intrTab[4] != nil {
 			_X86EMU_intrTab[4](4)
 		} else {
@@ -3678,7 +3669,7 @@ func x86emuOp_aad(_ uint8) {
 
 	START_OF_INSTR()
 	DECODE_PRINTF("AAD\n")
-	a := fetch_byte_imm()
+	_ = fetch_byte_imm()
 	TRACE_AND_STEP()
 	M.x86.gen.A.Set16(aad_word(M.x86.gen.A.Get16()))
 	DECODE_CLEAR_SEGOVR()
@@ -3866,8 +3857,6 @@ REMARKS:
 Handles opcode 0xe8
 ****************************************************************************/
 func x86emuOp_call_near_IMM(_ uint8) {
-	var ip32 uint32
-	var ip16 uint16
 	START_OF_INSTR()
 	DECODE_PRINTF("CALL\t")
 	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
@@ -3897,8 +3886,6 @@ REMARKS:
 Handles opcode 0xe9
 ****************************************************************************/
 func x86emuOp_jump_near_IMM(_ uint8) {
-	var ip uint32
-
 	START_OF_INSTR()
 	DECODE_PRINTF("JMP\t")
 	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
@@ -3929,9 +3916,9 @@ func x86emuOp_jump_far_IMM(_ uint8) {
 	START_OF_INSTR()
 	DECODE_PRINTF("JMP\tFAR ")
 	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-		ip := fetch_long_imm()
+		ip = fetch_long_imm()
 	} else {
-		ip := fetch_word_imm()
+		ip = uint32(fetch_word_imm())
 	}
 	cs := fetch_word_imm()
 	DECODE_PRINTF2("%04x:", cs)

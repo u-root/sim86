@@ -673,7 +673,7 @@ REMARKS:
 Implements the RCL instruction and side effects.
 ****************************************************************************/
 func rcl_byte(d uint8, s uint8) uint8 {
-	var res, int, cnt, mask, cf uint8
+	var res, cnt, mask, cf uint8
 
 	/* s is the rotate distance.  It varies from 0 - 8. */
 	/* have
@@ -746,7 +746,7 @@ REMARKS:
 Implements the RCL instruction and side effects.
 ****************************************************************************/
 func rcl_word(d uint16, s uint8) uint16 {
-	var res, int, cnt, mask, cf uint16
+	var res, cnt, mask, cf uint16
 
 	res = d
 	cnt = uint16(s) % 17
@@ -2194,9 +2194,8 @@ func pop_word() uint16 {
 	if CHECK_SP_ACCESS() {
 		x86emu_check_sp_access()
 	}
-	FUCK
-	res = sysr((uint32(M.x86.SS.Get()) << 4) + M.x86.SP.Get16())
-	M.x86.SP.Add(int16(2))
+	sysr((uint32(M.x86.seg.SS.Get()) << 4) + uint32(M.x86.spc.SP.Get16()), &res)
+	M.x86.spc.SP.Add(int16(2))
 	return res
 }
 
@@ -2212,8 +2211,8 @@ func pop_long() uint32 {
 	if CHECK_SP_ACCESS() {
 		x86emu_check_sp_access()
 	}
-	res = sys_rdl(uint32(M.x86.SS.Get())<<4 + M.x86.SP.Get16())
-	M.x86.SP.Add(int16(4))
+	sysr(uint32(M.x86.seg.SS.Get())<<4 + uint32(M.x86.spc.SP.Get16()), &res)
+	M.x86.spc.SP.Add(int16(4))
 	return res
 }
 
@@ -2247,7 +2246,7 @@ func x86emu_cpuid() {
 		/* In the case that we have hardware CPUID instruction, we make sure
 		 * that the features reported are limited to TSC and VME.
 		 */
-		M.x86.gen.D.Get32() &= 0x00000012
+		M.x86.gen.D.Set32(M.x86.gen.D.Get32() & 0x00000012)
 		break
 	default:
 		/* Finally, we don't support any additional features.  Most CPUs
