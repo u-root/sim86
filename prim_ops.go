@@ -1796,11 +1796,11 @@ REMARKS:
 Implements the IMUL instruction and side effects.
 ****************************************************************************/
 func imul_byte(s uint8) {
-	res := uint32(int16(M.x86.gen.A.Getl8()) * int16(s))
+	res := int16(M.x86.gen.A.Getl8()) * int16(s)
 
 	M.x86.gen.A.Set(res)
-	if ((M.x86.gen.A.Getl8()&0x80) == 0 && M.x86.R_AH == 0x00) ||
-		((M.x86.gen.A.Getl8()&0x80) != 0 && M.x86.R_AH == 0xFF) {
+	if ((M.x86.gen.A.Getl8()&0x80) == 0 && M.x86.gen.A.Geth8() == 0x00) ||
+		((M.x86.gen.A.Getl8()&0x80) != 0 && M.x86.gen.A.Geth8() == 0xFF) {
 		CLEAR_FLAG(F_CF)
 		CLEAR_FLAG(F_OF)
 	} else {
@@ -1814,12 +1814,12 @@ REMARKS:
 Implements the IMUL instruction and side effects.
 ****************************************************************************/
 func imul_word(s uint16) {
-	res := uint32(M.x86.gen.A.Get16() * int16(s))
+	res := uint32(int16(M.x86.gen.A.Get16()) * int16(s))
 
 	M.x86.gen.A.Set16(uint16(res))
-	M.x86.D.Set16(uint16(res >> 16))
-	if ((M.x86.gen.A.Get16()&0x8000) == 0 && M.x86.D.Get16() == 0x0000) ||
-		((M.x86.gen.A.Get16()&0x8000) != 0 && M.x86.D.Get16() == 0xFFFF) {
+	M.x86.gen.D.Set16(uint16(res >> 16))
+	if ((M.x86.gen.A.Get16()&0x8000) == 0 && M.x86.gen.D.Get16() == 0x0000) ||
+		((M.x86.gen.A.Get16()&0x8000) != 0 && M.x86.gen.D.Get16() == 0xFFFF) {
 		CLEAR_FLAG(F_CF)
 		CLEAR_FLAG(F_OF)
 	} else {
@@ -1836,7 +1836,7 @@ func imul_long_direct(res_lo, res_hi *uint32, d uint32, s uint32) {
 	res := int64(d) * int64(s)
 
 	*res_lo = uint32(res)
-	*res_hi = (u32)(res >> 32)
+	*res_hi = uint32(res >> 32)
 }
 
 /****************************************************************************
@@ -1844,7 +1844,11 @@ REMARKS:
 Implements the IMUL instruction and side effects.
 ****************************************************************************/
 func imul_long(s uint32) {
-	imul_long_direct(&M.x86.gen.A.Get32(), &M.x86.gen.D.Get32(), M.x86.gen.A.Get32(), s)
+	eax := M.x86.gen.A.Get32()
+	edx := M.x86.gen.D.Get32()
+	imul_long_direct(&eax, &edx, M.x86.gen.A.Get32(), s)
+	M.x86.gen.A.Set32(eax)
+	M.x86.gen.D.Set32(edx)
 	if ((M.x86.gen.A.Get32()&0x80000000) == 0 && M.x86.gen.D.Get32() == 0x00000000) ||
 		((M.x86.gen.A.Get32()&0x80000000) != 0 && M.x86.gen.D.Get32() == 0xFFFFFFFF) {
 		CLEAR_FLAG(F_CF)
@@ -1860,10 +1864,10 @@ REMARKS:
 Implements the MUL instruction and side effects.
 ****************************************************************************/
 func mul_byte(s uint8) {
-	res := uint16(M.x86.gen.A.Getl8() * s)
+	res := uint16(M.x86.gen.A.Getl8()) * uint16(s)
 
-	M.x86.Set16(res)
-	if M.x86.gen.A.Get8h() == 0 {
+	M.x86.gen.A.Set16(res)
+	if M.x86.gen.A.Geth8() == 0 {
 		CLEAR_FLAG(F_CF)
 		CLEAR_FLAG(F_OF)
 	} else {
@@ -1877,11 +1881,11 @@ REMARKS:
 Implements the MUL instruction and side effects.
 ****************************************************************************/
 func mul_word(s uint16) {
-	var res uint32 = M.x86.gen.A.Get16() * s
+	res := uint32(M.x86.gen.A.Get16()) * uint32(s)
 
 	M.x86.gen.A.Set16(uint16(res))
-	M.x86.R_DX = uint16((res >> 16))
-	if M.x86.D.Get16() == 0 {
+	M.x86.gen.D.Set16(uint16(res >> 16))
+	if M.x86.gen.D.Get16() == 0 {
 		CLEAR_FLAG(F_CF)
 		CLEAR_FLAG(F_OF)
 	} else {
@@ -1898,8 +1902,8 @@ func mul_long(s uint32) {
 	res := uint64(M.x86.gen.A.Get32()) * uint64(s)
 
 	M.x86.gen.A.Set32(uint32(res))
-	M.x86.D.Set32((u32)(res >> 32))
-	if M.x86.D.Get32() == 0 {
+	M.x86.gen.D.Set32(uint32(res >> 32))
+	if M.x86.gen.D.Get32() == 0 {
 		CLEAR_FLAG(F_CF)
 		CLEAR_FLAG(F_OF)
 	} else {
@@ -1915,19 +1919,19 @@ Implements the IDIV instruction and side effects.
 func idiv_byte(s uint8) {
 	var dvd, div, mod int16
 
-	dvd = M.x86.gen.A.Get16()
+	dvd = int16(M.x86.gen.A.Get16())
 	if s == 0 {
 		x86emu_intr_raise(0)
 		return
 	}
 	div = dvd / int16(s)
 	mod = dvd % int16(s)
-	if abs(div) > 0x7f {
+	if abs(int(div)) > 0x7f {
 		x86emu_intr_raise(0)
 		return
 	}
-	M.x86.gen.A.Set8l(int8(div))
-	M.x86.gen.A.Set8h(int8(mod))
+	M.x86.gen.A.Setl8(uint8(div))
+	M.x86.gen.A.Seth8(uint8(mod))
 }
 
 /****************************************************************************
@@ -1937,24 +1941,24 @@ Implements the IDIV instruction and side effects.
 func idiv_word(s uint16) {
 	var dvd, div, mod int32
 
-	dvd = (int32(M.x86.D.Get16()) << 16) | M.x86.gen.A.Get16()
+	dvd = int32(M.x86.gen.D.Get16()) << 16 | int32(M.x86.gen.A.Get16())
 	if s == 0 {
 		x86emu_intr_raise(0)
 		return
 	}
-	div = dvd / int16(s)
-	mod = dvd % int16(s)
-	if abs(div) > 0x7fff {
+	div = dvd / int32(s)
+	mod = dvd % int32(s)
+	if abs(int(div)) > 0x7fff {
 		x86emu_intr_raise(0)
 		return
 	}
 	CLEAR_FLAG(F_CF)
 	CLEAR_FLAG(F_SF)
 	CONDITIONAL_SET_FLAG(div == 0, F_ZF)
-	set_parity_flag(mod)
+	set_parity_flag(uint32(mod))
 
 	M.x86.gen.A.Set(uint16(div))
-	M.x86.D.Set(uint16(mod))
+	M.x86.gen.D.Set(uint16(mod))
 }
 
 /****************************************************************************
@@ -1964,14 +1968,14 @@ Implements the IDIV instruction and side effects.
 func idiv_long(s uint32) {
 	var dvd, div, mod int64
 
-	dvd = (int64(M.x86.D.Get32()) << 32) | M.x86.gen.A.Get32()
+	dvd = (int64(M.x86.gen.D.Get32()) << 32) | int64(M.x86.gen.A.Get32())
 	if s == 0 {
 		x86emu_intr_raise(0)
 		return
 	}
-	div = dvd / int32(s)
-	mod = dvd % int32(s)
-	if abs(div) > 0x7fffffff {
+	div = dvd / int64(s)
+	mod = dvd % int64(s)
+	if abs(int(div)) > 0x7fffffff {
 		x86emu_intr_raise(0)
 		return
 	}
@@ -1979,10 +1983,10 @@ func idiv_long(s uint32) {
 	CLEAR_FLAG(F_AF)
 	CLEAR_FLAG(F_SF)
 	SET_FLAG(F_ZF)
-	set_parity_flag(mod)
+	set_parity_flag(uint32(mod))
 
 	M.x86.gen.A.Set(uint32(div))
-	M.x86.D.Set(uint32(mod))
+	M.x86.gen.D.Set(uint32(mod))
 }
 
 /****************************************************************************
@@ -1990,21 +1994,21 @@ REMARKS:
 Implements the DIV instruction and side effects.
 ****************************************************************************/
 func div_byte(s uint8) {
-	var dvd, div, mod uint32
+	var dvd, div, mod int32
 
-	dvd = M.x86.gen.A.Get16()
+	dvd = int32(M.x86.gen.A.Get16())
 	if s == 0 {
 		x86emu_intr_raise(0)
 		return
 	}
-	div = dvd / uint8(s)
-	mod = dvd % uint8(s)
-	if abs(div) > 0xff {
+	div = dvd / int32(s)
+	mod = dvd % int32(s)
+	if abs(int(div)) > 0xff {
 		x86emu_intr_raise(0)
 		return
 	}
-	M.x86.gen.A.Set(uint8(div))
-	M.x86.gen.A.Set8h(uint8(mod))
+	M.x86.gen.A.Setl8(uint8(div))
+	M.x86.gen.A.Seth8(uint8(mod))
 }
 
 /****************************************************************************
@@ -2014,14 +2018,14 @@ Implements the DIV instruction and side effects.
 func div_word(s uint16) {
 	var dvd, div, mod uint32
 
-	dvd = (uint32(M.x86.D.Get16()) << 16) | M.x86.gen.A.Get16()
+	dvd = uint32(M.x86.gen.D.Get16()) << 16 | uint32(M.x86.gen.A.Get16())
 	if s == 0 {
 		x86emu_intr_raise(0)
 		return
 	}
-	div = dvd / uint16(s)
-	mod = dvd % uint16(s)
-	if abs(div) > 0xffff {
+	div = dvd / uint32(s)
+	mod = dvd % uint32(s)
+	if abs(int(div)) > 0xffff {
 		x86emu_intr_raise(0)
 		return
 	}
@@ -2031,7 +2035,7 @@ func div_word(s uint16) {
 	set_parity_flag(mod)
 
 	M.x86.gen.A.Set16(uint16(div))
-	M.x86.R_DX = uint16(mod)
+	M.x86.gen.A.Set16(uint16(mod))
 }
 
 /****************************************************************************
@@ -2041,7 +2045,7 @@ Implements the DIV instruction and side effects.
 func div_long(s uint32) {
 	var dvd, div, mod uint64
 
-	dvd = (uint64(M.x86.D.Get32()) << 32) | uint64(M.x86.gen.A.Get32())
+	dvd = (uint64(M.x86.gen.D.Get32()) << 32) | uint64(M.x86.gen.A.Get32())
 	if s == 0 {
 		x86emu_intr_raise(0)
 		return
@@ -2059,7 +2063,7 @@ func div_long(s uint32) {
 	set_parity_flag(mod)
 
 	M.x86.gen.A.Set(uint32(div))
-	M.x86.D.Set(uint32(mod))
+	M.x86.gen.D.Set(uint32(mod))
 }
 
 /****************************************************************************
@@ -2070,11 +2074,11 @@ Implements the IN string instruction and side effects.
 func single_in(size int) {
 	switch size {
 	case 1:
-		store_data_byte_abs(M.x86.seg.ES.Get(), M.x86.R_DI, sys_inb(M.x86.D.Get16()))
+		store_data_byte_abs(M.x86.seg.ES.Get(), M.x86.R_DI, sys_inb(M.x86.gen.D.Get16()))
 	case 2:
-		store_data_word_abs(M.x86.seg.ES.Get(), M.x86.R_DI, sys_inw(M.x86.D.Get16()))
+		store_data_word_abs(M.x86.seg.ES.Get(), M.x86.R_DI, sys_inw(M.x86.gen.D.Get16()))
 	default:
-		store_data_long_abs(M.x86.seg.ES.Get(), M.x86.R_DI, sys_inl(M.x86.D.Get16()))
+		store_data_long_abs(M.x86.seg.ES.Get(), M.x86.R_DI, sys_inl(M.x86.gen.D.Get16()))
 	}
 }
 
@@ -2091,7 +2095,7 @@ func ins(size int) {
 		for count > 0 {
 			count--
 			single_in(size)
-			M.x86.DI.Add(uint32(inc))
+			M.x86.gen.DI.Add(uint32(inc))
 		}
 	} else {
 		single_in(size)
@@ -2107,11 +2111,11 @@ Implements the OUT string instruction and side effects.
 func single_out(size int) {
 	switch size {
 	case 1:
-		sys_outb(M.x86.D.Get16(), fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.R_SI))
+		sys_outb(M.x86.gen.D.Get16(), fetch_data_byte_abs(M.x86.seg.ES.Get(), M.x86.R_SI))
 	case 2:
-		sys_outw(M.x86.D.Get16(), fetch_data_word_abs(M.x86.seg.ES.Get(), M.x86.R_SI))
+		sys_outw(M.x86.gen.D.Get16(), fetch_data_word_abs(M.x86.seg.ES.Get(), M.x86.R_SI))
 	default:
-		sys_outl(M.x86.D.Get16(), fetch_data_long_abs(M.x86.seg.ES.Get(), M.x86.R_SI))
+		sys_outl(M.x86.gen.D.Get16(), fetch_data_long_abs(M.x86.seg.ES.Get(), M.x86.R_SI))
 	}
 }
 
