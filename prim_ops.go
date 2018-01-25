@@ -734,7 +734,7 @@ func rcl_byte(d uint8, s uint8) uint8 {
 		   xor of CF and the most significant bit.  Blecck. */
 		/* parenthesized this expression since it appears to
 		   be causing OF to be missed */
-		CONDITIONAL_SET_FLAG_BOOL(cnt == 1 && XOR2(cf+((res>>6)&0x2)),
+		CONDITIONAL_SET_FLAG_BOOL((cnt == 1) && (XOR2(uint32(cf+((res>>6)&0x2)))!=0),
 			F_OF)
 
 	}
@@ -759,8 +759,7 @@ func rcl_word(d uint16, s uint8) uint16 {
 			res |= 1 << (cnt - 1)
 		}
 		CONDITIONAL_SET_FLAG(cf, F_CF)
-		CONDITIONAL_SET_FLAG(cnt == 1 && XOR2(cf+((res>>14)&0x2)),
-			F_OF)
+		CONDITIONAL_SET_FLAG((cnt == 1) && (XOR2(uint32(cf+((res>>14)&0x2))) != 0),F_OF)
 	}
 	return uint16(res)
 }
@@ -773,7 +772,7 @@ func rcl_long(d uint32, s uint8) uint32 {
 	var res, cnt, mask, cf uint32
 
 	res = d
-	cnt = s % 33
+	cnt = uint32(s) % 33
 	if cnt != 0 {
 		cf = (d >> (32 - cnt)) & 0x1
 		res = (d << cnt) & 0xffffffff
@@ -783,7 +782,7 @@ func rcl_long(d uint32, s uint8) uint32 {
 			res |= 1 << (cnt - 1)
 		}
 		CONDITIONAL_SET_FLAG(cf, F_CF)
-		CONDITIONAL_SET_FLAG(cnt == 1 && XOR2(cf+((res>>30)&0x2)),
+		CONDITIONAL_SET_FLAG((cnt == 1) && (XOR2(uint32(cf+((res>>30)&0x2))) != 0),
 			F_OF)
 	}
 	return res
@@ -818,13 +817,13 @@ func rcr_byte(d uint8, s uint8) uint8 {
 	   3) B_(8-n) <- cf
 	   4) B_(7) .. B_(8-(n-1)) <-  b_(n-2) .. b_(0)
 	*/
-	res = d
-	cnt = s % 9
+	res = uint32(d)
+	cnt = uint32(s % 9)
 	if cnt != 0 {
 		/* extract the new CARRY FLAG. */
 		/* CF <-  b_(n-1)              */
 		if cnt == 1 {
-			cf = d & 0x1
+			cf = uint32(d & 0x1)
 			/* note hackery here.  Access_flag(..) evaluates to either
 			   0 if flag not set
 			   non-zero if flag is set.
@@ -832,9 +831,11 @@ func rcr_byte(d uint8, s uint8) uint8 {
 			   0..1 in any representation of the flags register
 			   (i.e. packed bit array or unpacked.)
 			*/
-			ocf = ACCESS_FLAG(F_CF) != 0
+			if ACCESS_FLAG(F_CF) {
+				ocf = 1
+			}
 		} else {
-			cf = (d >> (cnt - 1)) & 0x1
+			cf = uint32((d >> (cnt - 1)) & 0x1)
 		}
 
 		/* B_(8-(n+1)) .. B_(0)  <-  b_(7) .. b_n  */
@@ -845,7 +846,7 @@ func rcr_byte(d uint8, s uint8) uint8 {
 		   as a negative number.  Needed??? */
 
 		mask = (1 << (8 - cnt)) - 1
-		res = (d >> cnt) & mask
+		res = uint32(d >> cnt) & mask
 
 		/* now the high stuff which rotated around
 		   into the positions B_cnt-2 .. B_0 */
@@ -853,7 +854,7 @@ func rcr_byte(d uint8, s uint8) uint8 {
 		/* shift it downward, 7-(n-2) = 9-n positions.
 		   and mask off the result before or'ing in.
 		*/
-		res |= (d << (9 - cnt))
+		res |= uint32(d << (9 - cnt))
 
 		/* if the carry flag was set, or it in.  */
 		if ACCESS_FLAG(F_CF) { /* carry flag is set */
@@ -866,7 +867,7 @@ func rcr_byte(d uint8, s uint8) uint8 {
 		   xor of CF and the most significant bit.  Blecck. */
 		/* parenthesized... */
 		if cnt == 1 {
-			CONDITIONAL_SET_FLAG(XOR2(ocf+((d>>6)&0x2)),
+			CONDITIONAL_SET_FLAG(XOR2(ocf+uint32((d>>6)&0x2)) != 0,
 				F_OF)
 		}
 	}
@@ -880,13 +881,15 @@ Implements the RCR instruction and side effects.
 func rcr_word(d uint16, s uint8) uint16 {
 	var res, cnt, mask, cf, ocf uint16
 
-	/* rotate right through carry */
+/* rotate right through carry */
 	res = d
-	cnt = s % 17
+	cnt = uint16(s) % 17
 	if cnt != 0 {
 		if cnt == 1 {
 			cf = d & 0x1
-			ocf = ACCESS_FLAG(F_CF) != 0
+			if ACCESS_FLAG(F_CF) {
+				ocf = 1
+			}
 		} else {
 			cf = (d >> (cnt - 1)) & 0x1
 		}
@@ -898,7 +901,7 @@ func rcr_word(d uint16, s uint8) uint16 {
 		}
 		CONDITIONAL_SET_FLAG(cf, F_CF)
 		if cnt == 1 {
-			CONDITIONAL_SET_FLAG(XOR2(ocf+((d>>14)&0x2)),
+			CONDITIONAL_SET_FLAG(XOR2(uint32(ocf+((d>>14)&0x2))),
 				F_OF)
 		}
 	}
@@ -914,11 +917,13 @@ func rcr_long(d uint32, s uint8) uint32 {
 
 	/* rotate right through carry */
 	res = d
-	cnt = s % 33
+	cnt = uint32(s) % 33
 	if cnt != 0 {
 		if cnt == 1 {
 			cf = d & 0x1
-			ocf = ACCESS_FLAG(F_CF) != 0
+			if ACCESS_FLAG(F_CF) {
+				ocf = 1
+			}
 		} else {
 			cf = (d >> (cnt - 1)) & 0x1
 		}
@@ -944,7 +949,7 @@ REMARKS:
 Implements the ROL instruction and side effects.
 ****************************************************************************/
 func rol_byte(d uint8, s uint8) uint8 {
-	var res, cnt, mask int
+	var res, cnt, mask uint32
 
 	/* rotate left */
 	/*
@@ -962,23 +967,22 @@ func rol_byte(d uint8, s uint8) uint8 {
 	   1) B_(7) .. B_(n)  <-  b_(8-(n+1)) .. b_(0)
 	   2) B_(n-1) .. B_(0) <-  b_(7) .. b_(8-n)
 	*/
-	res = d
-	cnt = s % 8
+	res = uint32(d)
+	cnt = uint32(s) % 8
 	if cnt != 0 {
 		/* B_(7) .. B_(n)  <-  b_(8-(n+1)) .. b_(0) */
-		res = (d << cnt)
+		res = (uint32(d) << cnt)
 
 		/* B_(n-1) .. B_(0) <-  b_(7) .. b_(8-n) */
 		mask = (1 << cnt) - 1
-		res |= (d >> (8 - cnt)) & mask
+		res |= uint32(d >> (8 - cnt)) & mask
 
 		/* set the new carry flag, Note that it is the low order
 		   bit of the result!!!                               */
 		CONDITIONAL_SET_FLAG(res&0x1, F_CF)
 		/* OVERFLOW is set *IFF* s==1, then it is the
 		   xor of CF and the most significant bit.  Blecck. */
-		CONDITIONAL_SET_FLAG(s == 1 &&
-			XOR2((res&0x1)+((res>>6)&0x2)),
+		CONDITIONAL_SET_FLAG(s == 1 &&	XOR2((res&0x1)+((res>>6)&0x2)) != 0,
 			F_OF)
 	}
 	if s != 0 {
@@ -994,17 +998,16 @@ REMARKS:
 Implements the ROL instruction and side effects.
 ****************************************************************************/
 func rol_word(d uint16, s uint8) uint16 {
-	var res, cnt, mask int
+	var res, cnt, mask uint32
 
-	res = d
-	cnt = s % 16
+	res = uint32(d)
+	cnt = uint32(s) % 16
 	if cnt != 0 {
-		res = (d << cnt)
-		mask = (1 << cnt) - 1
-		res |= (d >> (16 - cnt)) & mask
+		res = (uint32(d) << cnt)
+		mask = (uint32(1) << cnt) - 1
+		res |= uint32(d >> (16 - cnt)) & mask
 		CONDITIONAL_SET_FLAG(res&0x1, F_CF)
-		CONDITIONAL_SET_FLAG(s == 1 &&
-			XOR2((res&0x1)+((res>>14)&0x2)),
+		CONDITIONAL_SET_FLAG(s == 1 &&	XOR2((res&0x1)+((res>>14)&0x2)) != 0,
 			F_OF)
 	}
 	if s != 0 {
@@ -1023,14 +1026,12 @@ func rol_long(d uint32, s uint8) uint32 {
 	var res, cnt, mask uint32
 
 	res = d
-	if cnt = s % 32; cnt != 0 {
+	if cnt = uint32(s) % 32; cnt != 0 {
 		res = (d << cnt)
 		mask = (1 << cnt) - 1
 		res |= (d >> (32 - cnt)) & mask
 		CONDITIONAL_SET_FLAG(res&0x1, F_CF)
-		CONDITIONAL_SET_FLAG(s == 1 &&
-			XOR2((res&0x1)+((res>>30)&0x2)),
-			F_OF)
+		CONDITIONAL_SET_FLAG(s == 1 && XOR2((res&0x1)+((res>>30)&0x2)) != 0,F_OF)
 	}
 	if s != 0 {
 		/* set the new carry flag, Note that it is the low order
@@ -1045,7 +1046,7 @@ REMARKS:
 Implements the ROR instruction and side effects.
 ****************************************************************************/
 func ror_byte(d uint8, s uint8) uint8 {
-	var res, cnt, mask int
+	var res, cnt, mask uint32
 
 	/* rotate right */
 	/*
@@ -1062,21 +1063,21 @@ func ror_byte(d uint8, s uint8) uint8 {
 	   1) B_(8-(n+1)) .. B_(0)  <-  b_(7) .. b_(n)
 	   2) B_(7) .. B_(8-n) <-  b_(n-1) .. b_(0)
 	*/
-	res = d
-	if cnt = s % 8; cnt != 0 { /* not a typo, do nada if cnt==0 */
+	res = uint32(d)
+	if cnt = uint32(s) % 8; cnt != 0 { /* not a typo, do nada if cnt==0 */
 		/* B_(7) .. B_(8-n) <-  b_(n-1) .. b_(0) */
-		res = (d << (8 - cnt))
+		res = (uint32(d) << (8 - cnt))
 
 		/* B_(8-(n+1)) .. B_(0)  <-  b_(7) .. b_(n) */
-		mask = (1 << (8 - cnt)) - 1
-		res |= (d >> (cnt)) & mask
+		mask = uint32(1 << (8 - cnt)) - 1
+		res |= (uint32(d) >> (cnt)) & mask
 
 		/* set the new carry flag, Note that it is the low order
 		   bit of the result!!!                               */
 		CONDITIONAL_SET_FLAG(res&0x80, F_CF)
 		/* OVERFLOW is set *IFF* s==1, then it is the
 		   xor of the two most significant bits.  Blecck. */
-		CONDITIONAL_SET_FLAG(s == 1 && XOR2(res>>6), F_OF)
+		CONDITIONAL_SET_FLAG(s == 1 && XOR2(res>>6) != 0, F_OF)
 	} else if s != 0 {
 		/* set the new carry flag, Note that it is the low order
 		   bit of the result!!!                               */
@@ -1090,15 +1091,15 @@ REMARKS:
 Implements the ROR instruction and side effects.
 ****************************************************************************/
 func ror_word(d uint16, s uint8) uint16 {
-	var res, cnt, mask int
+	var res, cnt, mask uint32
 
-	res = d
-	if cnt = s % 16; cnt != 0 {
-		res = (d << (16 - cnt))
-		mask = (1 << (16 - cnt)) - 1
-		res |= (d >> (cnt)) & mask
+	res = uint32(d)
+	if cnt = uint32(s) % 16; cnt != 0 {
+		res = (uint32(d) << (16 - cnt))
+		mask = (uint32(1) << (16 - cnt)) - 1
+		res |= (uint32(d) >> (cnt)) & mask
 		CONDITIONAL_SET_FLAG(res&0x8000, F_CF)
-		CONDITIONAL_SET_FLAG(s == 1 && XOR2(res>>14), F_OF)
+		CONDITIONAL_SET_FLAG(s == 1 && XOR2(res>>14) != 0, F_OF)
 	} else if s != 0 {
 		/* set the new carry flag, Note that it is the low order
 		   bit of the result!!!                               */
@@ -1115,12 +1116,12 @@ func ror_long(d uint32, s uint8) uint32 {
 	var res, cnt, mask uint32
 
 	res = d
-	if cnt = s % 32; cnt != 0 {
+	if cnt = uint32(s) % 32; cnt != 0 {
 		res = (d << (32 - cnt))
 		mask = (1 << (32 - cnt)) - 1
 		res |= (d >> (cnt)) & mask
 		CONDITIONAL_SET_FLAG(res&0x80000000, F_CF)
-		CONDITIONAL_SET_FLAG(s == 1 && XOR2(res>>30), F_OF)
+		CONDITIONAL_SET_FLAG(s == 1 && XOR2(res>>30) != 0, F_OF)
 	} else if s != 0 {
 		/* set the new carry flag, Note that it is the low order
 		   bit of the result!!!                               */
@@ -1134,26 +1135,24 @@ REMARKS:
 Implements the SHL instruction and side effects.
 ****************************************************************************/
 func shl_byte(d uint8, s uint8) uint8 {
-	var cnt, res, cf int
+	var cnt, res, cf uint32
 
 	if s < 8 {
-		cnt = s % 8
+		cnt = uint32(s) % 8
 
 		/* last bit shifted out goes into carry flag */
 		if cnt > 0 {
-			res = d << cnt
-			cf = d & (1 << (8 - cnt))
+			res = uint32(d) << cnt
+			cf = uint32(d) & (1 << (8 - cnt))
 			CONDITIONAL_SET_FLAG(cf, F_CF)
 			set_szp_flags_8(uint8(res))
 		} else {
-			res = uint8(d)
+			res = uint32(d)
 		}
 
 		if cnt == 1 {
 			/* Needs simplification. */
-			CONDITIONAL_SET_FLAG(
-				(((res & 0x80) == 0x80) ^
-					(ACCESS_FLAG(F_CF) != 0)),
+			CONDITIONAL_SET_FLAG(xorb(res & 0x80 == 0x80, ACCESS_FLAG(F_CF)),
 				/* was (M.x86.R_FLG&F_CF)==F_CF)), */
 				F_OF)
 		} else {
@@ -1175,24 +1174,21 @@ REMARKS:
 Implements the SHL instruction and side effects.
 ****************************************************************************/
 func shl_word(d uint16, s uint8) uint16 {
-	var cnt, res, cf int
+	var cnt, res, cf uint32
 
 	if s < 16 {
-		cnt = s % 16
+		cnt = uint32(s) % 16
 		if cnt > 0 {
-			res = d << cnt
-			cf = d & (1 << (16 - cnt))
+			res = uint32(d) << cnt
+			cf = uint32(d) & (1 << (16 - cnt))
 			CONDITIONAL_SET_FLAG(cf, F_CF)
 			set_szp_flags_16(uint16(res))
 		} else {
-			res = uint16(d)
+			res = uint32(d)
 		}
 
 		if cnt == 1 {
-			CONDITIONAL_SET_FLAG(
-				(((res & 0x8000) == 0x8000) ^
-					(ACCESS_FLAG(F_CF) != 0)),
-				F_OF)
+			CONDITIONAL_SET_FLAG(xorb(res & 0x8000 == 0x8000, ACCESS_FLAG(F_CF)), F_OF)
 		} else {
 			CLEAR_FLAG(F_OF)
 		}
@@ -1212,21 +1208,20 @@ REMARKS:
 Implements the SHL instruction and side effects.
 ****************************************************************************/
 func shl_long(d uint32, s uint8) uint32 {
-	var cnt, res, cf int
+	var cnt, res, cf uint32
 
 	if s < 32 {
-		cnt = s % 32
+		cnt = uint32(s) % 32
 		if cnt > 0 {
-			res = d << cnt
-			cf = d & (1 << (32 - cnt))
+			res = uint32(d) << cnt
+			cf = uint32(d) & (1 << (32 - cnt))
 			CONDITIONAL_SET_FLAG(cf, F_CF)
 			set_szp_flags_32(uint32(res))
 		} else {
 			res = d
 		}
 		if cnt == 1 {
-			CONDITIONAL_SET_FLAG((((res & 0x80000000) == 0x80000000) ^
-				(ACCESS_FLAG(F_CF) != 0)), F_OF)
+			CONDITIONAL_SET_FLAG(xorb(res & 0x80000000 == 0x80000000, ACCESS_FLAG(F_CF)), F_OF)
 		} else {
 			CLEAR_FLAG(F_OF)
 		}
@@ -1246,17 +1241,17 @@ REMARKS:
 Implements the SHR instruction and side effects.
 ****************************************************************************/
 func shr_byte(d uint8, s uint8) uint8 {
-	var cnt, res, cf int
+	var cnt, res, cf uint32
 
 	if s < 8 {
-		cnt = s % 8
+		cnt = uint32(s) % 8
 		if cnt > 0 {
-			cf = d & (1 << (cnt - 1))
-			res = d >> cnt
+			cf = uint32(d) & (1 << (cnt - 1))
+			res = uint32(d) >> cnt
 			CONDITIONAL_SET_FLAG(cf, F_CF)
 			set_szp_flags_8(uint8(res))
 		} else {
-			res = uint8(d)
+			res = uint32(d)
 		}
 
 		if cnt == 1 {
@@ -1280,17 +1275,17 @@ REMARKS:
 Implements the SHR instruction and side effects.
 ****************************************************************************/
 func shr_word(d uint16, s uint8) uint16 {
-	var cnt, res, cf int
+	var cnt, res, cf uint32
 
 	if s < 16 {
-		cnt = s % 16
+		cnt = uint32(s) % 16
 		if cnt > 0 {
-			cf = d & (1 << (cnt - 1))
-			res = d >> cnt
+			cf = uint32(d) & (1 << (cnt - 1))
+			res = uint32(d) >> cnt
 			CONDITIONAL_SET_FLAG(cf, F_CF)
 			set_szp_flags_16(uint16(res))
 		} else {
-			res = d
+			res = uint32(d)
 		}
 
 		if cnt == 1 {
@@ -1314,12 +1309,12 @@ REMARKS:
 Implements the SHR instruction and side effects.
 ****************************************************************************/
 func shr_long(d uint32, s uint8) uint32 {
-	var cnt, res, cf int
+	var cnt, res, cf uint32
 
 	if s < 32 {
-		cnt = s % 32
+		cnt = uint32(s) % 32
 		if cnt > 0 {
-			cf = d & (1 << (cnt - 1))
+			cf = uint32(d) & (1 << (cnt - 1))
 			res = d >> cnt
 			CONDITIONAL_SET_FLAG(cf, F_CF)
 			set_szp_flags_32(uint32(res))
@@ -1347,22 +1342,22 @@ REMARKS:
 Implements the SAR instruction and side effects.
 ****************************************************************************/
 func sar_byte(d uint8, s uint8) uint8 {
-	var cnt, res, cf, mask, sf int
+	var cnt, res, cf, mask, sf uint32
 
-	res = d
-	sf = d & 0x80
-	cnt = s % 8
+	res = uint32(d)
+	sf = uint32(d) & 0x80
+	cnt = uint32(s) % 8
 	if cnt > 0 && cnt < 8 {
 		mask = (1 << (8 - cnt)) - 1
-		cf = d & (1 << (cnt - 1))
-		res = (d >> cnt) & mask
+		cf = uint32(d) & (1 << (cnt - 1))
+		res = (uint32(d) >> cnt) & mask
 		CONDITIONAL_SET_FLAG(cf, F_CF)
-		if sf {
+		if sf != 0 {
 			res |= ^mask
 		}
 		set_szp_flags_8(uint8(res))
 	} else if cnt >= 8 {
-		if sf {
+		if sf != 0 {
 			res = 0xff
 			SET_FLAG(F_CF)
 			CLEAR_FLAG(F_ZF)
@@ -1384,22 +1379,22 @@ REMARKS:
 Implements the SAR instruction and side effects.
 ****************************************************************************/
 func sar_word(d uint16, s uint8) uint16 {
-	var cnt, res, cf, mask, sf int
+	var cnt, res, cf, mask, sf uint32
 
-	sf = d & 0x8000
-	cnt = s % 16
-	res = d
+	sf = uint32(d) & 0x8000
+	cnt = uint32(s) % 16
+	res = uint32(d)
 	if cnt > 0 && cnt < 16 {
 		mask = (1 << (16 - cnt)) - 1
-		cf = d & (1 << (cnt - 1))
-		res = (d >> cnt) & mask
+		cf = uint32(d) & (1 << (cnt - 1))
+		res = (uint32(d) >> cnt) & mask
 		CONDITIONAL_SET_FLAG(cf, F_CF)
-		if sf {
+		if sf != 0 {
 			res |= ^mask
 		}
 		set_szp_flags_16(uint16(res))
 	} else if cnt >= 16 {
-		if sf {
+		if sf != 0 {
 			res = 0xffff
 			SET_FLAG(F_CF)
 			CLEAR_FLAG(F_ZF)
@@ -1424,19 +1419,19 @@ func sar_long(d uint32, s uint8) uint32 {
 	var cnt, res, cf, mask, sf uint32
 
 	sf = d & 0x80000000
-	cnt = s % 32
-	res = d
+	cnt = uint32(s) % 32
+	res = uint32(d)
 	if cnt > 0 && cnt < 32 {
 		mask = (1 << (32 - cnt)) - 1
-		cf = d & (1 << (cnt - 1))
+		cf = uint32(d) & (1 << (cnt - 1))
 		res = (d >> cnt) & mask
 		CONDITIONAL_SET_FLAG(cf, F_CF)
-		if sf {
+		if sf != 0 {
 			res |= ^mask
 		}
 		set_szp_flags_32(res)
 	} else if cnt >= 32 {
-		if sf {
+		if sf != 0 {
 			res = 0xffffffff
 			SET_FLAG(F_CF)
 			CLEAR_FLAG(F_ZF)
@@ -1458,21 +1453,20 @@ REMARKS:
 Implements the SHLD instruction and side effects.
 ****************************************************************************/
 func shld_word(d uint16, fill uint16, s uint8) uint16 {
-	var cnt, res, cf int
+	var cnt, res, cf uint32
 
 	if s < 16 {
-		cnt = s % 16
+		cnt = uint32(s) % 16
 		if cnt > 0 {
-			res = (d << cnt) | (fill >> (16 - cnt))
-			cf = d & (1 << (16 - cnt))
+			res = (uint32(d) << cnt) | (uint32(fill) >> (16 - cnt))
+			cf = uint32(d) & (1 << (16 - cnt))
 			CONDITIONAL_SET_FLAG(cf, F_CF)
 			set_szp_flags_16(uint16(res))
 		} else {
-			res = d
+			res = uint32(d)
 		}
 		if cnt == 1 {
-			CONDITIONAL_SET_FLAG((((res & 0x8000) == 0x8000) ^
-				(ACCESS_FLAG(F_CF) != 0)), F_OF)
+			CONDITIONAL_SET_FLAG(xorb(res & 0x8000 == 0x8000,  ACCESS_FLAG(F_CF)), F_OF)
 		} else {
 			CLEAR_FLAG(F_OF)
 		}
@@ -1492,21 +1486,20 @@ REMARKS:
 Implements the SHLD instruction and side effects.
 ****************************************************************************/
 func shld_long(d uint32, fill uint32, s uint8) uint32 {
-	var cnt, res, cf int
+	var cnt, res, cf uint32
 
 	if s < 32 {
-		cnt = s % 32
+		cnt = uint32(s) % 32
 		if cnt > 0 {
-			res = (d << cnt) | (fill >> (32 - cnt))
-			cf = d & (1 << (32 - cnt))
+			res = (uint32(d) << cnt) | (fill >> (32 - cnt))
+			cf = uint32(d) & (1 << (32 - cnt))
 			CONDITIONAL_SET_FLAG(cf, F_CF)
 			set_szp_flags_32(uint32(res))
 		} else {
 			res = d
 		}
 		if cnt == 1 {
-			CONDITIONAL_SET_FLAG((((res & 0x80000000) == 0x80000000) ^
-				(ACCESS_FLAG(F_CF) != 0)), F_OF)
+			CONDITIONAL_SET_FLAG(xorb(res & 0x80000000 == 0x80000000, ACCESS_FLAG(F_CF)), F_OF)
 		} else {
 			CLEAR_FLAG(F_OF)
 		}
@@ -1526,17 +1519,17 @@ REMARKS:
 Implements the SHRD instruction and side effects.
 ****************************************************************************/
 func shrd_word(d uint16, fill uint16, s uint8) uint16 {
-	var cnt, res, cf int
+	var cnt, res, cf uint32
 
 	if s < 16 {
-		cnt = s % 16
+		cnt = uint32(s) % 16
 		if cnt > 0 {
-			cf = d & (1 << (cnt - 1))
-			res = (d >> cnt) | (fill << (16 - cnt))
+			cf = uint32(d) & (1 << (cnt - 1))
+			res = (uint32(d) >> cnt) | (uint32(fill) << (16 - cnt))
 			CONDITIONAL_SET_FLAG(cf, F_CF)
 			set_szp_flags_16(uint16(res))
 		} else {
-			res = d
+			res = uint32(d)
 		}
 
 		if cnt == 1 {
@@ -1560,12 +1553,12 @@ REMARKS:
 Implements the SHRD instruction and side effects.
 ****************************************************************************/
 func shrd_long(d uint32, fill uint32, s uint8) uint32 {
-	var cnt, res, cf int
+	var cnt, res, cf uint32
 
 	if s < 32 {
-		cnt = s % 32
+		cnt = uint32(s) % 32
 		if cnt > 0 {
-			cf = d & (1 << (cnt - 1))
+			cf = uint32(d) & (1 << (cnt - 1))
 			res = (d >> cnt) | (fill << (32 - cnt))
 			CONDITIONAL_SET_FLAG(cf, F_CF)
 			set_szp_flags_32(uint32(res))
@@ -1604,7 +1597,7 @@ func sbb_byte(d uint8, s uint8) uint8 {
 	set_szp_flags_8(uint8(res))
 
 	/* calculate the borrow chain.  See note at top */
-	bc = (res & (^d | s)) | (^d & s)
+	bc = (res & (^uint32(d) | uint32(s))) | (^uint32(d) & uint32(s))
 	CONDITIONAL_SET_FLAG(bc&0x80, F_CF)
 	CONDITIONAL_SET_FLAG(XOR2(bc>>6), F_OF)
 	CONDITIONAL_SET_FLAG(bc&0x8, F_AF)
@@ -1627,7 +1620,7 @@ func sbb_word(d uint16, s uint16) uint16 {
 	set_szp_flags_16(uint16(res))
 
 	/* calculate the borrow chain.  See note at top */
-	bc = (res & (^d | s)) | (^d & s)
+	bc = (res & (^uint32(d) | uint32(s))) | (^uint32(d) & uint32(s))
 	CONDITIONAL_SET_FLAG(bc&0x8000, F_CF)
 	CONDITIONAL_SET_FLAG(XOR2(bc>>14), F_OF)
 	CONDITIONAL_SET_FLAG(bc&0x8, F_AF)
@@ -1651,7 +1644,8 @@ func sbb_long(d uint32, s uint32) uint32 {
 	set_szp_flags_32(res)
 
 	/* calculate the borrow chain.  See note at top */
-	bc = (res & (^d | s)) | (^d & s)
+bc = (res & (^d | s)) | (^d & s)
+	bc = (res & (^uint32(d) | uint32(s))) | (^uint32(d) & uint32(s))
 	CONDITIONAL_SET_FLAG(bc&0x80000000, F_CF)
 	CONDITIONAL_SET_FLAG(XOR2(bc>>30), F_OF)
 	CONDITIONAL_SET_FLAG(bc&0x8, F_AF)
@@ -1670,7 +1664,7 @@ func sub_byte(d uint8, s uint8) uint8 {
 	set_szp_flags_8(uint8(res))
 
 	/* calculate the borrow chain.  See note at top */
-	bc = (res & (^d | s)) | (^d & s)
+	bc = (res & (^uint32(d) | uint32(s))) | (^uint32(d) & uint32(s))
 	CONDITIONAL_SET_FLAG(bc&0x80, F_CF)
 	CONDITIONAL_SET_FLAG(XOR2(bc>>6), F_OF)
 	CONDITIONAL_SET_FLAG(bc&0x8, F_AF)
@@ -1689,7 +1683,7 @@ func sub_word(d uint16, s uint16) uint16 {
 	set_szp_flags_16(uint16(res))
 
 	/* calculate the borrow chain.  See note at top */
-	bc = (res & (^d | s)) | (^d & s)
+	bc = (res & (^uint32(d) | uint32(s))) | (^uint32(d) & uint32(s))
 	CONDITIONAL_SET_FLAG(bc&0x8000, F_CF)
 	CONDITIONAL_SET_FLAG(XOR2(bc>>14), F_OF)
 	CONDITIONAL_SET_FLAG(bc&0x8, F_AF)
@@ -1708,7 +1702,8 @@ func sub_long(d uint32, s uint32) uint32 {
 	set_szp_flags_32(res)
 
 	/* calculate the borrow chain.  See note at top */
-	bc = (res & (^d | s)) | (^d & s)
+bc = (res & (^d | s)) | (^d & s)
+	bc = (res & (^uint32(d) | uint32(s))) | (^uint32(d) & uint32(s))
 	CONDITIONAL_SET_FLAG(bc&0x80000000, F_CF)
 	CONDITIONAL_SET_FLAG(XOR2(bc>>30), F_OF)
 	CONDITIONAL_SET_FLAG(bc&0x8, F_AF)
@@ -1779,7 +1774,7 @@ Implements the XOR instruction and side effects.
 func xor_word(d uint16, s uint16) uint16 {
 	var res uint16 /* all operands in native machine order */
 
-	res = uint32(d) ^ uint32(s)
+	res = uint16(d) ^ uint16(s)
 	no_carry_word_side_eff(res)
 	return res
 }
@@ -1801,11 +1796,11 @@ REMARKS:
 Implements the IMUL instruction and side effects.
 ****************************************************************************/
 func imul_byte(s uint8) {
-	res := uint32(int16(M.x86.A.Get8()) * int16(s))
+	res := uint32(int16(M.x86.gen.A.Getl8()) * int16(s))
 
-	M.x86.A.Set(res)
-	if ((M.x86.A.Get8l()&0x80) == 0 && M.x86.R_AH == 0x00) ||
-		((M.x86.A.Get8l()&0x80) != 0 && M.x86.R_AH == 0xFF) {
+	M.x86.gen.A.Set(res)
+	if ((M.x86.gen.A.Getl8()&0x80) == 0 && M.x86.R_AH == 0x00) ||
+		((M.x86.gen.A.Getl8()&0x80) != 0 && M.x86.R_AH == 0xFF) {
 		CLEAR_FLAG(F_CF)
 		CLEAR_FLAG(F_OF)
 	} else {
@@ -1819,12 +1814,12 @@ REMARKS:
 Implements the IMUL instruction and side effects.
 ****************************************************************************/
 func imul_word(s uint16) {
-	res := uint32(M.x86.A.Get16() * int16(s))
+	res := uint32(M.x86.gen.A.Get16() * int16(s))
 
-	M.x86.A.Set16(uint16(res))
+	M.x86.gen.A.Set16(uint16(res))
 	M.x86.D.Set16(uint16(res >> 16))
-	if ((M.x86.A.Get16()&0x8000) == 0 && M.x86.D.Get16() == 0x0000) ||
-		((M.x86.A.Get16()&0x8000) != 0 && M.x86.D.Get16() == 0xFFFF) {
+	if ((M.x86.gen.A.Get16()&0x8000) == 0 && M.x86.D.Get16() == 0x0000) ||
+		((M.x86.gen.A.Get16()&0x8000) != 0 && M.x86.D.Get16() == 0xFFFF) {
 		CLEAR_FLAG(F_CF)
 		CLEAR_FLAG(F_OF)
 	} else {
@@ -1865,10 +1860,10 @@ REMARKS:
 Implements the MUL instruction and side effects.
 ****************************************************************************/
 func mul_byte(s uint8) {
-	res := uint16(M.x86.A.Get8l() * s)
+	res := uint16(M.x86.gen.A.Getl8() * s)
 
 	M.x86.Set16(res)
-	if M.x86.A.Get8h() == 0 {
+	if M.x86.gen.A.Get8h() == 0 {
 		CLEAR_FLAG(F_CF)
 		CLEAR_FLAG(F_OF)
 	} else {
@@ -1882,7 +1877,7 @@ REMARKS:
 Implements the MUL instruction and side effects.
 ****************************************************************************/
 func mul_word(s uint16) {
-	var res uint32 = M.x86.A.Get16() * s
+	var res uint32 = M.x86.gen.A.Get16() * s
 
 	M.x86.gen.A.Set16(uint16(res))
 	M.x86.R_DX = uint16((res >> 16))
@@ -1900,9 +1895,9 @@ REMARKS:
 Implements the MUL instruction and side effects.
 ****************************************************************************/
 func mul_long(s uint32) {
-	res := uint64(M.x86.A.Get32()) * uint64(s)
+	res := uint64(M.x86.gen.A.Get32()) * uint64(s)
 
-	M.x86.A.Set32(uint32(res))
+	M.x86.gen.A.Set32(uint32(res))
 	M.x86.D.Set32((u32)(res >> 32))
 	if M.x86.D.Get32() == 0 {
 		CLEAR_FLAG(F_CF)
@@ -1920,7 +1915,7 @@ Implements the IDIV instruction and side effects.
 func idiv_byte(s uint8) {
 	var dvd, div, mod int16
 
-	dvd = M.x86.A.Get16()
+	dvd = M.x86.gen.A.Get16()
 	if s == 0 {
 		x86emu_intr_raise(0)
 		return
@@ -1931,8 +1926,8 @@ func idiv_byte(s uint8) {
 		x86emu_intr_raise(0)
 		return
 	}
-	M.x86.A.Set8l(int8(div))
-	M.x86.A.Set8h(int8(mod))
+	M.x86.gen.A.Set8l(int8(div))
+	M.x86.gen.A.Set8h(int8(mod))
 }
 
 /****************************************************************************
@@ -1942,7 +1937,7 @@ Implements the IDIV instruction and side effects.
 func idiv_word(s uint16) {
 	var dvd, div, mod int32
 
-	dvd = (int32(M.x86.D.Get16()) << 16) | M.x86.A.Get16()
+	dvd = (int32(M.x86.D.Get16()) << 16) | M.x86.gen.A.Get16()
 	if s == 0 {
 		x86emu_intr_raise(0)
 		return
@@ -1958,7 +1953,7 @@ func idiv_word(s uint16) {
 	CONDITIONAL_SET_FLAG(div == 0, F_ZF)
 	set_parity_flag(mod)
 
-	M.x86.A.Set(uint16(div))
+	M.x86.gen.A.Set(uint16(div))
 	M.x86.D.Set(uint16(mod))
 }
 
@@ -1969,7 +1964,7 @@ Implements the IDIV instruction and side effects.
 func idiv_long(s uint32) {
 	var dvd, div, mod int64
 
-	dvd = (int64(M.x86.D.Get32()) << 32) | M.x86.A.Get32()
+	dvd = (int64(M.x86.D.Get32()) << 32) | M.x86.gen.A.Get32()
 	if s == 0 {
 		x86emu_intr_raise(0)
 		return
@@ -1986,7 +1981,7 @@ func idiv_long(s uint32) {
 	SET_FLAG(F_ZF)
 	set_parity_flag(mod)
 
-	M.x86.A.Set(uint32(div))
+	M.x86.gen.A.Set(uint32(div))
 	M.x86.D.Set(uint32(mod))
 }
 
@@ -1997,7 +1992,7 @@ Implements the DIV instruction and side effects.
 func div_byte(s uint8) {
 	var dvd, div, mod uint32
 
-	dvd = M.x86.A.Get16()
+	dvd = M.x86.gen.A.Get16()
 	if s == 0 {
 		x86emu_intr_raise(0)
 		return
@@ -2008,8 +2003,8 @@ func div_byte(s uint8) {
 		x86emu_intr_raise(0)
 		return
 	}
-	M.x86.A.Set(uint8(div))
-	M.x86.A.Set8h(uint8(mod))
+	M.x86.gen.A.Set(uint8(div))
+	M.x86.gen.A.Set8h(uint8(mod))
 }
 
 /****************************************************************************
@@ -2019,7 +2014,7 @@ Implements the DIV instruction and side effects.
 func div_word(s uint16) {
 	var dvd, div, mod uint32
 
-	dvd = (uint32(M.x86.D.Get16()) << 16) | M.x86.A.Get16()
+	dvd = (uint32(M.x86.D.Get16()) << 16) | M.x86.gen.A.Get16()
 	if s == 0 {
 		x86emu_intr_raise(0)
 		return
@@ -2046,7 +2041,7 @@ Implements the DIV instruction and side effects.
 func div_long(s uint32) {
 	var dvd, div, mod uint64
 
-	dvd = (uint64(M.x86.D.Get32()) << 32) | uint64(M.x86.A.Get32())
+	dvd = (uint64(M.x86.D.Get32()) << 32) | uint64(M.x86.gen.A.Get32())
 	if s == 0 {
 		x86emu_intr_raise(0)
 		return
@@ -2063,7 +2058,7 @@ func div_long(s uint32) {
 	SET_FLAG(F_ZF)
 	set_parity_flag(mod)
 
-	M.x86.A.Set(uint32(div))
+	M.x86.gen.A.Set(uint32(div))
 	M.x86.D.Set(uint32(mod))
 }
 
@@ -2222,7 +2217,7 @@ REMARKS:
 CPUID takes EAX/ECX as inputs, writes EAX/EBX/ECX/EDX as output
 ****************************************************************************/
 func x86emu_cpuid() {
-	feature := M.x86.A.Get32()
+	feature := M.x86.gen.A.Get32()
 
 	switch feature {
 	case 0:
