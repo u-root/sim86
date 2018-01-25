@@ -522,7 +522,7 @@ Implements the INC instruction and side effects.
 func inc_byte(d uint8) uint8 {
 	res := d + 1
 	set_szp_flags_8(uint8(res))
-	calc_carry_chain(8, uint32(d), 1, res, 0)
+	calc_carry_chain(8, uint32(d), 1, uint32(res), 0)
 
 	return uint8(res)
 }
@@ -534,9 +534,16 @@ Implements the INC instruction and side effects.
 func inc_word(d uint16) uint16 {
 	var res uint32 /* all operands in native machine order */
 
-	res = d + 1
+	// good fun! In C you can do this:
+	// u16 a = 0xffff
+	// u32 b = a + 1
+	// b will have the value 65536
+	// in go, it depends ... the answer is (correctly) different
+	// between uint32(d)+1 and uint32(d+1)
+	// The author seems to expect C behavior.
+	res = uint32(d) + 1
 	set_szp_flags_16(uint16(res))
-	calc_carry_chain(16, uint32(d), 1, res, 0)
+	calc_carry_chain(16, uint32(d), 1, uint32(res), 0)
 
 	return uint16(res)
 }
@@ -550,7 +557,7 @@ func inc_long(d uint32) uint32 {
 
 	res = d + 1
 	set_szp_flags_32(res)
-	calc_carry_chain(32, uint32(d), 1, res, 0)
+	calc_carry_chain(32, uint32(d), 1, uint32(res), 0)
 
 	return res
 }
@@ -562,7 +569,7 @@ Implements the OR instruction and side effects.
 func or_byte(d uint8, s uint8) uint8 {
 	var res uint8 /* all operands in native machine order */
 
-	res = uint32(d) | uint32(s)
+	res = d | s
 	no_carry_byte_side_eff(res)
 
 	return res
@@ -575,7 +582,7 @@ Implements the OR instruction and side effects.
 func or_word(d uint16, s uint16) uint16 {
 	var res uint16 /* all operands in native machine order */
 
-	res = uint32(d) | uint32(s)
+	res = d | s
 	no_carry_word_side_eff(res)
 	return res
 }
@@ -600,9 +607,9 @@ func neg_byte(s uint8) uint8 {
 	var res uint8
 
 	CONDITIONAL_SET_FLAG(s != 0, F_CF)
-	res = (u8) - s
+	res =  - s
 	set_szp_flags_8(res)
-	calc_borrow_chain(8, 0, uint32(s), res, 0)
+	calc_borrow_chain(8, 0, uint32(s), uint32(res), 0)
 
 	return res
 }
@@ -617,7 +624,7 @@ func neg_word(s uint16) uint16 {
 	CONDITIONAL_SET_FLAG(s != 0, F_CF)
 	res = uint16(-s)
 	set_szp_flags_16(uint16(res))
-	calc_borrow_chain(16, 0, uint32(s), res, 0)
+	calc_borrow_chain(16, 0, uint32(s), uint32(res), 0)
 
 	return res
 }
@@ -630,9 +637,9 @@ func neg_long(s uint32) uint32 {
 	var res uint32
 
 	CONDITIONAL_SET_FLAG(s != 0, F_CF)
-	res = (u32) - s
+	res =  - s
 	set_szp_flags_32(res)
-	calc_borrow_chain(32, 0, uint32(s), res, 0)
+	calc_borrow_chain(32, 0, uint32(s), uint32(res), 0)
 
 	return res
 }
@@ -727,7 +734,7 @@ func rcl_byte(d uint8, s uint8) uint8 {
 		   xor of CF and the most significant bit.  Blecck. */
 		/* parenthesized this expression since it appears to
 		   be causing OF to be missed */
-		CONDITIONAL_SET_FLAG(cnt == 1 && XOR2(cf+((res>>6)&0x2)),
+		CONDITIONAL_SET_FLAG_BOOL(cnt == 1 && XOR2(cf+((res>>6)&0x2)),
 			F_OF)
 
 	}
@@ -742,7 +749,7 @@ func rcl_word(d uint16, s uint8) uint16 {
 	var res, int, cnt, mask, cf uint16
 
 	res = d
-	cnt = s % 17
+	cnt = uint16(s) % 17
 	if cnt != 0 {
 		cf = (d >> (16 - cnt)) & 0x1
 		res = (d << cnt) & 0xffff
