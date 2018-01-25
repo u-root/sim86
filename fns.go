@@ -346,5 +346,5 @@ func CONDITIONAL_SET_FLAG(cond interface{}, flag uint32) {
 
 // Mode returns true if the bits are *all* set in the mode.
 func Mode(m uint32) bool {
-	return M.x86.mode & m == m
+	return M.x86.mode&m == m
 }

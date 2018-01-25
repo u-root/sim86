@@ -369,7 +369,7 @@ Implements the AND instruction and side effects.
 func and_byte(d uint8, s uint8) uint8 {
 	var res uint8 /* all operands in native machine order */
 
-	res =  d & s
+	res = d & s
 
 	no_carry_byte_side_eff(res)
 	return res
@@ -382,7 +382,7 @@ Implements the AND instruction and side effects.
 func and_word(d uint16, s uint16) uint16 {
 	var res uint16 /* all operands in native machine order */
 
-	res =  d & s
+	res = d & s
 
 	no_carry_word_side_eff(res)
 	return res
@@ -607,7 +607,7 @@ func neg_byte(s uint8) uint8 {
 	var res uint8
 
 	CONDITIONAL_SET_FLAG(s != 0, F_CF)
-	res =  - s
+	res = -s
 	set_szp_flags_8(res)
 	calc_borrow_chain(8, 0, uint32(s), uint32(res), 0)
 
@@ -637,7 +637,7 @@ func neg_long(s uint32) uint32 {
 	var res uint32
 
 	CONDITIONAL_SET_FLAG(s != 0, F_CF)
-	res =  - s
+	res = -s
 	set_szp_flags_32(res)
 	calc_borrow_chain(32, 0, uint32(s), uint32(res), 0)
 
@@ -734,7 +734,7 @@ func rcl_byte(d uint8, s uint8) uint8 {
 		   xor of CF and the most significant bit.  Blecck. */
 		/* parenthesized this expression since it appears to
 		   be causing OF to be missed */
-		CONDITIONAL_SET_FLAG_BOOL((cnt == 1) && (XOR2(uint32(cf+((res>>6)&0x2)))!=0),
+		CONDITIONAL_SET_FLAG_BOOL((cnt == 1) && (XOR2(uint32(cf+((res>>6)&0x2))) != 0),
 			F_OF)
 
 	}
@@ -759,7 +759,7 @@ func rcl_word(d uint16, s uint8) uint16 {
 			res |= 1 << (cnt - 1)
 		}
 		CONDITIONAL_SET_FLAG(cf, F_CF)
-		CONDITIONAL_SET_FLAG((cnt == 1) && (XOR2(uint32(cf+((res>>14)&0x2))) != 0),F_OF)
+		CONDITIONAL_SET_FLAG((cnt == 1) && (XOR2(uint32(cf+((res>>14)&0x2))) != 0), F_OF)
 	}
 	return uint16(res)
 }
@@ -846,7 +846,7 @@ func rcr_byte(d uint8, s uint8) uint8 {
 		   as a negative number.  Needed??? */
 
 		mask = (1 << (8 - cnt)) - 1
-		res = uint32(d >> cnt) & mask
+		res = uint32(d>>cnt) & mask
 
 		/* now the high stuff which rotated around
 		   into the positions B_cnt-2 .. B_0 */
@@ -881,7 +881,7 @@ Implements the RCR instruction and side effects.
 func rcr_word(d uint16, s uint8) uint16 {
 	var res, cnt, mask, cf, ocf uint16
 
-/* rotate right through carry */
+	/* rotate right through carry */
 	res = d
 	cnt = uint16(s) % 17
 	if cnt != 0 {
@@ -975,14 +975,14 @@ func rol_byte(d uint8, s uint8) uint8 {
 
 		/* B_(n-1) .. B_(0) <-  b_(7) .. b_(8-n) */
 		mask = (1 << cnt) - 1
-		res |= uint32(d >> (8 - cnt)) & mask
+		res |= uint32(d>>(8-cnt)) & mask
 
 		/* set the new carry flag, Note that it is the low order
 		   bit of the result!!!                               */
 		CONDITIONAL_SET_FLAG(res&0x1, F_CF)
 		/* OVERFLOW is set *IFF* s==1, then it is the
 		   xor of CF and the most significant bit.  Blecck. */
-		CONDITIONAL_SET_FLAG(s == 1 &&	XOR2((res&0x1)+((res>>6)&0x2)) != 0,
+		CONDITIONAL_SET_FLAG(s == 1 && XOR2((res&0x1)+((res>>6)&0x2)) != 0,
 			F_OF)
 	}
 	if s != 0 {
@@ -1005,9 +1005,9 @@ func rol_word(d uint16, s uint8) uint16 {
 	if cnt != 0 {
 		res = (uint32(d) << cnt)
 		mask = (uint32(1) << cnt) - 1
-		res |= uint32(d >> (16 - cnt)) & mask
+		res |= uint32(d>>(16-cnt)) & mask
 		CONDITIONAL_SET_FLAG(res&0x1, F_CF)
-		CONDITIONAL_SET_FLAG(s == 1 &&	XOR2((res&0x1)+((res>>14)&0x2)) != 0,
+		CONDITIONAL_SET_FLAG(s == 1 && XOR2((res&0x1)+((res>>14)&0x2)) != 0,
 			F_OF)
 	}
 	if s != 0 {
@@ -1031,7 +1031,7 @@ func rol_long(d uint32, s uint8) uint32 {
 		mask = (1 << cnt) - 1
 		res |= (d >> (32 - cnt)) & mask
 		CONDITIONAL_SET_FLAG(res&0x1, F_CF)
-		CONDITIONAL_SET_FLAG(s == 1 && XOR2((res&0x1)+((res>>30)&0x2)) != 0,F_OF)
+		CONDITIONAL_SET_FLAG(s == 1 && XOR2((res&0x1)+((res>>30)&0x2)) != 0, F_OF)
 	}
 	if s != 0 {
 		/* set the new carry flag, Note that it is the low order
@@ -1069,7 +1069,7 @@ func ror_byte(d uint8, s uint8) uint8 {
 		res = (uint32(d) << (8 - cnt))
 
 		/* B_(8-(n+1)) .. B_(0)  <-  b_(7) .. b_(n) */
-		mask = uint32(1 << (8 - cnt)) - 1
+		mask = uint32(1<<(8-cnt)) - 1
 		res |= (uint32(d) >> (cnt)) & mask
 
 		/* set the new carry flag, Note that it is the low order
@@ -1152,7 +1152,7 @@ func shl_byte(d uint8, s uint8) uint8 {
 
 		if cnt == 1 {
 			/* Needs simplification. */
-			CONDITIONAL_SET_FLAG(xorb(res & 0x80 == 0x80, ACCESS_FLAG(F_CF)),
+			CONDITIONAL_SET_FLAG(xorb(res&0x80 == 0x80, ACCESS_FLAG(F_CF)),
 				/* was (M.x86.R_FLG&F_CF)==F_CF)), */
 				F_OF)
 		} else {
@@ -1188,7 +1188,7 @@ func shl_word(d uint16, s uint8) uint16 {
 		}
 
 		if cnt == 1 {
-			CONDITIONAL_SET_FLAG(xorb(res & 0x8000 == 0x8000, ACCESS_FLAG(F_CF)), F_OF)
+			CONDITIONAL_SET_FLAG(xorb(res&0x8000 == 0x8000, ACCESS_FLAG(F_CF)), F_OF)
 		} else {
 			CLEAR_FLAG(F_OF)
 		}
@@ -1221,7 +1221,7 @@ func shl_long(d uint32, s uint8) uint32 {
 			res = d
 		}
 		if cnt == 1 {
-			CONDITIONAL_SET_FLAG(xorb(res & 0x80000000 == 0x80000000, ACCESS_FLAG(F_CF)), F_OF)
+			CONDITIONAL_SET_FLAG(xorb(res&0x80000000 == 0x80000000, ACCESS_FLAG(F_CF)), F_OF)
 		} else {
 			CLEAR_FLAG(F_OF)
 		}
@@ -1466,7 +1466,7 @@ func shld_word(d uint16, fill uint16, s uint8) uint16 {
 			res = uint32(d)
 		}
 		if cnt == 1 {
-			CONDITIONAL_SET_FLAG(xorb(res & 0x8000 == 0x8000,  ACCESS_FLAG(F_CF)), F_OF)
+			CONDITIONAL_SET_FLAG(xorb(res&0x8000 == 0x8000, ACCESS_FLAG(F_CF)), F_OF)
 		} else {
 			CLEAR_FLAG(F_OF)
 		}
@@ -1499,7 +1499,7 @@ func shld_long(d uint32, fill uint32, s uint8) uint32 {
 			res = d
 		}
 		if cnt == 1 {
-			CONDITIONAL_SET_FLAG(xorb(res & 0x80000000 == 0x80000000, ACCESS_FLAG(F_CF)), F_OF)
+			CONDITIONAL_SET_FLAG(xorb(res&0x80000000 == 0x80000000, ACCESS_FLAG(F_CF)), F_OF)
 		} else {
 			CLEAR_FLAG(F_OF)
 		}
@@ -1644,7 +1644,7 @@ func sbb_long(d uint32, s uint32) uint32 {
 	set_szp_flags_32(res)
 
 	/* calculate the borrow chain.  See note at top */
-bc = (res & (^d | s)) | (^d & s)
+	bc = (res & (^d | s)) | (^d & s)
 	bc = (res & (^uint32(d) | uint32(s))) | (^uint32(d) & uint32(s))
 	CONDITIONAL_SET_FLAG(bc&0x80000000, F_CF)
 	CONDITIONAL_SET_FLAG(XOR2(bc>>30), F_OF)
@@ -1702,7 +1702,7 @@ func sub_long(d uint32, s uint32) uint32 {
 	set_szp_flags_32(res)
 
 	/* calculate the borrow chain.  See note at top */
-bc = (res & (^d | s)) | (^d & s)
+	bc = (res & (^d | s)) | (^d & s)
 	bc = (res & (^uint32(d) | uint32(s))) | (^uint32(d) & uint32(s))
 	CONDITIONAL_SET_FLAG(bc&0x80000000, F_CF)
 	CONDITIONAL_SET_FLAG(XOR2(bc>>30), F_OF)
@@ -1762,7 +1762,7 @@ Implements the XOR instruction and side effects.
 func xor_byte(d uint8, s uint8) uint8 {
 	var res uint8 /* all operands in native machine order */
 
-	res =  d ^ s
+	res = d ^ s
 	no_carry_byte_side_eff(res)
 	return res
 }
@@ -1941,7 +1941,7 @@ Implements the IDIV instruction and side effects.
 func idiv_word(s uint16) {
 	var dvd, div, mod int32
 
-	dvd = int32(M.x86.gen.D.Get16()) << 16 | int32(M.x86.gen.A.Get16())
+	dvd = int32(M.x86.gen.D.Get16())<<16 | int32(M.x86.gen.A.Get16())
 	if s == 0 {
 		x86emu_intr_raise(0)
 		return
@@ -2018,7 +2018,7 @@ Implements the DIV instruction and side effects.
 func div_word(s uint16) {
 	var dvd, div, mod uint32
 
-	dvd = uint32(M.x86.gen.D.Get16()) << 16 | uint32(M.x86.gen.A.Get16())
+	dvd = uint32(M.x86.gen.D.Get16())<<16 | uint32(M.x86.gen.A.Get16())
 	if s == 0 {
 		x86emu_intr_raise(0)
 		return
@@ -2194,7 +2194,7 @@ func pop_word() uint16 {
 	if CHECK_SP_ACCESS() {
 		x86emu_check_sp_access()
 	}
-	sysr((uint32(M.x86.seg.SS.Get()) << 4) + uint32(M.x86.spc.SP.Get16()), &res)
+	sysr((uint32(M.x86.seg.SS.Get())<<4)+uint32(M.x86.spc.SP.Get16()), &res)
 	M.x86.spc.SP.Add(int16(2))
 	return res
 }
@@ -2211,7 +2211,7 @@ func pop_long() uint32 {
 	if CHECK_SP_ACCESS() {
 		x86emu_check_sp_access()
 	}
-	sysr(uint32(M.x86.seg.SS.Get())<<4 + uint32(M.x86.spc.SP.Get16()), &res)
+	sysr(uint32(M.x86.seg.SS.Get())<<4+uint32(M.x86.spc.SP.Get16()), &res)
 	M.x86.spc.SP.Add(int16(4))
 	return res
 }
