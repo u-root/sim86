@@ -9,12 +9,12 @@ import (
 
 var (
 	disassemble = flag.Bool("d", true, "Disassemble")
-	step = flag.Bool("s", true, "Single step")
-	trace = flag.Bool("t", true, "Trace")
-	cmds = bufio.NewReader(os.Stdin)
+	step        = flag.Bool("s", true, "Single step")
+	trace       = flag.Bool("t", true, "Trace")
+	cmds        = bufio.NewReader(os.Stdin)
 )
 
-var memory [1<<20]byte
+var memory [1 << 20]byte
 
 func cpuInit() {
 	// due to init loop
@@ -36,4 +36,3 @@ func main() {
 	X86EMU_exec()
 	log.Printf("Done")
 }
-

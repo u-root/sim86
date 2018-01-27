@@ -166,7 +166,10 @@ func x86emuOp_illegal_op(op1 uint8) {
 	START_OF_INSTR()
 	if M.x86.spc.SP.Get16() != 0 {
 		DECODE_PRINTF("ILLEGAL X86 OPCODE\n")
-		TRACE_REGS()
+		if TRACE_REGS() {
+			x86emu_end_instr()
+			return
+		}
 		fmt.Printf("%04x:%04x: %02X ILLEGAL X86 OPCODE!\n", M.x86.seg.CS.Get(), M.x86.spc.IP.Get()-1, op1)
 
 		HALT_SYS()
@@ -3650,7 +3653,10 @@ func x86emuOp_aam(_ uint8) {
 	a := fetch_byte_imm() /* this is a stupid encoding. */
 	if a != 10 {
 		DECODE_PRINTF("ERROR DECODING AAM\n")
-		TRACE_REGS()
+		if TRACE_REGS() {
+			x86emu_end_instr()
+			return
+		}
 		HALT_SYS()
 	}
 	TRACE_AND_STEP()
@@ -4756,8 +4762,7 @@ func x86emuOp_opcFF_word_RM(_ uint8) {
 /***************************************************************************
  * Single byte operation code table:
  **************************************************************************/
-var x86emu_optab = [256]optab{
-}
+var x86emu_optab = [256]optab{}
 var _x86emu_optab = [256]optab{
 	/*  0x00 */ x86emuOp_genop_byte_RM_R,
 	/*  0x01 */ x86emuOp_genop_word_RM_R,

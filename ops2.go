@@ -54,7 +54,10 @@ Handles illegal opcodes.
 func x86emuOp2_illegal_op(op2 uint8) {
 	START_OF_INSTR()
 	DECODE_PRINTF("ILLEGAL EXTENDED X86 OPCODE\n")
-	TRACE_REGS()
+	if TRACE_REGS() {
+		x86emu_end_instr()
+		return
+	}
 	fmt.Printf("%04x:%04x: %02X ILLEGAL EXTENDED X86 OPCODE!\n",
 		M.x86.seg.CS.Get(), M.x86.spc.IP.Get16()-2, op2)
 	HALT_SYS()
@@ -101,7 +104,10 @@ func x86emuOp2_opc_01(op2 uint8) {
 		break
 	default:
 		DECODE_PRINTF("ILLEGAL EXTENDED X86 OPCODE IN 0F 01\n")
-		TRACE_REGS()
+		if TRACE_REGS() {
+			x86emu_end_instr()
+			return
+		}
 		fmt.Printf("%04x:%04x: %02X ILLEGAL EXTENDED X86 OPCODE!\n",
 			M.x86.seg.CS.Get(), M.x86.spc.IP.Get16()-2, op2)
 		HALT_SYS()
@@ -1166,7 +1172,10 @@ func x86emuOp2_btX_I(op2 uint8) {
 		break
 	default:
 		DECODE_PRINTF("ILLEGAL EXTENDED X86 OPCODE\n")
-		TRACE_REGS()
+		if TRACE_REGS() {
+			x86emu_end_instr()
+			return
+		}
 		fmt.Printf("%04x:%04x: %02X%02X ILLEGAL EXTENDED X86 OPCODE EXTENSION!\n",
 			M.x86.seg.CS.Get(), M.x86.spc.IP.Get16()-3, op2, (mod<<6)|(rh<<3)|rl)
 		HALT_SYS()

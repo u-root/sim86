@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
-	)
+)
 
 var notyet = `
 # define CHECK_IP_FETCH()              	(M.x86.check & CHECK_IP_FETCH_F)
@@ -255,14 +255,17 @@ func END_OF_INSTR() {
 	fmt.Printf("End instruction\n")
 }
 
-func TRACE_REGS() {
-	if (DEBUG_DISASSEMBLE()) {
+// trace_regs traces. it also returns true if the caller should immediately
+// return
+func TRACE_REGS() bool {
+	if DEBUG_DISASSEMBLE() {
 		x86emu_just_disassemble()
-		return
+		return true
 	}
-	if (DEBUG_TRACE() || DEBUG_DECODE()){
+	if DEBUG_TRACE() || DEBUG_DECODE() {
 		X86EMU_trace_regs()
 	}
+	return false
 }
 func SINGLE_STEP() {
 	if DEBUG_STEP() {
@@ -330,12 +333,12 @@ func sysw(addr uint32, i interface{}) {
 	switch v := i.(type) {
 	case uint32:
 		memory[addr] = uint8(v)
-		memory[addr] = uint8(v>>8)
-		memory[addr] = uint8(v>>16)
-		memory[addr] = uint8(v>>24)
+		memory[addr] = uint8(v >> 8)
+		memory[addr] = uint8(v >> 16)
+		memory[addr] = uint8(v >> 24)
 	case uint16:
 		memory[addr] = uint8(v)
-		memory[addr] = uint8(v>>8)
+		memory[addr] = uint8(v >> 8)
 	case uint8:
 		memory[addr] = v
 	default:

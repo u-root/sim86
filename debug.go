@@ -171,10 +171,10 @@ func x86emu_end_instr() {
 
 func print_encoded_bytes(s uint16, o uint16) {
 	var buf1 string
-	for i:=uint16(0); i< uint16(M.x86.enc_pos); i++ {
-		buf1 += fmt.Sprintf("%02x", fetch_data_byte_abs(s,o+i));
-    }
-    fmt.Printf("%-20s ",buf1);
+	for i := uint16(0); i < uint16(M.x86.enc_pos); i++ {
+		buf1 += fmt.Sprintf("%02x", fetch_data_byte_abs(s, o+i))
+	}
+	fmt.Printf("%-20s ", buf1)
 }
 
 func print_decoded_instruction() {
@@ -209,36 +209,37 @@ func X86EMU_dump_memory(seg uint16, o uint16, amt uint32) {
 			fmt.Printf("%02x ", fetch_data_byte_abs(seg, uint16(i)))
 			i++
 		}
-			fmt.Printf("\n")
-			start = end
-			end = start + 16
+		fmt.Printf("\n")
+		start = end
+		end = start + 16
 	}
 }
+
 var (
 	breakpoint uint16
-	noDecode = true
+	noDecode   = true
 )
+
 func x86emu_single_step() error {
 	var (
 		segment, offset uint16
 	)
 
-
-        if (DEBUG_BREAK()) {
-                if (M.x86.saved_ip != breakpoint) {
-                        return nil;
-                } else {
-			M.x86.debug &= ^DEBUG_DECODE_NOPRINT_F;
-                        M.x86.debug |= DEBUG_TRACE_F;
-                        M.x86.debug &= ^DEBUG_BREAK_F;
-                        print_decoded_instruction ();
-                        X86EMU_trace_regs();
-                }
-        }
+	if DEBUG_BREAK() {
+		if M.x86.saved_ip != breakpoint {
+			return nil
+		} else {
+			M.x86.debug &= ^DEBUG_DECODE_NOPRINT_F
+			M.x86.debug |= DEBUG_TRACE_F
+			M.x86.debug &= ^DEBUG_BREAK_F
+			print_decoded_instruction()
+			X86EMU_trace_regs()
+		}
+	}
 	var done bool
-	offset = M.x86.saved_ip;
-	for ! done {
-		fmt.Printf("-");
+	offset = M.x86.saved_ip
+	for !done {
+		fmt.Printf("-")
 		cmd, ps, err := parse_line(cmds)
 		log.Printf("parse_line: %v %v %v", cmd, ps, err)
 		if err != nil {
@@ -246,49 +247,49 @@ func x86emu_single_step() error {
 		}
 		switch cmd {
 		case "u":
-			disassemble_forward(M.x86.saved_cs,uint16(offset),10);
+			disassemble_forward(M.x86.saved_cs, uint16(offset), 10)
 		case "d":
 			if len(ps) == 1 {
-				segment = M.x86.saved_cs;
-				offset = ps[0];
-                                    X86EMU_dump_memory(segment,uint16(offset),16);
-                                    offset += 16;
+				segment = M.x86.saved_cs
+				offset = ps[0]
+				X86EMU_dump_memory(segment, uint16(offset), 16)
+				offset += 16
 			} else if len(ps) == 2 {
-				segment = ps[0];
-				offset = ps[1];
-				X86EMU_dump_memory(segment,uint16(offset),16);
-				offset += 16;
+				segment = ps[0]
+				offset = ps[1]
+				X86EMU_dump_memory(segment, uint16(offset), 16)
+				offset += 16
 			} else {
-				segment = M.x86.saved_cs;
-				X86EMU_dump_memory(segment,uint16(offset),16);
-				offset += 16;
+				segment = M.x86.saved_cs
+				X86EMU_dump_memory(segment, uint16(offset), 16)
+				offset += 16
 			}
 		case "c":
-			M.x86.debug ^= DEBUG_TRACECALL_F;
+			M.x86.debug ^= DEBUG_TRACECALL_F
 		case "s":
-			M.x86.debug ^= DEBUG_SVC_F | DEBUG_SYS_F | DEBUG_SYSINT_F;
+			M.x86.debug ^= DEBUG_SVC_F | DEBUG_SYS_F | DEBUG_SYSINT_F
 		case "r":
-			X86EMU_trace_regs();
+			X86EMU_trace_regs()
 		case "x":
-			X86EMU_trace_xregs();
+			X86EMU_trace_xregs()
 		case "g":
-			if len(ps) == 1{
-				breakpoint = ps[0];
-				if (noDecode) {
-					M.x86.debug |= DEBUG_DECODE_NOPRINT_F;
+			if len(ps) == 1 {
+				breakpoint = ps[0]
+				if noDecode {
+					M.x86.debug |= DEBUG_DECODE_NOPRINT_F
 				} else {
-					M.x86.debug &= ^DEBUG_DECODE_NOPRINT_F;
+					M.x86.debug &= ^DEBUG_DECODE_NOPRINT_F
 				}
-				M.x86.debug &= ^DEBUG_TRACE_F;
-				M.x86.debug |= DEBUG_BREAK_F;
+				M.x86.debug &= ^DEBUG_TRACE_F
+				M.x86.debug |= DEBUG_BREAK_F
 				done = true
 			}
 		case "q":
 			log.Fatalf("Define DBUG_EXIT")
 			//M.x86.debug |= DEBUG_EXIT;
 		case "P":
-			noDecode = ! noDecode
-			fmt.Printf("Toggled decoding to %v\n",noDecode)
+			noDecode = !noDecode
+			fmt.Printf("Toggled decoding to %v\n", noDecode)
 		case "t":
 		case "":
 			done = true
@@ -317,10 +318,10 @@ func parse_line(r *bufio.Reader) (string, []uint16, error) {
 	if len(fields) == 0 {
 		return "", nil, fmt.Errorf("You need to enter a command")
 	}
-	
+
 	cmd := fields[0]
 	var vals []uint16
-	for i := range(fields[1:]) {
+	for i := range fields[1:] {
 		v, err := strconv.ParseUint(fields[i], 0, 16)
 		if err != nil {
 			return cmd, vals, err
