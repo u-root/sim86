@@ -4757,6 +4757,8 @@ func x86emuOp_opcFF_word_RM(_ uint8) {
  * Single byte operation code table:
  **************************************************************************/
 var x86emu_optab = [256]optab{
+}
+var _x86emu_optab = [256]optab{
 	/*  0x00 */ x86emuOp_genop_byte_RM_R,
 	/*  0x01 */ x86emuOp_genop_word_RM_R,
 	/*  0x02 */ x86emuOp_genop_byte_R_RM,

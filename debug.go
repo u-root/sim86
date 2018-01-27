@@ -40,7 +40,11 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"log"
+	"strconv"
+	"strings"
 )
 
 /*----------------------------- Implementation ----------------------------*/
@@ -150,8 +154,7 @@ func x86emu_check_data_access(_, _ uint) {
 }
 
 func x86emu_inc_decoded_inst_len(x uint32) {
-	panic("x86emu_inc_decoded_inst_len")
-	//M.x86.enc_pos += x
+	M.x86.enc_pos += int(x)
 }
 
 func x86emu_decode_printf(x string, y ...interface{}) {
@@ -167,12 +170,11 @@ func x86emu_end_instr() {
 }
 
 func print_encoded_bytes(s uint16, o uint16) {
-	panic("print encoded bytes")
-	var _ = `
-    for (i:=0; i< M.x86.enc_pos; i++) {
-	    snfmt.Printf(buf1+2*i, 64 - 2 * i, "%02x", fetch_data_byte_abs(s,o+i));
+	var buf1 string
+	for i:=uint16(0); i< uint16(M.x86.enc_pos); i++ {
+		buf1 += fmt.Sprintf("%02x", fetch_data_byte_abs(s,o+i));
     }
-    fmt.Printf("%-20s ",buf1);`
+    fmt.Printf("%-20s ",buf1);
 }
 
 func print_decoded_instruction() {
@@ -212,97 +214,87 @@ func X86EMU_dump_memory(seg uint16, o uint16, amt uint32) {
 		}
 	}
 }
+var (
+	breakpoint uint16
+	noDecode = true
+)
+func x86emu_single_step() error {
+	var (
+		segment, offset uint16
+	)
 
-func x86emu_single_step() {
-	panic("single step")
-	var _ = `
-    char s[1024];
-    int ps[10];
-    int ntok;
-    int cmd;
-    int done;
-        int segment;
-    int offset;
-    static int breakpoint;
-    static int noDecode = 1;
 
         if (DEBUG_BREAK()) {
                 if (M.x86.saved_ip != breakpoint) {
-                        return;
+                        return nil;
                 } else {
-              M.x86.debug &= ~DEBUG_DECODE_NOPRINT_F;
+			M.x86.debug &= ^DEBUG_DECODE_NOPRINT_F;
                         M.x86.debug |= DEBUG_TRACE_F;
-                        M.x86.debug &= ~DEBUG_BREAK_F;
+                        M.x86.debug &= ^DEBUG_BREAK_F;
                         print_decoded_instruction ();
                         X86EMU_trace_regs();
                 }
         }
-    done=0;
-    offset = M.x86.saved_ip;
-    while (!done) {
-        fmt.Printf("-");
-        (void)fgets(s, 1023, stdin);
-        cmd = parse_line(s, ps, &ntok);
-        switch(cmd) {
-          case 'u':
-            disassemble_forward(M.x86.saved_cs,uint16(offset),10);
-            break;
-          case 'd':
-                            if (ntok == 2) {
-                                    segment = M.x86.saved_cs;
-                                    offset = ps[1];
+	var done bool
+	offset = M.x86.saved_ip;
+	for ! done {
+		fmt.Printf("-");
+		cmd, ps, err := parse_line(cmds)
+		log.Printf("parse_line: %v %v %v", cmd, ps, err)
+		if err != nil {
+			return err
+		}
+		switch cmd {
+		case "u":
+			disassemble_forward(M.x86.saved_cs,uint16(offset),10);
+		case "d":
+			if len(ps) == 1 {
+				segment = M.x86.saved_cs;
+				offset = ps[0];
                                     X86EMU_dump_memory(segment,uint16(offset),16);
                                     offset += 16;
-                            } else if (ntok == 3) {
-                                    segment = ps[1];
-                                    offset = ps[2];
-                                    X86EMU_dump_memory(segment,uint16(offset),16);
-                                    offset += 16;
-                            } else {
-                                    segment = M.x86.saved_cs;
-                                    X86EMU_dump_memory(segment,uint16(offset),16);
-                                    offset += 16;
-                            }
-            break;
-          case 'c':
-            M.x86.debug ^= DEBUG_TRACECALL_F;
-            break;
-          case 's':
-            M.x86.debug ^= DEBUG_SVC_F | DEBUG_SYS_F | DEBUG_SYSINT_F;
-            break;
-          case 'r':
-            X86EMU_trace_regs();
-            break;
-          case 'x':
-            X86EMU_trace_xregs();
-            break;
-          case 'g':
-            if (ntok == 2) {
-                breakpoint = ps[1];
-        if (noDecode) {
-                        M.x86.debug |= DEBUG_DECODE_NOPRINT_F;
-        } else {
-                        M.x86.debug &= ~DEBUG_DECODE_NOPRINT_F;
-        }
-        M.x86.debug &= ~DEBUG_TRACE_F;
-        M.x86.debug |= DEBUG_BREAK_F;
-        done = 1;
-            }
-            break;
-          case 'q':
-          M.x86.debug |= DEBUG_EXIT;
-          return;
-      case 'P':
-          noDecode = (noDecode)?0:1;
-          fmt.Printf("Toggled decoding to %s\n",(noDecode)?"FALSE":"TRUE");
-          break;
-          case 't':
-      case 0:
-            done = 1;
-            break;
-        }
-    }
-`
+			} else if len(ps) == 2 {
+				segment = ps[0];
+				offset = ps[1];
+				X86EMU_dump_memory(segment,uint16(offset),16);
+				offset += 16;
+			} else {
+				segment = M.x86.saved_cs;
+				X86EMU_dump_memory(segment,uint16(offset),16);
+				offset += 16;
+			}
+		case "c":
+			M.x86.debug ^= DEBUG_TRACECALL_F;
+		case "s":
+			M.x86.debug ^= DEBUG_SVC_F | DEBUG_SYS_F | DEBUG_SYSINT_F;
+		case "r":
+			X86EMU_trace_regs();
+		case "x":
+			X86EMU_trace_xregs();
+		case "g":
+			if len(ps) == 1{
+				breakpoint = ps[0];
+				if (noDecode) {
+					M.x86.debug |= DEBUG_DECODE_NOPRINT_F;
+				} else {
+					M.x86.debug &= ^DEBUG_DECODE_NOPRINT_F;
+				}
+				M.x86.debug &= ^DEBUG_TRACE_F;
+				M.x86.debug |= DEBUG_BREAK_F;
+				done = true
+			}
+		case "q":
+			log.Fatalf("Define DBUG_EXIT")
+			//M.x86.debug |= DEBUG_EXIT;
+		case "P":
+			noDecode = ! noDecode
+			fmt.Printf("Toggled decoding to %v\n",noDecode)
+		case "t":
+		case "":
+			done = true
+		}
+	}
+	return nil
 }
 
 func X86EMU_trace_on() uint32 {
@@ -315,35 +307,29 @@ func X86EMU_trace_off() uint32 {
 	return M.x86.debug
 }
 
-func parse_line(s string, ps *int, n *int) error {
-	panic(`
-    int cmd;
-
-    *n = 0;
-    while(*s == ' ' || *s == '\t') s++;
-    ps[*n] = *s;
-    switch (*s) {
-      case '\n':
-        *n += 1;
-        return 0;
-      default:
-        cmd = *s;
-        *n += 1;
-    }
-
-    while (1) {
-        while (*s != ' ' && *s != '\t' && *s != '\n')  s++;
-
-        if (*s == '\n')
-            return cmd;
-
-        while(*s == ' ' || *s == '\t') s++;
-
-        sscanf(s,"%x",&ps[*n]);
-        *n += 1;
-    }
-    `)
+func parse_line(r *bufio.Reader) (string, []uint16, error) {
+	data, err := r.ReadString('\n')
+	if err != nil {
+		return "", nil, err
+	}
+	fields := strings.Fields(data)
+	log.Printf("felds %v", fields)
+	if len(fields) == 0 {
+		return "", nil, fmt.Errorf("You need to enter a command")
+	}
+	
+	cmd := fields[0]
+	var vals []uint16
+	for i := range(fields[1:]) {
+		v, err := strconv.ParseUint(fields[i], 0, 16)
+		if err != nil {
+			return cmd, vals, err
+		}
+		vals = append(vals, uint16(v))
+	}
+	return cmd, vals, nil
 }
+
 func x86emu_dump_regs() {
 	fmt.Printf("\tAX=%04x  ", M.x86.gen.A.Get16())
 	fmt.Printf("BX=%04x  ", M.x86.gen.B.Get16())

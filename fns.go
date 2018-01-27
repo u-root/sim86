@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+	)
 
 var notyet = `
 # define CHECK_IP_FETCH()              	(M.x86.check & CHECK_IP_FETCH_F)
@@ -222,8 +225,7 @@ func initDEBUG_SYS_F() {
 	DEBUG_SYS_F = (DEBUG_SVC_F | DEBUG_FS_F | DEBUG_PROC_F)
 }
 func sys_rdb(ip uint32) byte {
-	panic("fix me")
-	return 0
+	return memory[ip]
 }
 func SAVE_IP_CS(cs, ip uint16) {
 	if DEBUG_DECODE() || DEBUG_TRACECALL() || DEBUG_BREAK() || DEBUG_IO_TRACE() || DEBUG_SAVE_IP_CS() {
@@ -252,8 +254,15 @@ func START_OF_INSTR() {
 func END_OF_INSTR() {
 	fmt.Printf("End instruction\n")
 }
+
 func TRACE_REGS() {
-	fmt.Printf("Trace regs\n")
+	if (DEBUG_DISASSEMBLE()) {
+		x86emu_just_disassemble()
+		return
+	}
+	if (DEBUG_TRACE() || DEBUG_DECODE()){
+		X86EMU_trace_regs()
+	}
 }
 func SINGLE_STEP() {
 	if DEBUG_STEP() {
@@ -290,12 +299,6 @@ func halted() bool {
 	return M.x86.intr&INTR_HALTED != 0
 }
 
-func sysw(addr uint32, i interface{}) {
-	panic("sysw")
-}
-func sysr(addr uint32, i interface{}) {
-	panic("sysr")
-}
 func RETURN_TRACE(u, v, w, x uint16, s string) {
 	if DEBUG_TRACECALLREGS() {
 		x86emu_dump_regs()
@@ -323,6 +326,25 @@ func sys_outw(i uint16, v uint16) {
 func sys_outl(i uint16, v uint32) {
 	panic("io")
 }
+func sysw(addr uint32, i interface{}) {
+	switch v := i.(type) {
+	case uint32:
+		memory[addr] = uint8(v)
+		memory[addr] = uint8(v>>8)
+		memory[addr] = uint8(v>>16)
+		memory[addr] = uint8(v>>24)
+	case uint16:
+		memory[addr] = uint8(v)
+		memory[addr] = uint8(v>>8)
+	case uint8:
+		memory[addr] = v
+	default:
+		log.Panicf("sysw: %T", v)
+	}
+}
+func sysr(addr uint32, i interface{}) {
+	panic("sysr")
+}
 func CONDITIONAL_SET_FLAG_BOOL(cond bool, flag uint32) {
 	if cond {
 		SET_FLAG(flag)
@@ -339,8 +361,10 @@ func CONDITIONAL_SET_FLAG(cond interface{}, flag uint32) {
 		CONDITIONAL_SET_FLAG_BOOL(v != 0, flag)
 	case uint16:
 		CONDITIONAL_SET_FLAG_BOOL(v != 0, flag)
+	case uint8:
+		CONDITIONAL_SET_FLAG_BOOL(v != 0, flag)
 	default:
-		panic("CSF")
+		log.Panicf("CSF: %T", cond)
 	}
 }
 
