@@ -207,11 +207,11 @@ func X86EMU_dump_memory(seg uint16, o uint16, amt uint32) {
 		}
 		for i < end {
 			fmt.Printf("%02x ", fetch_data_byte_abs(seg, uint16(i)))
+			i++
+		}
 			fmt.Printf("\n")
 			start = end
 			end = start + 16
-			i++
-		}
 	}
 }
 var (
