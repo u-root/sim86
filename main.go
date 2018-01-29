@@ -24,7 +24,7 @@ func cpuInit() {
 func main() {
 	log.Printf("x86 emulator")
 	if *disassemble {
-		M.x86.debug |= DEBUG_DISASSEMBLE_F
+		M.x86.debug |= DEBUG_DISASSEMBLE_F | DEBUG_DECODE_F
 	}
 	if *step {
 		M.x86.debug |= DEBUG_STEP_F

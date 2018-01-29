@@ -125,10 +125,10 @@ func X86EMU_exec() {
 		op1 = sys_rdb((uint32(M.x86.seg.CS.Get())<<4 + uint32(ip)))
 		M.x86.spc.IP.Set16(ip + 1)
 		x86emu_optab[op1](op1)
-		//if (M.x86.debug & DEBUG_EXIT) {
-		//    M.x86.debug &= ~DEBUG_EXIT;
-		//    return;
-		//}
+		if M.x86.exit {
+		    M.x86.exit = false
+		    return
+		}
 	}
 }
 

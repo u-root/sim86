@@ -58,6 +58,7 @@ func X86EMU_trace_regs() {
 			x86emu_dump_regs()
 		}
 	}
+	fmt.Printf("trace regs DD %v DDD %v\n", DEBUG_DECODE(),DEBUG_DECODE_NOPRINT())
 	if DEBUG_DECODE() && !DEBUG_DECODE_NOPRINT() {
 		fmt.Printf("%04x:%04x ", M.x86.saved_cs, M.x86.saved_ip)
 		print_encoded_bytes(M.x86.saved_cs, M.x86.saved_ip)
@@ -83,9 +84,10 @@ func x86emu_just_disassemble() {
 
 func disassemble_forward(seg uint16, off uint16, n int) {
 	var (
-		tregs *X86EMU_sysEnv
+		tregs X86EMU_sysEnv
 		op1   uint8
 	)
+	fmt.Printf("DAF %04x:%04x %d\n", seg, off, n)
 	/*
 	 * hack, hack, hack.  What we do is use the exact machinery set up
 	 * for execution, except that now there is an additional state
@@ -110,16 +112,17 @@ func disassemble_forward(seg uint16, off uint16, n int) {
 	 * This was done for an entirely different reason, but makes a
 	 * nice way to get the system to help debug codes.
 	 */
-	tregs = M
-	tregs.x86.spc.IP.Set16(off)
-	tregs.x86.seg.CS.Set(seg)
+	tregs = *M
+	M.x86.spc.IP.Set16(off)
+	M.x86.seg.CS.Set(seg)
 
 	/* reset the decoding buffers */
-	tregs.x86.enc_str_pos = 0
-	tregs.x86.enc_pos = 0
+	M.x86.enc_str_pos = 0
+	M.x86.enc_pos = 0
+	M.x86.decoded_buf = []byte{}
 
 	/* turn on the "disassemble only, no execute" flag */
-	tregs.x86.debug |= DEBUG_DISASSEMBLE_F
+	M.x86.debug |= DEBUG_DISASSEMBLE_F
 
 	/* DUMP NEXT n instructions to screen in straight_line fashion */
 	/*
@@ -135,6 +138,7 @@ func disassemble_forward(seg uint16, off uint16, n int) {
 		M.x86.spc.IP.Set16(ip + 1)
 		x86emu_optab[op1](op1)
 	}
+	*M = tregs
 	/* end major hack mode. */
 }
 
@@ -158,23 +162,25 @@ func x86emu_inc_decoded_inst_len(x uint32) {
 }
 
 func x86emu_decode_printf(x string, y ...interface{}) {
-	M.x86.decoded_buf = []byte(string(M.x86.decoded_buf) + fmt.Sprintf(x, y...))
+	fmt.Printf(x, y...)
+//M.x86.decoded_buf = []byte(string(M.x86.decoded_buf) + fmt.Sprintf(x, y...))
 }
 
 func x86emu_decode_printf2(x string, y int) {
-	x86emu_decode_printf(x, y)
+	fmt.Printf(x, y)
+//	x86emu_decode_printf(x, y)
 }
 
 func x86emu_end_instr() {
 	M.x86.decoded_buf = []byte{}
+	M.x86.enc_pos = 0
 }
 
 func print_encoded_bytes(s uint16, o uint16) {
-	var buf1 string
+	fmt.Printf("print encode bytes s %x o %x enc-pos %x\n", s, o, M.x86.enc_pos)
 	for i := uint16(0); i < uint16(M.x86.enc_pos); i++ {
-		buf1 += fmt.Sprintf("%02x", fetch_data_byte_abs(s, o+i))
+		fmt.Printf("%02x", fetch_data_byte_abs(s, o+i))
 	}
-	fmt.Printf("%-20s ", buf1)
 }
 
 func print_decoded_instruction() {
@@ -285,8 +291,7 @@ func x86emu_single_step() error {
 				done = true
 			}
 		case "q":
-			log.Fatalf("Define DBUG_EXIT")
-			//M.x86.debug |= DEBUG_EXIT;
+			M.x86.exit = true
 		case "P":
 			noDecode = !noDecode
 			fmt.Printf("Toggled decoding to %v\n", noDecode)
@@ -299,11 +304,13 @@ func x86emu_single_step() error {
 }
 
 func X86EMU_trace_on() uint32 {
+	log.Printf("ton")
 	M.x86.debug = M.x86.debug | DEBUG_STEP_F | DEBUG_DECODE_F | DEBUG_TRACE_F
 	return M.x86.debug
 }
 
 func X86EMU_trace_off() uint32 {
+	log.Printf("toff")
 	M.x86.debug = M.x86.debug & ^(DEBUG_STEP_F | DEBUG_DECODE_F | DEBUG_TRACE_F)
 	return M.x86.debug
 }
@@ -316,7 +323,7 @@ func parse_line(r *bufio.Reader) (string, []uint16, error) {
 	fields := strings.Fields(data)
 	log.Printf("felds %v", fields)
 	if len(fields) == 0 {
-		return "", nil, fmt.Errorf("You need to enter a command")
+		return "", nil, nil
 	}
 
 	cmd := fields[0]

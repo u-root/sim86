@@ -197,6 +197,7 @@ type X86EMU_regs struct {
 	intr        uint32
 	debug       uint32
 	check       int
+	exit bool
 	saved_ip    uint16
 	saved_cs    uint16
 	enc_pos     int

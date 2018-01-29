@@ -253,6 +253,7 @@ func START_OF_INSTR() {
 }
 func END_OF_INSTR() {
 	fmt.Printf("End instruction\n")
+	x86emu_end_instr()
 }
 
 // trace_regs traces. it also returns true if the caller should immediately
