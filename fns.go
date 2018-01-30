@@ -268,14 +268,16 @@ func TRACE_REGS() bool {
 	}
 	return false
 }
-func SINGLE_STEP() {
+func SINGLE_STEP() bool {
 	if DEBUG_STEP() {
 		x86emu_single_step()
+		return true
 	}
+	return false
 }
-func TRACE_AND_STEP() {
+func TRACE_AND_STEP() bool {
 	TRACE_REGS()
-	SINGLE_STEP()
+	return SINGLE_STEP()
 }
 
 func DECODE_CLEAR_SEGOVR() {

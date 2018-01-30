@@ -126,8 +126,8 @@ func X86EMU_exec() {
 		M.x86.spc.IP.Set16(ip + 1)
 		x86emu_optab[op1](op1)
 		if M.x86.exit {
-		    M.x86.exit = false
-		    return
+			M.x86.exit = false
+			return
 		}
 	}
 }

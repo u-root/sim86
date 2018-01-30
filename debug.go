@@ -58,7 +58,7 @@ func X86EMU_trace_regs() {
 			x86emu_dump_regs()
 		}
 	}
-	fmt.Printf("trace regs DD %v DDD %v\n", DEBUG_DECODE(),DEBUG_DECODE_NOPRINT())
+	fmt.Printf("trace regs DD %v DDD %v\n", DEBUG_DECODE(), DEBUG_DECODE_NOPRINT())
 	if DEBUG_DECODE() && !DEBUG_DECODE_NOPRINT() {
 		fmt.Printf("%04x:%04x ", M.x86.saved_cs, M.x86.saved_ip)
 		print_encoded_bytes(M.x86.saved_cs, M.x86.saved_ip)
@@ -163,12 +163,12 @@ func x86emu_inc_decoded_inst_len(x uint32) {
 
 func x86emu_decode_printf(x string, y ...interface{}) {
 	fmt.Printf(x, y...)
-//M.x86.decoded_buf = []byte(string(M.x86.decoded_buf) + fmt.Sprintf(x, y...))
+	//M.x86.decoded_buf = []byte(string(M.x86.decoded_buf) + fmt.Sprintf(x, y...))
 }
 
 func x86emu_decode_printf2(x string, y int) {
 	fmt.Printf(x, y)
-//	x86emu_decode_printf(x, y)
+	//	x86emu_decode_printf(x, y)
 }
 
 func x86emu_end_instr() {
@@ -177,7 +177,6 @@ func x86emu_end_instr() {
 }
 
 func print_encoded_bytes(s uint16, o uint16) {
-	fmt.Printf("print encode bytes s %x o %x enc-pos %x\n", s, o, M.x86.enc_pos)
 	for i := uint16(0); i < uint16(M.x86.enc_pos); i++ {
 		fmt.Printf("%02x", fetch_data_byte_abs(s, o+i))
 	}
