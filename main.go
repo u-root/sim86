@@ -8,9 +8,9 @@ import (
 )
 
 var (
-	disassemble = flag.Bool("d", true, "Disassemble")
-	step        = flag.Bool("s", true, "Single step")
-	trace       = flag.Bool("t", true, "Trace")
+	disassemble = flag.Bool("d", false, "Disassemble")
+	step        = flag.Bool("s", false, "Single step")
+	trace       = flag.Bool("t", false, "Trace")
 	cmds        = bufio.NewReader(os.Stdin)
 )
 
@@ -23,6 +23,7 @@ func cpuInit() {
 
 func main() {
 	log.Printf("x86 emulator")
+	flag.Parse()
 	if *disassemble {
 		M.x86.debug |= DEBUG_DISASSEMBLE_F | DEBUG_DECODE_F
 	}

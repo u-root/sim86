@@ -123,12 +123,17 @@ func X86EMU_exec() {
 		}
 		ip := M.x86.spc.IP.Get16()
 		op1 = sys_rdb((uint32(M.x86.seg.CS.Get())<<4 + uint32(ip)))
+		fmt.Printf("Set ip to %d\n", ip)
 		M.x86.spc.IP.Set16(ip + 1)
+		ip = M.x86.spc.IP.Get16()
+		fmt.Printf("Set ip to %d\n", ip)
+		x86emu_dump_regs()
 		x86emu_optab[op1](op1)
 		if M.x86.exit {
 			M.x86.exit = false
 			return
 		}
+		x86emu_dump_regs()
 	}
 }
 
