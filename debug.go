@@ -396,10 +396,10 @@ func x86emu_dump_regs() {
 }
 
 func x86emu_dump_xregs() {
-	fmt.Printf("\tAX=%08x  ", M.x86.gen.A.Get32())
-	fmt.Printf("BX=%08x  ", M.x86.gen.B.Get32())
-	fmt.Printf("CX=%08x  ", M.x86.gen.C.Get32())
-	fmt.Printf("DX=%08x  ", M.x86.gen.D.Get32())
+	fmt.Printf("\tAX=%08x  ", G(EAX))
+	fmt.Printf("BX=%08x  ", G(EBX))
+	fmt.Printf("CX=%08x  ", G(ECX))
+	fmt.Printf("DX=%08x  ", G(EDX))
 	fmt.Printf("SP=%08x  ", G(SP))
 	fmt.Printf("BP=%08x  ", G(BP))
 	fmt.Printf("SI=%08x  ", G(SI))
