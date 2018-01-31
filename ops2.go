@@ -826,8 +826,8 @@ func x86emuOp2_bts_R(_ uint8) {
 			}
 			bit := G(shiftreg) & 0xF
 			mask := uint16(0x1 << bit)
-			CONDITIONAL_SET_FLAG(G(srcreg)&mask, F_CF)
-			S(srcreg,G(srcreg) | mask)
+			CONDITIONAL_SET_FLAG(G16(srcreg)&mask, F_CF)
+			S(srcreg,G16(srcreg) | mask)
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -1154,8 +1154,8 @@ func x86emuOp2_btr_R(_ uint8) {
 			}
 			bit := G(shiftreg) & 0xF
 			mask := uint16(0x1 << bit)
-			CONDITIONAL_SET_FLAG(G(srcreg)&mask, F_CF)
-			S(srcreg,G(srcreg) & ^mask)
+			CONDITIONAL_SET_FLAG(G16(srcreg)&mask, F_CF)
+			S(srcreg,G16(srcreg) & ^mask)
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -1440,16 +1440,16 @@ func x86emuOp2_btX_I(op2 uint8) {
 			}
 			bit := shift & 0xF
 			mask := uint16(0x1 << bit)
-			CONDITIONAL_SET_FLAG(G(srcreg)&mask, F_CF)
+			CONDITIONAL_SET_FLAG(G16(srcreg)&mask, F_CF)
 			switch rh {
 			case 5:
-				S(srcreg,G(srcreg) | mask)
+				S(srcreg,G16(srcreg) | mask)
 				break
 			case 6:
-				S(srcreg,G(srcreg) & mask)
+				S(srcreg,G16(srcreg) & mask)
 				break
 			case 7:
-				S(srcreg,G(srcreg) ^ mask)
+				S(srcreg,G16(srcreg) ^ mask)
 				break
 			default:
 				break
@@ -1524,8 +1524,8 @@ func x86emuOp2_btc_R(_ uint8) {
 			}
 			bit := G(shiftreg) & 0xF
 			mask := uint16(0x1 << bit)
-			CONDITIONAL_SET_FLAG(G(srcreg)&mask, F_CF)
-			S(srcreg,G(srcreg) ^ mask)
+			CONDITIONAL_SET_FLAG(G16(srcreg)&mask, F_CF)
+			S(srcreg,G16(srcreg) ^ mask)
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -1552,7 +1552,7 @@ func x86emuOp2_bsf(_ uint8) {
 			}
 			srcval := fetch_data_long(srcoffset)
 			CONDITIONAL_SET_FLAG(srcval == 0, F_ZF)
-			for S(dstreg,0); G(dstreg) < 32; dstS(reg,dstG(reg) + 1) {
+			for S(dstreg,0); G(dstreg) < 32; S(dstreg,G(dstreg) + 1) {
 				if ((srcval >> G(dstreg)) & 1) != 0 {
 					break
 				}
@@ -1566,7 +1566,7 @@ func x86emuOp2_bsf(_ uint8) {
 			}
 			srcval := fetch_data_word(srcoffset)
 			CONDITIONAL_SET_FLAG(srcval == 0, F_ZF)
-			for S(dstreg,0); G(dstreg) < 16; dstS(reg,dstG(reg) + 1) {
+			for S(dstreg,0); G(dstreg) < 16; S(dstreg,G(dstreg) + 1) {
 				if ((srcval >> G(dstreg)) & 1) != 0 {
 					break
 				}
@@ -1575,7 +1575,7 @@ func x86emuOp2_bsf(_ uint8) {
 	} else { /* register to register */
 		if M.x86.mode&SYSMODE_PREFIX_DATA != 0 {
 
-			srcval := decode_rm_long_register(rl).Get()
+			srcval := G(decode_rm_long_register(rl))
 			DECODE_PRINTF(",")
 			dstreg := decode_rm_long_register(rh)
 			if TRACE_AND_STEP() {
@@ -1583,14 +1583,14 @@ func x86emuOp2_bsf(_ uint8) {
 				return
 			}
 			CONDITIONAL_SET_FLAG(srcval == 0, F_ZF)
-			for S(dstreg,0); G(dstreg) < 32; dstS(reg,dstG(reg) + 1) {
+			for S(dstreg,0); G(dstreg) < 32; S(dstreg,G(dstreg) + 1) {
 				if ((srcval >> G(dstreg)) & 1) != 0 {
 					break
 				}
 			}
 		} else {
 
-			srcval := decode_rm_word_register(rl).Get()
+			srcval := G(decode_rm_word_register(rl))
 			DECODE_PRINTF(",")
 			dstreg := decode_rm_word_register(rh)
 			if TRACE_AND_STEP() {
@@ -1598,7 +1598,7 @@ func x86emuOp2_bsf(_ uint8) {
 				return
 			}
 			CONDITIONAL_SET_FLAG(srcval == 0, F_ZF)
-			for S(dstreg,0); G(dstreg) < 16; dstS(reg,dstG(reg) + 1) {
+			for S(dstreg,0); G(dstreg) < 16; S(dstreg,G(dstreg) + 1) {
 				if ((srcval >> G(dstreg)) & 1) != 0 {
 					break
 				}
@@ -1631,7 +1631,7 @@ func x86emuOp2_bsr(_ uint8) {
 			}
 			srcval := fetch_data_long(srcoffset)
 			CONDITIONAL_SET_FLAG(srcval == 0, F_ZF)
-			for S(dstreg,31); G(dstreg) > 0; dstS(reg,dstG(reg) - 1) {
+			for S(dstreg,31); G(dstreg) > 0; S(dstreg,G(dstreg) - 1) {
 				if ((srcval >> G(dstreg)) & 1) != 0 {
 					break
 				}
@@ -1645,7 +1645,7 @@ func x86emuOp2_bsr(_ uint8) {
 			}
 			srcval := fetch_data_word(srcoffset)
 			CONDITIONAL_SET_FLAG(srcval == 0, F_ZF)
-			for S(dstreg,15); G(dstreg) > 0; dstS(reg,dstG(reg) - 1) {
+			for S(dstreg,15); G(dstreg) > 0; S(dstreg,G(dstreg) - 1) {
 				if ((srcval >> G(dstreg)) & 1) != 0 {
 					break
 				}
@@ -1654,7 +1654,7 @@ func x86emuOp2_bsr(_ uint8) {
 	} else { /* register to register */
 		if M.x86.mode&SYSMODE_PREFIX_DATA != 0 {
 
-			srcval := decode_rm_long_register(rl).Get()
+			srcval := G(decode_rm_long_register(rl))
 			DECODE_PRINTF(",")
 			dstreg := decode_rm_long_register(rh)
 			if TRACE_AND_STEP() {
@@ -1662,14 +1662,14 @@ func x86emuOp2_bsr(_ uint8) {
 				return
 			}
 			CONDITIONAL_SET_FLAG(srcval == 0, F_ZF)
-			for S(dstreg,31); G(dstreg) > 0; dstS(reg,dstG(reg) - 1) {
+			for S(dstreg,31); G(dstreg) > 0; S(dstreg,G(dstreg) - 1) {
 				if ((srcval >> G(dstreg)) & 1) != 0 {
 					break
 				}
 			}
 		} else {
 
-			srcval := decode_rm_word_register(rl).Get()
+			srcval := G(decode_rm_word_register(rl))
 			DECODE_PRINTF(",")
 			dstreg := decode_rm_word_register(rh)
 			if TRACE_AND_STEP() {
@@ -1677,7 +1677,7 @@ func x86emuOp2_bsr(_ uint8) {
 				return
 			}
 			CONDITIONAL_SET_FLAG(srcval == 0, F_ZF)
-			for S(dstreg,15); G(dstreg) > 0; dstS(reg,dstG(reg) - 1) {
+			for S(dstreg,15); G(dstreg) > 0; S(dstreg,G(dstreg) - 1) {
 				if ((srcval >> G(dstreg)) & 1) != 0 {
 					break
 				}
