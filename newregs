@@ -5,3 +5,5 @@ sed -i 's/M.x86.....\(..\).Set(\(.*\))/S(\1, \2)/' $1
 
 sed -i 's/M.x86.....\(.\).Get16()/G(\1X)/' $1
 sed -i 's/M.x86.....\(.\).Get32()/G(E\1X)/' $1
+sed -i 's/M.x86.spc.FLAGS/G(FLAGS)/' $1
+sed -i 's/M.x86.spc.EFLAGS/G(EFLAGS)/' $1

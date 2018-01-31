@@ -58,13 +58,13 @@ func x86emu_intr_handle() {
 		if _X86EMU_intrTab[intno] != nil {
 			panic("_X86EMU_intrTab[intno](intno)")
 		} else {
-			push_word(uint16(M.x86.spc.FLAGS))
+			push_word(uint16(G(FLAGS)))
 			CLEAR_FLAG(F_IF)
 			CLEAR_FLAG(F_TF)
-			push_word(M.x86.seg.CS.Get())
-			M.x86.seg.CS.Set(mem_access_word(uint32(intno*4 + 2)))
-			push_word(M.x86.spc.IP.Get16())
-			M.x86.spc.IP.Set16(mem_access_word(uint32(intno * 4)))
+			push_word(G(CS))
+			S(CS, mem_access_word(uint32(intno*4 + 2)))
+			push_word(G(IP))
+			S(IP, mem_access_word(uint32(intno * 4)))
 			M.x86.intr = 0
 		}
 	}
@@ -103,11 +103,11 @@ func X86EMU_exec() {
 		}
 
 		/* If debugging, save the IP and CS values. */
-		SAVE_IP_CS(M.x86.seg.CS.Get(), M.x86.spc.IP.Get16())
+		SAVE_IP_CS(G(CS), G(IP))
 		INC_DECODED_INST_LEN(1)
 		if M.x86.intr != 0 {
 			if (M.x86.intr & INTR_HALTED) != 0 {
-				if M.x86.spc.SP.Get16() != 0 {
+				if G(SP) != 0 {
 					fmt.Printf("halted\n")
 					X86EMU_trace_regs()
 				} else {
@@ -121,11 +121,11 @@ func X86EMU_exec() {
 				x86emu_intr_handle()
 			}
 		}
-		ip := M.x86.spc.IP.Get16()
-		op1 = sys_rdb((uint32(M.x86.seg.CS.Get())<<4 + uint32(ip)))
+		ip := G(IP)
+		op1 = sys_rdb((uint32(G(CS))<<4 + uint32(ip)))
 		fmt.Printf("Set ip to %d\n", ip)
-		M.x86.spc.IP.Set16(ip + 1)
-		ip = M.x86.spc.IP.Get16()
+		S(IP, ip + 1)
+		ip = G(IP)
 		fmt.Printf("Set ip to %d\n", ip)
 		x86emu_dump_regs()
 		x86emu_optab[op1](op1)
@@ -164,9 +164,9 @@ func fetch_decode_modrm() (uint32, uint32, uint32) {
 		x86emu_check_ip_access()
 	}
 
-	ip := M.x86.spc.IP.Get16()
-	fetched = sys_rdb(uint32(M.x86.seg.CS.Get())<<4 + uint32(ip))
-	M.x86.spc.IP.Set16(ip + 1)
+	ip := G(IP)
+	fetched = sys_rdb(uint32(G(CS))<<4 + uint32(ip))
+	S(IP, ip + 1)
 	INC_DECODED_INST_LEN(1)
 	mod := uint32((fetched >> 6) & 0x03)
 	regh := uint32((fetched >> 3) & 0x07)
@@ -191,9 +191,9 @@ func fetch_byte_imm() uint8 {
 		x86emu_check_ip_access()
 	}
 
-	ip := M.x86.spc.IP.Get16()
-	fetched = sys_rdb((uint32(M.x86.seg.CS.Get()) << 4) + uint32(ip))
-	M.x86.spc.IP.Set16(ip + 1)
+	ip := G(IP)
+	fetched = sys_rdb((uint32(G(CS)) << 4) + uint32(ip))
+	S(IP, ip + 1)
 	INC_DECODED_INST_LEN(1)
 	return fetched
 }
@@ -214,9 +214,9 @@ func fetch_word_imm() uint16 {
 	if CHECK_IP_FETCH() {
 		x86emu_check_ip_access()
 	}
-	ip := M.x86.spc.IP.Get16()
-	fetched = sys_rdw((uint32(M.x86.seg.CS.Get()) << 4) + uint32(ip))
-	M.x86.spc.IP.Set16(ip + 2)
+	ip := G(IP)
+	fetched = sys_rdw((uint32(G(CS)) << 4) + uint32(ip))
+	S(IP, ip + 2)
 	INC_DECODED_INST_LEN(2)
 	return fetched
 }
@@ -237,9 +237,9 @@ func fetch_long_imm() uint32 {
 	if CHECK_IP_FETCH() {
 		x86emu_check_ip_access()
 	}
-	ip := M.x86.spc.IP.Get16()
-	fetched = sys_rdl((uint32(M.x86.seg.CS.Get()) << 4) + uint32(ip))
-	M.x86.spc.IP.Set16(ip + 4)
+	ip := G(IP)
+	fetched = sys_rdl((uint32(G(CS)) << 4) + uint32(ip))
+	S(IP, ip + 4)
 	INC_DECODED_INST_LEN(4)
 	return fetched
 }
@@ -279,24 +279,24 @@ func get_data_segment() uint16 {
 	case 0: /* default case: use ds register */
 	case SYSMODE_SEGOVR_DS:
 	case SYSMODE_SEGOVR_DS | SYSMODE_SEG_DS_SS:
-		return M.x86.seg.DS.Get()
+		return G(DS)
 	case SYSMODE_SEG_DS_SS: /* non-overridden, use ss register */
-		return M.x86.seg.SS.Get()
+		return G(SS)
 	case SYSMODE_SEGOVR_CS:
 	case SYSMODE_SEGOVR_CS | SYSMODE_SEG_DS_SS:
-		return M.x86.seg.CS.Get()
+		return G(CS)
 	case SYSMODE_SEGOVR_ES:
 	case SYSMODE_SEGOVR_ES | SYSMODE_SEG_DS_SS:
-		return M.x86.seg.ES.Get()
+		return G(ES)
 	case SYSMODE_SEGOVR_FS:
 	case SYSMODE_SEGOVR_FS | SYSMODE_SEG_DS_SS:
-		return M.x86.seg.FS.Get()
+		return G(FS)
 	case SYSMODE_SEGOVR_GS:
 	case SYSMODE_SEGOVR_GS | SYSMODE_SEG_DS_SS:
-		return M.x86.seg.GS.Get()
+		return G(GS)
 	case SYSMODE_SEGOVR_SS:
 	case SYSMODE_SEGOVR_SS | SYSMODE_SEG_DS_SS:
-		return M.x86.seg.SS.Get()
+		return G(SS)
 	default:
 
 		HALT_SYS()
@@ -673,28 +673,28 @@ func decode_sib_si(scale uint32, index uint32) uint32 {
 	switch index {
 	case 0:
 		DECODE_PRINTF("EAX]")
-		return M.x86.gen.A.Get32() * index
+		return G(EAX) * index
 	case 1:
 		DECODE_PRINTF("ECX]")
-		return M.x86.gen.C.Get32() * index
+		return G(ECX) * index
 	case 2:
 		DECODE_PRINTF("EDX]")
-		return M.x86.gen.D.Get32() * index
+		return G(EDX) * index
 	case 3:
 		DECODE_PRINTF("EBX]")
-		return M.x86.gen.B.Get32() * index
+		return G(EBX) * index
 	case 4:
 		DECODE_PRINTF("0]")
 		return 0
 	case 5:
 		DECODE_PRINTF("EBP]")
-		return M.x86.spc.BP.Get32() * index
+		return G(BP) * index
 	case 6:
 		DECODE_PRINTF("ESI]")
-		return M.x86.spc.SI.Get32() * index
+		return G(SI) * index
 	case 7:
 		DECODE_PRINTF("EDI]")
-		return M.x86.spc.DI.Get32() * index
+		return G(DI) * index
 	}
 	HALT_SYS()
 	return 0 /* NOT REACHED OR REACHED ON ERROR */
@@ -721,23 +721,23 @@ func decode_sib_address(mod uint32) uint32 {
 	switch base {
 	case 0:
 		DECODE_PRINTF("[EAX]")
-		offset = M.x86.gen.A.Get32()
+		offset = G(EAX)
 		break
 	case 1:
 		DECODE_PRINTF("[ECX]")
-		offset = M.x86.gen.C.Get32()
+		offset = G(ECX)
 		break
 	case 2:
 		DECODE_PRINTF("[EDX]")
-		offset = M.x86.gen.D.Get32()
+		offset = G(EDX)
 		break
 	case 3:
 		DECODE_PRINTF("[EBX]")
-		offset = M.x86.gen.B.Get32()
+		offset = G(EBX)
 		break
 	case 4:
 		DECODE_PRINTF("[ESP]")
-		offset = M.x86.spc.SP.Get32()
+		offset = G(SP)
 		break
 	case 5:
 		switch mod {
@@ -749,26 +749,26 @@ func decode_sib_address(mod uint32) uint32 {
 		case 1:
 			displacement = uint32(fetch_byte_imm())
 			DECODE_PRINTF2("[%d][EBP]", displacement)
-			offset = M.x86.spc.BP.Get32() + displacement
+			offset = G(BP) + displacement
 			break
 		case 2:
 			displacement = fetch_long_imm()
 			DECODE_PRINTF2("[%d][EBP]", displacement)
-			offset = M.x86.spc.BP.Get32() + displacement
+			offset = G(BP) + displacement
 			break
 		default:
 			HALT_SYS()
 		}
 		DECODE_PRINTF("[EAX]")
-		offset = M.x86.gen.A.Get32()
+		offset = G(EAX)
 		break
 	case 6:
 		DECODE_PRINTF("[ESI]")
-		offset = M.x86.spc.SI.Get32()
+		offset = G(SI)
 		break
 	case 7:
 		DECODE_PRINTF("[EDI]")
-		offset = M.x86.spc.DI.Get32()
+		offset = G(DI)
 		break
 	default:
 		HALT_SYS()
@@ -805,16 +805,16 @@ func decode_rm00_address(rm uint32) uint32 {
 		switch rm {
 		case 0:
 			DECODE_PRINTF("[EAX]")
-			return M.x86.gen.A.Get32()
+			return G(EAX)
 		case 1:
 			DECODE_PRINTF("[ECX]")
-			return M.x86.gen.C.Get32()
+			return G(ECX)
 		case 2:
 			DECODE_PRINTF("[EDX]")
-			return M.x86.gen.D.Get32()
+			return G(EDX)
 		case 3:
 			DECODE_PRINTF("[EBX]")
-			return M.x86.gen.B.Get32()
+			return G(EBX)
 		case 4:
 			return decode_sib_address(0)
 		case 5:
@@ -823,41 +823,41 @@ func decode_rm00_address(rm uint32) uint32 {
 			return offset
 		case 6:
 			DECODE_PRINTF("[ESI]")
-			return M.x86.spc.SI.Get32()
+			return G(SI)
 		case 7:
 			DECODE_PRINTF("[EDI]")
-			return M.x86.spc.DI.Get32()
+			return G(DI)
 		}
 	} else {
 		/* 16-bit addressing */
 		switch rm {
 		case 0:
 			DECODE_PRINTF("[BX+SI]")
-			return uint32(M.x86.gen.B.Get16() + M.x86.spc.SI.Get16())
+			return uint32(G(BX) + G(SI))
 		case 1:
 			DECODE_PRINTF("[BX+DI]")
-			return uint32(M.x86.gen.B.Get16() + M.x86.spc.DI.Get16())
+			return uint32(G(BX) + G(DI))
 		case 2:
 			DECODE_PRINTF("[BP+SI]")
 			M.x86.mode |= SYSMODE_SEG_DS_SS
-			return uint32(M.x86.spc.BP.Get16() + M.x86.spc.SI.Get16())
+			return uint32(G(BP) + M.x86.spc.SI.Get16())
 		case 3:
 			DECODE_PRINTF("[BP+DI]")
 			M.x86.mode |= SYSMODE_SEG_DS_SS
-			return uint32(M.x86.spc.BP.Get16() + M.x86.spc.DI.Get16())
+			return uint32(G(BP) + M.x86.spc.DI.Get16())
 		case 4:
 			DECODE_PRINTF("[SI]")
-			return uint32(M.x86.spc.SI.Get16())
+			return uint32(G(SI))
 		case 5:
 			DECODE_PRINTF("[DI]")
-			return uint32(M.x86.spc.DI.Get16())
+			return uint32(G(DI))
 		case 6:
 			offset = uint32(fetch_word_imm())
 			DECODE_PRINTF2("[%04x]", offset)
 			return offset
 		case 7:
 			DECODE_PRINTF("[BX]")
-			return uint32(M.x86.gen.B.Get16())
+			return uint32(G(BX))
 		}
 	}
 	HALT_SYS()
@@ -887,16 +887,16 @@ func decode_rm01_address(rm uint32) uint32 {
 		switch rm {
 		case 0:
 			DECODE_PRINTF2("%d[EAX]", displacement)
-			return M.x86.gen.A.Get32() + displacement
+			return G(EAX) + displacement
 		case 1:
 			DECODE_PRINTF2("%d[ECX]", displacement)
-			return M.x86.gen.C.Get32() + displacement
+			return G(ECX) + displacement
 		case 2:
 			DECODE_PRINTF2("%d[EDX]", displacement)
-			return M.x86.gen.D.Get32() + displacement
+			return G(EDX) + displacement
 		case 3:
 			DECODE_PRINTF2("%d[EBX]", displacement)
-			return M.x86.gen.B.Get32() + displacement
+			return G(EBX) + displacement
 		case 4:
 			{
 				var offset = uint32(decode_sib_address(1))
@@ -906,13 +906,13 @@ func decode_rm01_address(rm uint32) uint32 {
 			}
 		case 5:
 			DECODE_PRINTF2("%d[EBP]", displacement)
-			return M.x86.spc.BP.Get32() + displacement
+			return G(BP) + displacement
 		case 6:
 			DECODE_PRINTF2("%d[ESI]", displacement)
-			return M.x86.spc.SI.Get32() + displacement
+			return G(SI) + displacement
 		case 7:
 			DECODE_PRINTF2("%d[EDI]", displacement)
-			return M.x86.spc.DI.Get32() + displacement
+			return G(DI) + displacement
 		}
 	} else {
 		/* 16-bit addressing */
@@ -920,31 +920,31 @@ func decode_rm01_address(rm uint32) uint32 {
 		switch rm {
 		case 0:
 			DECODE_PRINTF2("%d[BX+SI]", d16)
-			return uint32((M.x86.gen.B.Get16() + M.x86.spc.SI.Get16() + d16))
+			return uint32((G(BX) + G(SI) + d16))
 		case 1:
 			DECODE_PRINTF2("%d[BX+DI]", d16)
-			return uint32((M.x86.gen.B.Get16() + M.x86.spc.DI.Get16() + d16))
+			return uint32((G(BX) + G(DI) + d16))
 		case 2:
 			DECODE_PRINTF2("%d[BP+SI]", d16)
 			M.x86.mode |= SYSMODE_SEG_DS_SS
-			return uint32((M.x86.spc.BP.Get16() + M.x86.spc.SI.Get16() + d16))
+			return uint32((G(BP) + M.x86.spc.SI.Get16() + d16))
 		case 3:
 			DECODE_PRINTF2("%d[BP+DI]", d16)
 			M.x86.mode |= SYSMODE_SEG_DS_SS
-			return uint32((M.x86.spc.BP.Get16() + M.x86.spc.DI.Get16() + d16))
+			return uint32((G(BP) + M.x86.spc.DI.Get16() + d16))
 		case 4:
 			DECODE_PRINTF2("%d[SI]", d16)
-			return uint32((M.x86.spc.SI.Get16() + d16))
+			return uint32((G(SI) + d16))
 		case 5:
 			DECODE_PRINTF2("%d[DI]", d16)
-			return uint32((M.x86.spc.DI.Get16() + d16))
+			return uint32((G(DI) + d16))
 		case 6:
 			DECODE_PRINTF2("%d[BP]", d16)
 			M.x86.mode |= SYSMODE_SEG_DS_SS
-			return uint32((M.x86.spc.BP.Get16() + d16))
+			return uint32((G(BP) + d16))
 		case 7:
 			DECODE_PRINTF2("%d[BX]", d16)
-			return uint32((M.x86.gen.B.Get16() + d16))
+			return uint32((G(BX) + d16))
 		}
 	}
 	HALT_SYS()
@@ -974,16 +974,16 @@ func decode_rm10_address(rm uint32) uint32 {
 		switch rm {
 		case 0:
 			DECODE_PRINTF2("%d[EAX]", displacement)
-			return M.x86.gen.A.Get32() + displacement
+			return G(EAX) + displacement
 		case 1:
 			DECODE_PRINTF2("%d[ECX]", displacement)
-			return M.x86.gen.C.Get32() + displacement
+			return G(ECX) + displacement
 		case 2:
 			DECODE_PRINTF2("%d[EDX]", displacement)
-			return M.x86.gen.D.Get32() + displacement
+			return G(EDX) + displacement
 		case 3:
 			DECODE_PRINTF2("%d[EBX]", displacement)
-			return M.x86.gen.B.Get32() + displacement
+			return G(EBX) + displacement
 		case 4:
 			{
 				var offset = decode_sib_address(2)
@@ -993,13 +993,13 @@ func decode_rm10_address(rm uint32) uint32 {
 			}
 		case 5:
 			DECODE_PRINTF2("%d[EBP]", displacement)
-			return M.x86.spc.BP.Get32() + displacement
+			return G(BP) + displacement
 		case 6:
 			DECODE_PRINTF2("%d[ESI]", displacement)
-			return M.x86.spc.SI.Get32() + displacement
+			return G(SI) + displacement
 		case 7:
 			DECODE_PRINTF2("%d[EDI]", displacement)
-			return M.x86.spc.DI.Get32() + displacement
+			return G(DI) + displacement
 		}
 	} else {
 		var displacement = uint16(fetch_word_imm())
@@ -1008,31 +1008,31 @@ func decode_rm10_address(rm uint32) uint32 {
 		switch rm {
 		case 0:
 			DECODE_PRINTF2("%d[BX+SI]", displacement)
-			return uint32((M.x86.gen.B.Get16() + M.x86.spc.SI.Get16() + displacement))
+			return uint32((G(BX) + G(SI) + displacement))
 		case 1:
 			DECODE_PRINTF2("%d[BX+DI]", displacement)
-			return uint32((M.x86.gen.B.Get16() + M.x86.spc.DI.Get16() + displacement))
+			return uint32((G(BX) + G(DI) + displacement))
 		case 2:
 			DECODE_PRINTF2("%d[BP+SI]", displacement)
 			M.x86.mode |= SYSMODE_SEG_DS_SS
-			return uint32((M.x86.spc.BP.Get16() + M.x86.spc.SI.Get16() + displacement))
+			return uint32((G(BP) + M.x86.spc.SI.Get16() + displacement))
 		case 3:
 			DECODE_PRINTF2("%d[BP+DI]", displacement)
 			M.x86.mode |= SYSMODE_SEG_DS_SS
-			return uint32((M.x86.spc.BP.Get16() + M.x86.spc.DI.Get16() + displacement))
+			return uint32((G(BP) + M.x86.spc.DI.Get16() + displacement))
 		case 4:
 			DECODE_PRINTF2("%d[SI]", displacement)
-			return uint32((M.x86.spc.SI.Get16() + displacement))
+			return uint32((G(SI) + displacement))
 		case 5:
 			DECODE_PRINTF2("%d[DI]", displacement)
-			return uint32((M.x86.spc.DI.Get16() + displacement))
+			return uint32((G(DI) + displacement))
 		case 6:
 			DECODE_PRINTF2("%d[BP]", displacement)
 			M.x86.mode |= SYSMODE_SEG_DS_SS
-			return uint32((M.x86.spc.BP.Get16() + displacement))
+			return uint32((G(BP) + displacement))
 		case 7:
 			DECODE_PRINTF2("%d[BX]", displacement)
-			return uint32((M.x86.gen.B.Get16() + displacement))
+			return uint32((G(BX) + displacement))
 		}
 	}
 	HALT_SYS()
