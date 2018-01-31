@@ -6,7 +6,7 @@ package main
 
 import "log"
 
-type regtype uint8
+type regtype uint16
 
 // A regtype encodes width in low byte and shift amount in high byte
 const (

@@ -113,8 +113,8 @@ func disassemble_forward(seg uint16, off uint16, n int) {
 	 * nice way to get the system to help debug codes.
 	 */
 	tregs = *M
-	M.x86.spc.IP.Set16(off)
-	M.x86.seg.CS.Set(seg)
+	S(IP, off)
+	S(CS, seg)
 
 	/* reset the decoding buffers */
 	M.x86.enc_str_pos = 0
@@ -133,9 +133,9 @@ func disassemble_forward(seg uint16, off uint16, n int) {
 	 * Note the use of a copy of the register structure...
 	 */
 	for i := 0; i < n; i += 1 {
-		ip := M.x86.spc.IP.Get16()
-		op1 = sys_rdb(uint32(M.x86.seg.CS.Get())<<4 + uint32(ip))
-		M.x86.spc.IP.Set16(ip + 1)
+		ip := G(IP)
+		op1 = sys_rdb(uint32(G(CS))<<4 + uint32(ip))
+		S(IP, ip + 1)
 		x86emu_optab[op1](op1)
 	}
 	*M = tregs
@@ -338,19 +338,19 @@ func parse_line(r *bufio.Reader) (string, []uint16, error) {
 }
 
 func x86emu_dump_regs() {
-	fmt.Printf("\tAX=%04x  ", M.x86.gen.A.Get16())
-	fmt.Printf("BX=%04x  ", M.x86.gen.B.Get16())
-	fmt.Printf("CX=%04x  ", M.x86.gen.C.Get16())
-	fmt.Printf("DX=%04x  ", M.x86.gen.D.Get16())
-	fmt.Printf("SP=%04x  ", M.x86.spc.SP.Get16())
-	fmt.Printf("BP=%04x  ", M.x86.spc.BP.Get16())
-	fmt.Printf("SI=%04x  ", M.x86.spc.SI.Get16())
-	fmt.Printf("DI=%04x\n", M.x86.spc.DI.Get16())
-	fmt.Printf("\tDS=%04x  ", M.x86.seg.DS.Get())
-	fmt.Printf("ES=%04x  ", M.x86.seg.ES.Get())
-	fmt.Printf("SS=%04x  ", M.x86.seg.SS.Get())
-	fmt.Printf("CS=%04x  ", M.x86.seg.CS.Get())
-	fmt.Printf("IP=%04x   ", M.x86.spc.IP.Get16())
+	fmt.Printf("\tAX=%04x  ", G(AX))
+	fmt.Printf("BX=%04x  ", G(BX))
+	fmt.Printf("CX=%04x  ", G(CX))
+	fmt.Printf("DX=%04x  ", G(DX))
+	fmt.Printf("SP=%04x  ", G(SP))
+	fmt.Printf("BP=%04x  ", G(BP))
+	fmt.Printf("SI=%04x  ", G(SI))
+	fmt.Printf("DI=%04x\n", G(DI))
+	fmt.Printf("\tDS=%04x  ", G(DS))
+	fmt.Printf("ES=%04x  ", G(ES))
+	fmt.Printf("SS=%04x  ", G(SS))
+	fmt.Printf("CS=%04x  ", G(CS))
+	fmt.Printf("IP=%04x   ", G(IP))
 	/* CHECKED... */
 	if ACCESS_FLAG(F_OF) {
 		fmt.Printf("OV ")
@@ -400,15 +400,15 @@ func x86emu_dump_xregs() {
 	fmt.Printf("BX=%08x  ", M.x86.gen.B.Get32())
 	fmt.Printf("CX=%08x  ", M.x86.gen.C.Get32())
 	fmt.Printf("DX=%08x  ", M.x86.gen.D.Get32())
-	fmt.Printf("SP=%08x  ", M.x86.spc.SP.Get32())
-	fmt.Printf("BP=%08x  ", M.x86.spc.BP.Get32())
-	fmt.Printf("SI=%08x  ", M.x86.spc.SI.Get32())
-	fmt.Printf("DI=%08x\n", M.x86.spc.DI.Get32())
-	fmt.Printf("\tDS=%04x  ", M.x86.seg.DS.Get())
-	fmt.Printf("ES=%04x  ", M.x86.seg.ES.Get())
-	fmt.Printf("SS=%04x  ", M.x86.seg.SS.Get())
-	fmt.Printf("CS=%04x  ", M.x86.seg.CS.Get())
-	fmt.Printf("IP=%08x   ", M.x86.spc.IP.Get32())
+	fmt.Printf("SP=%08x  ", G(SP))
+	fmt.Printf("BP=%08x  ", G(BP))
+	fmt.Printf("SI=%08x  ", G(SI))
+	fmt.Printf("DI=%08x\n", G(DI))
+	fmt.Printf("\tDS=%04x  ", G(DS))
+	fmt.Printf("ES=%04x  ", G(ES))
+	fmt.Printf("SS=%04x  ", G(SS))
+	fmt.Printf("CS=%04x  ", G(CS))
+	fmt.Printf("IP=%08x   ", G(IP))
 
 	/* CHECKED... */
 	if ACCESS_FLAG(F_OF) {
