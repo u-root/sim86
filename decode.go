@@ -41,6 +41,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 )
 
@@ -482,6 +483,11 @@ NOTE: Do not inline this function as (*sys_wrX) is already inline!
 func store_data_long_abs(segment uint16, offset uint16, val uint32) {
 
 	sysw((uint32(segment)<<4)+uint32(offset), val)
+
+}
+type regmap struct {
+	n string
+	r regtype
 }
 
 /****************************************************************************
@@ -524,7 +530,7 @@ func decode_rm_byte_register(reg uint32) regtype {
 	}
 	HALT_SYS()
 	log.Panicf("bad register in decode_rm_byte_register: %04x", reg)
-	return nil /* NOT REACHED OR REACHED ON ERROR */
+	return 0
 }
 
 /****************************************************************************
@@ -538,11 +544,7 @@ REMARKS:
 Return a pointer to the register given by the R/RM field of the
 modrm byte, for word operands.  Also enables the decoding of instructions.
 ****************************************************************************/
-func decode_rm_word_register(reg uint32) register16 {
-	type regmap struct {
-			n string
-			r regtype
-		}
+func decode_rm_word_register(reg uint32) regtype {
 	var rmap = [...]regmap {
 		{"AX", AX},
 		{"CX", CX},
@@ -553,12 +555,13 @@ func decode_rm_word_register(reg uint32) register16 {
 		{"SI", SI},
 		{"DI", DI},
 	}
-	if reg < len(rmap) {
+	if int(reg) < len(rmap) {
 		DECODE_PRINTF(rmap[reg].n)
 		return rmap[reg].r
 	}
 	HALT_SYS()
 	log.Panicf("decode_rm_word_register bad register %d\n", reg)
+	return 0
 }
 
 /****************************************************************************
@@ -572,7 +575,7 @@ REMARKS:
 Return a pointer to the register given by the R/RM field of the
 modrm byte, for dword operands.  Also enables the decoding of instructions.
 ****************************************************************************/
-func decode_rm_long_register(reg uint32) register {
+func decode_rm_long_register(reg uint32) regtype {
 	var rmap = [...]regmap {
 		{"EAX", EAX},
 		{"ECX", ECX},
@@ -583,12 +586,13 @@ func decode_rm_long_register(reg uint32) register {
 		{"ESI", ESI},
 		{"EDI", EDI},
 	}
-	if reg < len(rmap) {
+	if int(reg) < len(rmap) {
 		DECODE_PRINTF(rmap[reg].n)
 		return rmap[reg].r
 	}
 	HALT_SYS()
 	log.Panicf("decode_rm_long_register bad register %d\n", reg)
+	return 0
 }
 
 /****************************************************************************
@@ -603,33 +607,22 @@ Return a pointer to the register given by the R/RM field of the
 modrm byte, for word operands, modified from above for the weirdo
 special case of segreg operands.  Also enables the decoding of instructions.
 ****************************************************************************/
-func decode_rm_seg_register(reg uint32) register16 {
-	switch reg {
-	case 0:
-		DECODE_PRINTF("ES")
-		return M.x86.seg.ES
-	case 1:
-		DECODE_PRINTF("CS")
-		return M.x86.seg.CS
-	case 2:
-		DECODE_PRINTF("SS")
-		return M.x86.seg.SS
-	case 3:
-		DECODE_PRINTF("DS")
-		return M.x86.seg.DS
-	case 4:
-		DECODE_PRINTF("FS")
-		return M.x86.seg.FS
-	case 5:
-		DECODE_PRINTF("GS")
-		return M.x86.seg.GS
-	case 6:
-	case 7:
-		DECODE_PRINTF("ILLEGAL SEGREG")
-		break
+func decode_rm_seg_register(reg uint32) regtype {
+	var rmap = [...]regmap {
+		{"ES", ES},
+		{"CS", CS},
+		{"SS", SS},
+		{"DS", DS},
+		{"FS", FS},
+		{"GS", GS},
+	}
+	if int(reg) < len(rmap) {
+		DECODE_PRINTF(rmap[reg].n)
+		return rmap[reg].r
 	}
 	HALT_SYS()
-	return nil /* NOT REACHED OR REACHED ON ERROR */
+	log.Panicf("decode_rm_seg_register bad register %d\n", reg)
+	return 0
 }
 
 /****************************************************************************
@@ -678,6 +671,7 @@ func decode_sib_si(scale uint32, index uint32) uint32 {
 		return G(DI) * index
 	}
 	HALT_SYS()
+	log.Panicf("decode_sib_si bad index register %d\n", index)
 	return 0 /* NOT REACHED OR REACHED ON ERROR */
 }
 
@@ -821,11 +815,11 @@ func decode_rm00_address(rm uint32) uint32 {
 		case 2:
 			DECODE_PRINTF("[BP+SI]")
 			M.x86.mode |= SYSMODE_SEG_DS_SS
-			return uint32(G16(BP) + M.x86.spc.SI.Get16())
+			return uint32(G16(BP) + G16(SI))
 		case 3:
 			DECODE_PRINTF("[BP+DI]")
 			M.x86.mode |= SYSMODE_SEG_DS_SS
-			return uint32(G16(BP) + M.x86.spc.DI.Get16())
+			return uint32(G16(BP) + G16(DI))
 		case 4:
 			DECODE_PRINTF("[SI]")
 			return uint32(G16(SI))
@@ -908,11 +902,11 @@ func decode_rm01_address(rm uint32) uint32 {
 		case 2:
 			DECODE_PRINTF2("%d[BP+SI]", d16)
 			M.x86.mode |= SYSMODE_SEG_DS_SS
-			return uint32((G16(BP) + M.x86.spc.SI.Get16() + d16))
+			return uint32((G16(BP) + G16(SI) + d16))
 		case 3:
 			DECODE_PRINTF2("%d[BP+DI]", d16)
 			M.x86.mode |= SYSMODE_SEG_DS_SS
-			return uint32((G16(BP) + M.x86.spc.DI.Get16() + d16))
+			return uint32((G16(BP) + G16(DI) + d16))
 		case 4:
 			DECODE_PRINTF2("%d[SI]", d16)
 			return uint32((G16(SI) + d16))
@@ -996,11 +990,11 @@ func decode_rm10_address(rm uint32) uint32 {
 		case 2:
 			DECODE_PRINTF2("%d[BP+SI]", displacement)
 			M.x86.mode |= SYSMODE_SEG_DS_SS
-			return uint32((G16(BP) + M.x86.spc.SI.Get16() + displacement))
+			return uint32((G16(BP) + G16(SI) + displacement))
 		case 3:
 			DECODE_PRINTF2("%d[BP+DI]", displacement)
 			M.x86.mode |= SYSMODE_SEG_DS_SS
-			return uint32((G16(BP) + M.x86.spc.DI.Get16() + displacement))
+			return uint32((G16(BP) + G16(DI) + displacement))
 		case 4:
 			DECODE_PRINTF2("%d[SI]", displacement)
 			return uint32((G16(SI) + displacement))
