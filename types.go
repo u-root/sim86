@@ -17,15 +17,15 @@ const (
 )
 
 func R(r regtype) (regtype, regtype, regtype) {
-	reg, shift, size := r>>8, (r>>4)&0xf, (r&0xf)*8
+	reg, shift, size := r>>8, (r>>4)&0xf, (r & 0xf)
 	if reg < 0 || reg > 15 {
 		log.Panicf("R %x: bogus register # %02x", r, reg)
 	}
 	if shift != 0 && shift != 8 {
-		log.Panicf("R %x: bogus register shift", r, shift)
+		log.Panicf("R %x: bogus register shift %d", r, shift)
 	}
 	if size != 1 && size != 2 && size != 4 {
-		log.Panicf("R %x: bogus register size", r, size)
+		log.Panicf("R %x: bogus register size %d", r, size)
 	}
 	return reg, shift, size
 
@@ -79,7 +79,9 @@ func S(r regtype, val interface{}) {
 		}
 	case uint8:
 		mask := uint32(0xff) << shift
+		log.Printf("mask %08x reg %08x val %08x", mask, reg, M.x86.regs[reg])
 		M.x86.regs[reg] = (M.x86.regs[reg] &^ mask) | uint32(v)<<shift
+		log.Printf("\t%08x", M.x86.regs[reg])
 	default:
 		log.Panicf("Can't assign type %T to register", val)
 	}
@@ -92,14 +94,14 @@ func G(r regtype) uint32 {
 	reg, shift, size := R(r)
 	v := M.x86.regs[reg]
 	switch {
-	case size == 32:
+	case size == 4:
 		if M.x86.mode&SYSMODE_32BIT_REP != 0 {
 			return v
 		}
 		return uint32(uint16(v))
-	case size == 16:
+	case size == 2:
 		return uint32(uint16(v))
-	case size == 8 && shift == 0:
+	case size == 1 && shift == 0:
 		return uint32(uint8(v))
 	default:
 		return uint32(uint8(v >> 8))
@@ -141,7 +143,7 @@ const (
 	DL             = 0x0301
 	DH             = 0x0381
 	DX             = 0x0302
-	EDX            = 0x3004
+	EDX            = 0x0304
 	SP             = 0x0402
 	ESP            = 0x0404
 	BP             = 0x0502

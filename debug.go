@@ -133,12 +133,15 @@ func disassemble_forward(seg uint16, off uint16, n int) {
 	 * Note the use of a copy of the register structure...
 	 */
 	for i := 0; i < n; i += 1 {
-		ip := G(IP)
+		ip := G16(IP)
 		op1 = sys_rdb(uint32(G(CS))<<4 + uint32(ip))
 		S(IP, ip+1)
 		x86emu_optab[op1](op1)
 	}
+	ip, cs := G(IP), G(CS)
 	*M = tregs
+	S(IP, ip)
+	S(CS, cs)
 	/* end major hack mode. */
 }
 

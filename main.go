@@ -16,7 +16,7 @@ var (
 
 var memory [1 << 20]byte
 
-func cpuInit() {
+func init() {
 	// due to init loop
 	copy(x86emu_optab[:], _x86emu_optab[:])
 }
@@ -33,7 +33,6 @@ func main() {
 	if *trace {
 		M.x86.debug |= DEBUG_TRACE_F
 	}
-	cpuInit()
 	X86EMU_exec()
 	log.Printf("Done")
 }
