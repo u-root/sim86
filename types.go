@@ -164,6 +164,7 @@ const (
 
 type X86EMU_regs struct {
 	regmem      [64]uint32
+	FLAGS		uint32
 	mode        uint32
 	intr        uint32
 	debug       uint32
