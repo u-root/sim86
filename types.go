@@ -6,193 +6,137 @@ package main
 
 import "log"
 
-type register interface {
-	Set32(uint32)
-	Get32() uint32
-	Set16(uint16)
-	Get16() uint16
-	Seth8(uint8)
-	Geth8() uint8
-	Setl8(uint8)
-	Getl8() uint8
-	Set(v interface{})
-	Get() uint32
-}
+type regtype uint8
 
-type register16 interface {
-	Set(uint16)
-	Get() uint16
-	Set16(uint16)
-	Get16() uint16
-}
+// A regtype encodes width in low byte and shift amount in high byte
+const (
+	d  regtype = 32
+	w          = 16
+	bl         = 8
+	bh         = 0x808
+)
 
-type register8 interface {
-	Set(uint8)
-	Get() uint8
-	Set8(uint8)
-	Get8() uint8
-	Seth8(uint8)
-	Geth8() uint8
-}
-
-type reg32 struct {
-	reg uint32
-}
-
-type reg16 struct {
-	reg uint32
-}
-
-type reg8 struct {
-	reg uint32
-}
-
-//func (r reg32) Get() uint32 {
-//	return r.reg32
-//}
-
-func (r reg32) Set32(i uint32) {
-	r.reg = i
-}
-func (r reg32) Get32() uint32 {
-	return r.reg
-}
-
-func (r reg32) Set16(i uint16) {
-	r.reg = uint32(i)
-}
-func (r reg32) Get16() uint16 {
-	return uint16(r.reg)
-}
-
-func (r reg16) Set(i uint16) {
-	r.reg = (r.reg & 0xffff0000) | uint32(i)
-}
-func (r reg16) Get() uint16 {
-	return uint16(r.reg)
-}
-func (r reg16) Set16(i uint16) {
-	r.Set(i)
-}
-func (r reg16) Get16() uint16 {
-	return r.Get()
-}
-
-func (r reg8) Set(i uint8) {
-	r.reg = (r.reg & 0xffffff00) | uint32(i)
-}
-func (r reg8) Get() uint8 {
-	return uint8(r.reg)
-}
-func (r reg8) Set8(i uint8) {
-	r.Set(i)
-}
-func (r reg8) Get8() uint8 {
-	return r.Get()
-}
-func (r reg8) Seth8(i uint8) {
-	r.reg = (r.reg & 0xfff00ff) | uint32(i)<<8
-}
-func (r reg8) Geth8() uint8 {
-	return uint8(r.reg >> 8)
-}
-
-func (r reg32) Seth8(i uint8) {
-	r.reg = (r.reg & 0x0000ff00) | uint32(i)<<8
-}
-func (r reg32) Geth8() uint8 {
-	return uint8(r.reg >> 8)
-}
-func (r reg32) Setl8(i uint8) {
-	r.reg = (r.reg & 0xffffff00) | uint32(i)
-}
-func (r reg32) Getl8() uint8 {
-	return uint8(r.reg >> 8)
-}
-
-func (r reg32) Set(v interface{}) {
-	switch i := v.(type) {
-	case uint32:
-		r.Set32(i)
-	case uint16:
-		r.Set16(i)
-	case uint8:
-		r.Setl8(i)
-	default:
-		log.Fatalf("Can't set register with %v", v)
+func R(r regtype) (regtype, regtype, regtype) {
+	reg, shift, size := r>>8, (r>>4)&0xf, (r&0xf)*8
+	if reg < 0 || reg > 15 {
+		log.Panicf("R %x: bogus register # %02x", r, reg)
 	}
-}
+	if shift != 0 && shift != 8 {
+		log.Panicf("R %x: bogus register shift", r, shift)
+	}
+	if size != 1 && size != 2 && size != 4 {
+		log.Panicf("R %x: bogus register size", r, size)
+	}
+	return reg, shift, size
 
-func (r reg32) Add(v interface{}) {
-	switch i := v.(type) {
+}
+func S(r regtype, val interface{}) {
+	reg, shift, size := R(r)
+	switch v := val.(type) {
 	case uint32:
-		r.Set32(r.Get32() + i)
+		switch size {
+		case 4:
+			if M.x86.mode&SYSMODE_32BIT_REP != 0 {
+				M.x86.regs[reg] = v
+			}
+			M.x86.regs[reg] = M.x86.regs[reg]&0xffff0000 | uint32(v)
+		default:
+			log.Panicf("R %x: Can't assign 32 bits to %d bits", size)
+		}
 	case uint16:
-		r.Set16(r.Get16() + i)
+		switch size {
+		case 4, 2:
+			M.x86.regs[reg] = M.x86.regs[reg]&0xffff0000 | uint32(v)
+		default:
+			log.Panicf("R %x: Can't assign 16 bits to %d bits", size)
+		}
 	case uint8:
-		r.Setl8(r.Getl8() + i)
+		mask := 0xff << shift
+		M.x86.regs[reg] = (M.x86.regs[reg] &^ mask) | v<<shift
 	default:
-		log.Fatalf("Can't add register with %v", v)
+		log.Panicf("Can't assign type %T to register", val)
 	}
 }
 
 // Get gets the register as uint32. The amount of data depends on the SYSMODE.
 // Note you can't just return the u32, always, in the none 32-bit case you have to
 // return the low 16 bits, upper 16 0.
-func (r reg32) Get() uint32 {
-	if M.x86.mode&SYSMODE_32BIT_REP != 0 {
-		return r.Get32()
+func G(r regtype) uint32 {
+	reg, shift, size := R(r)
+	v := M.x86.regs[reg]
+	switch {
+	case size == 32:
+		if M.x86.mode&SYSMODE_32BIT_REP != 0 {
+			return v
+		}
+		return uint32(uint16(v))
+	case size == 16:
+		return uint32(uint16(v))
+	case size == 8 && shift == 0:
+		return uint32(uint8(v))
+	default:
+		return uint32(uint8(v >> 8))
 	}
-	return uint32(r.Get16())
 }
 
 // Changes takes a variable and adds it. It can be negative.
 // In this case, due to the mode, we use the ability to override
 // the number of bits in the register.
-func (r reg32) Change(i int) {
-	if M.x86.mode&SYSMODE_32BIT_REP != 0 {
-		r.Set32(r.Get32() + uint32(i))
-	} else {
-		r.Set16(r.Get16() + uint16(i))
-	}
+func Change(r regtype, i int) {
+	S(r, G(r)+uint32(i))
 }
 
-func (r reg32) Dec() {
-	r.Change(-1)
+func Dec(r regtype) {
+	Change(r, -1)
 }
 
-func (r reg32) Inc() {
-	r.Change(1)
+func Inc(r regtype) {
+	Change(r, 1)
 }
 
-type i386_general_regs struct {
-	A reg32
-	B reg32
-	C reg32
-	D reg32
-}
-
-type i386_special_regs struct {
-	SP    reg32
-	BP    reg32
-	SI    reg32
-	DI    reg32
-	IP    reg32
-	FLAGS uint32
-}
-type i386_segment_regs struct {
-	CS reg16
-	DS reg16
-	SS reg16
-	ES reg16
-	FS reg16
-	GS reg16
-}
+// Simple encoding
+// reg size is low nibl (#bytes)
+// reg shift is next nibl
+// reg # is next byte
+const (
+	AL     regtype = 0x0001
+	AH             = 0x0081
+	AX             = 0x0002
+	EAX            = 0x0004
+	BL             = 0x0101
+	BH             = 0x0181
+	BX             = 0x0102
+	EBX            = 0x0104
+	CL             = 0x0201
+	CH             = 0x0281
+	CX             = 0x0202
+	ECX            = 0x0204
+	DL             = 0x0301
+	DH             = 0x0381
+	DX             = 0x0302
+	EDX            = 0x3004
+	SP             = 0x0402
+	ESP            = 0x0404
+	BP             = 0x0502
+	EBP            = 0x0504
+	SI             = 0x0602
+	ESI            = 0x0604
+	DI             = 0x0702
+	EDI            = 0x0704
+	IP             = 0x0802
+	EIP            = 0x0804
+	FLAGS          = 0x0902
+	EFLAGS         = 0x0904
+	CS             = 0x00A02
+	DS             = 0x00B02
+	SS             = 0x00C02
+	ES             = 0x00D02
+	FS             = 0x00E02
+	GS             = 0x00F02
+)
 
 type X86EMU_regs struct {
-	gen         i386_general_regs
-	spc         i386_special_regs
-	seg         i386_segment_regs
+	regmem      [64]uint32
 	mode        uint32
 	intr        uint32
 	debug       uint32
@@ -207,6 +151,7 @@ type X86EMU_regs struct {
 	intno       uint8
 	__pad       []uint8
 }
+
 type X86EMU_sysEnv struct {
 	mem_base uint32
 	mem_size uint32
