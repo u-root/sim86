@@ -30,6 +30,33 @@ func R(r regtype) (regtype, regtype, regtype) {
 	return reg, shift, size
 
 }
+
+// convenience functions.
+// This is really stupid and needs to be cleaned up.
+func S32(r regtype, val uint32) {
+	S(r, val)
+}
+
+func G32(r regtype) uint32 {
+	return G(r)
+}
+
+func S16(r regtype, val uint16) {
+	S(r, val)
+}
+
+func G16(r regtype) uint16{
+	return uint16(G(r))
+}
+
+func S8(r regtype, val uint8) {
+	S(r, val)
+}
+
+func G8(r regtype) uint8 {
+	return uint8(G(r))
+}
+
 func S(r regtype, val interface{}) {
 	reg, shift, size := R(r)
 	switch v := val.(type) {
@@ -59,7 +86,7 @@ func S(r regtype, val interface{}) {
 }
 
 // Get gets the register as uint32. The amount of data depends on the SYSMODE.
-// Note you can't just return the u32, always, in the none 32-bit case you have to
+// Note you can't just return the uint32, always, in the none 32-bit case you have to
 // return the low 16 bits, upper 16 0.
 func G(r regtype) uint32 {
 	reg, shift, size := R(r)
