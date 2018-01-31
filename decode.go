@@ -124,11 +124,7 @@ func X86EMU_exec() {
 		}
 		ip := G16(IP)
 		op1 = sys_rdb((uint32(G16(CS))<<4 + uint32(ip)))
-		fmt.Printf("try to Set ip to %d\n", ip+1)
 		S16(IP, ip+1)
-		ip = G16(IP)
-		fmt.Printf("\tip %d\n", ip)
-		x86emu_dump_regs()
 		x86emu_optab[op1](op1)
 		if M.x86.exit {
 			M.x86.exit = false

@@ -79,9 +79,7 @@ func S(r regtype, val interface{}) {
 		}
 	case uint8:
 		mask := uint32(0xff) << shift
-		log.Printf("mask %08x reg %08x val %08x", mask, reg, M.x86.regs[reg])
 		M.x86.regs[reg] = (M.x86.regs[reg] &^ mask) | uint32(v)<<shift
-		log.Printf("\t%08x", M.x86.regs[reg])
 	default:
 		log.Panicf("Can't assign type %T to register", val)
 	}
