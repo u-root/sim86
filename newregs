@@ -24,6 +24,10 @@ sed -i 's/M.x86.....\(.\).Set16(\(.*\))/S(\1X, \2)/' $1
 #sed -i 's/M.x86.spc.FLAGS/G(FLAGS)/' $1
 #sed -i 's/M.x86.spc.EFLAGS/G(EFLAGS)/' $1
 
+sed -i 's/\(.*byte.*\)shiftreg\.Get()/\1G8(shiftreg)/g' $1
+sed -i 's/\(.*word.*\)shiftreg\.Get()/\1G16(shiftreg)/g' $1
+sed -i 's/\(.*long.*\)shiftreg\.Get()/\1G32(shiftreg)/g' $1
+sed -i 's/shiftreg\.Get()/G(shiftreg)/g' $1
 sed -i 's/\(.*byte.*\)srcreg\.Get()/\1G8(srcreg)/g' $1
 sed -i 's/\(.*word.*\)srcreg\.Get()/\1G16(srcreg)/g' $1
 sed -i 's/\(.*long.*\)srcreg\.Get()/\1G32(srcreg)/g' $1

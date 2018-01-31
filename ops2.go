@@ -112,7 +112,7 @@ func x86emuOp2_opc_01(op2 uint8) {
 			return
 		}
 		fmt.Printf("%04x:%04x: %02X ILLEGAL EXTENDED X86 OPCODE!\n",
-			G16(CS), M.x86.spc.IP.Get16()-2, op2)
+			G16(CS), G16(IP)-2, op2)
 		HALT_SYS()
 		break
 	}
@@ -188,8 +188,8 @@ func x86emuOp2_rdtsc(_ uint8) {
 		END_OF_INSTR()
 		return
 	}
-	M.x86.gen.A.Set32(uint32(counter))
-	M.x86.gen.D.Set32(uint32(counter >> 32))
+	S(EAX, uint32(counter))
+	S(EDX, uint32(counter >> 32))
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -207,8 +207,8 @@ func x86emuOp2_rdmsr(op2 uint8) {
 		END_OF_INSTR()
 		return
 	}
-	M.x86.gen.D.Set32(0)
-	M.x86.gen.A.Set32(0)
+	S(EDX, 0)
+	S(EAX, 0)
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -298,15 +298,15 @@ func x86emuOp2_long_jump(op2 uint8) {
 	START_OF_INSTR()
 	cond := x86emu_check_jump_condition(op2 & 0xF)
 	target := int16(fetch_word_imm())
-	target += int16(M.x86.spc.IP.Get16())
+	target += int16(G16(IP))
 	DECODE_PRINTF2("%04x\n", target)
 	if TRACE_AND_STEP() {
 		END_OF_INSTR()
 		return
 	}
 	if cond {
-		M.x86.spc.IP.Set16(uint16(target))
-		JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, M.x86.seg.CS.Get(), M.x86.spc.IP.Get16(), " LONG COND ")
+		S16(IP, uint16(target))
+		JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, G16(CS), G16(IP), " LONG COND ")
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -333,35 +333,35 @@ func x86emuOp2_bswap(op2 uint8) {
 	switch op2 {
 	case 0xc8:
 		DECODE_PRINTF("EAX\n")
-		M.x86.gen.A.Set32(x86emu_bswap(M.x86.gen.A.Get32()))
+		S(EAX, x86emu_bswap(G32(EAX)))
 		break
 	case 0xc9:
 		DECODE_PRINTF("ECX\n")
-		M.x86.gen.C.Set32(x86emu_bswap(M.x86.gen.C.Get32()))
+		S(ECX, x86emu_bswap(G32(ECX)))
 		break
 	case 0xca:
 		DECODE_PRINTF("EDX\n")
-		M.x86.gen.D.Set32(x86emu_bswap(M.x86.gen.D.Get32()))
+		S(EDX, x86emu_bswap(G32(EDX)))
 		break
 	case 0xcb:
 		DECODE_PRINTF("EBX\n")
-		M.x86.gen.B.Set32(x86emu_bswap(M.x86.gen.B.Get32()))
+		S(EBX, x86emu_bswap(G32(EBX)))
 		break
 	case 0xcc:
 		DECODE_PRINTF("ESP\n")
-		M.x86.spc.SP.Set32(x86emu_bswap(M.x86.spc.SP.Get32()))
+		S(SP, x86emu_bswap(G(SP)))
 		break
 	case 0xcd:
 		DECODE_PRINTF("EBP\n")
-		M.x86.spc.BP.Set32(x86emu_bswap(M.x86.spc.BP.Get32()))
+		S(BP, x86emu_bswap(G(BP)))
 		break
 	case 0xce:
 		DECODE_PRINTF("ESI\n")
-		M.x86.spc.SI.Set32(x86emu_bswap(M.x86.spc.SI.Get32()))
+		S(SI, x86emu_bswap(G(SI)))
 		break
 	case 0xcf:
 		DECODE_PRINTF("EDI\n")
-		M.x86.spc.DI.Set32(x86emu_bswap(M.x86.spc.DI.Get32()))
+		S(DI, x86emu_bswap(G(DI)))
 		break
 	}
 	if TRACE_AND_STEP() {
@@ -469,9 +469,9 @@ func x86emuOp2_set_byte(op2 uint8) {
 			return
 		}
 		if cond {
-			destreg.Set(1)
+			S(destreg,1)
 		} else {
-			destreg.Set(0)
+			S(destreg,0)
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -489,7 +489,7 @@ func x86emuOp2_push_FS(_ uint8) {
 		END_OF_INSTR()
 		return
 	}
-	push_word(M.x86.seg.FS.Get())
+	push_word(G16(FS))
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -505,7 +505,7 @@ func x86emuOp2_pop_FS(_ uint8) {
 		END_OF_INSTR()
 		return
 	}
-	M.x86.seg.FS.Set(pop_word())
+	S16(FS, pop_word())
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -545,8 +545,8 @@ func x86emuOp2_bt_R(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			bit := shiftreg.Get() & 0x1F
-			disp := shiftreg.Get() >> 5
+			bit := G(shiftreg) & 0x1F
+			disp := G(shiftreg) >> 5
 			srcval := fetch_data_long(srcoffset + uint32(disp))
 			CONDITIONAL_SET_FLAG(srcval&(0x1<<bit), F_CF)
 		} else {
@@ -557,8 +557,8 @@ func x86emuOp2_bt_R(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			bit := shiftreg.Get() & 0xF
-			disp := shiftreg.Get() >> 4
+			bit := G(shiftreg) & 0xF
+			disp := G(shiftreg) >> 4
 			srcval := fetch_data_word(srcoffset + uint32(disp))
 			CONDITIONAL_SET_FLAG(srcval&(0x1<<bit), F_CF)
 		}
@@ -572,8 +572,8 @@ func x86emuOp2_bt_R(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			bit := shiftreg.Get() & 0x1F
-			CONDITIONAL_SET_FLAG(srcreg.Get()&(0x1<<bit), F_CF)
+			bit := G(shiftreg) & 0x1F
+			CONDITIONAL_SET_FLAG(G(srcreg)&(0x1<<bit), F_CF)
 		} else {
 
 			srcreg := decode_rm_word_register(rl)
@@ -583,8 +583,8 @@ func x86emuOp2_bt_R(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			bit := shiftreg.Get() & 0xF
-			CONDITIONAL_SET_FLAG(srcreg.Get()&(0x1<<bit), F_CF)
+			bit := G(shiftreg) & 0xF
+			CONDITIONAL_SET_FLAG(G(srcreg)&(0x1<<bit), F_CF)
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -614,7 +614,7 @@ func x86emuOp2_shld_IMM(_ uint8) {
 				return
 			}
 			destval := fetch_data_long(destoffset)
-			destval = shld_long(destval, shiftreg.Get(), shift)
+			destval = shld_long(destval, G32(shiftreg), shift)
 			store_data_long(destoffset, destval)
 		} else {
 
@@ -628,7 +628,7 @@ func x86emuOp2_shld_IMM(_ uint8) {
 				return
 			}
 			destval := fetch_data_word(destoffset)
-			destval = shld_word(destval, shiftreg.Get(), shift)
+			destval = shld_word(destval, G16(shiftreg), shift)
 			store_data_word(destoffset, destval)
 		}
 	} else { /* register to register */
@@ -644,7 +644,7 @@ func x86emuOp2_shld_IMM(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			destreg.Set(shld_long(destreg.Get(), shiftreg.Get(), shift))
+			S32(destreg, shld_long(G32(destreg), G32(shiftreg), shift))
 		} else {
 
 			destreg := decode_rm_word_register(rl)
@@ -657,7 +657,7 @@ func x86emuOp2_shld_IMM(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			destreg.Set(shld_word(destreg.Get(), shiftreg.Get(), shift))
+			S16(destreg, shld_word(G16(destreg), G16(shiftreg), shift))
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -685,7 +685,7 @@ func x86emuOp2_shld_CL(_ uint8) {
 				return
 			}
 			destval := fetch_data_long(destoffset)
-			destval = shld_long(destval, shiftreg.Get(), M.x86.gen.C.Getl8())
+			destval = shld_long(destval, G32(shiftreg), G8(CL))
 			store_data_long(destoffset, destval)
 		} else {
 
@@ -697,7 +697,7 @@ func x86emuOp2_shld_CL(_ uint8) {
 				return
 			}
 			destval := fetch_data_word(destoffset)
-			destval = shld_word(destval, shiftreg.Get(), M.x86.gen.C.Getl8())
+			destval = shld_word(destval, G16(shiftreg), G8(CL))
 			store_data_word(destoffset, destval)
 		}
 	} else { /* register to register */
@@ -711,7 +711,7 @@ func x86emuOp2_shld_CL(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			destreg.Set(shld_long(destreg.Get(), shiftreg.Get(), M.x86.gen.C.Getl8()))
+			S32(destreg, shld_long(G32(destreg), G32(shiftreg), G8(CL)))
 		} else {
 
 			destreg := decode_rm_word_register(rl)
@@ -722,7 +722,7 @@ func x86emuOp2_shld_CL(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			destreg.Set(shld_word(destreg.Get(), shiftreg.Get(), M.x86.gen.C.Getl8()))
+			S16(destreg, shld_word(G16(destreg), G16(shiftreg), G8(CL)))
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -740,7 +740,7 @@ func x86emuOp2_push_GS(_ uint8) {
 		END_OF_INSTR()
 		return
 	}
-	push_word(M.x86.seg.GS.Get())
+	push_word(G16(GS))
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -756,7 +756,7 @@ func x86emuOp2_pop_GS(_ uint8) {
 		END_OF_INSTR()
 		return
 	}
-	M.x86.seg.GS.Set(pop_word())
+	S16(GS, pop_word())
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -780,8 +780,8 @@ func x86emuOp2_bts_R(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			bit := shiftreg.Get() & 0x1F
-			disp := int16(shiftreg.Get()) >> 5
+			bit := G(shiftreg) & 0x1F
+			disp := int16(G(shiftreg)) >> 5
 			srcval := fetch_data_long(srcoffset + uint32(disp))
 			mask := uint32(0x1 << bit)
 			CONDITIONAL_SET_FLAG(srcval&mask, F_CF)
@@ -794,8 +794,8 @@ func x86emuOp2_bts_R(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			bit := shiftreg.Get() & 0xF
-			disp := int16(shiftreg.Get()) >> 4
+			bit := G(shiftreg) & 0xF
+			disp := int16(G(shiftreg)) >> 4
 			srcval := fetch_data_word(srcoffset + uint32(disp))
 			mask := uint16(0x1 << bit)
 			CONDITIONAL_SET_FLAG(srcval&mask, F_CF)
@@ -811,10 +811,10 @@ func x86emuOp2_bts_R(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			bit := shiftreg.Get() & 0x1F
+			bit := G(shiftreg) & 0x1F
 			mask := uint32(0x1 << bit)
-			CONDITIONAL_SET_FLAG(srcreg.Get()&mask, F_CF)
-			srcreg.Set(srcreg.Get() | mask)
+			CONDITIONAL_SET_FLAG(G(srcreg)&mask, F_CF)
+			S(srcreg,G(srcreg) | mask)
 		} else {
 
 			srcreg := decode_rm_word_register(rl)
@@ -824,10 +824,10 @@ func x86emuOp2_bts_R(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			bit := shiftreg.Get() & 0xF
+			bit := G(shiftreg) & 0xF
 			mask := uint16(0x1 << bit)
-			CONDITIONAL_SET_FLAG(srcreg.Get()&mask, F_CF)
-			srcreg.Set(srcreg.Get() | mask)
+			CONDITIONAL_SET_FLAG(G(srcreg)&mask, F_CF)
+			S(srcreg,G(srcreg) | mask)
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -857,7 +857,7 @@ func x86emuOp2_shrd_IMM(_ uint8) {
 				return
 			}
 			destval := fetch_data_long(destoffset)
-			destval = shrd_long(destval, shiftreg.Get(), shift)
+			destval = shrd_long(destval, G32(shiftreg), shift)
 			store_data_long(destoffset, destval)
 		} else {
 
@@ -871,7 +871,7 @@ func x86emuOp2_shrd_IMM(_ uint8) {
 				return
 			}
 			destval := fetch_data_word(destoffset)
-			destval = shrd_word(destval, shiftreg.Get(), shift)
+			destval = shrd_word(destval, G16(shiftreg), shift)
 			store_data_word(destoffset, destval)
 		}
 	} else { /* register to register */
@@ -887,7 +887,7 @@ func x86emuOp2_shrd_IMM(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			destreg.Set(shrd_long(destreg.Get(), shiftreg.Get(), shift))
+			S32(destreg, shrd_long(G32(destreg), G32(shiftreg), shift))
 		} else {
 
 			destreg := decode_rm_word_register(rl)
@@ -900,7 +900,7 @@ func x86emuOp2_shrd_IMM(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			destreg.Set(shrd_word(destreg.Get(), shiftreg.Get(), shift))
+			S16(destreg, shrd_word(G16(destreg), G16(shiftreg), shift))
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -928,7 +928,7 @@ func x86emuOp2_shrd_CL(_ uint8) {
 				return
 			}
 			destval := fetch_data_long(destoffset)
-			destval = shrd_long(destval, shiftreg.Get(), M.x86.gen.C.Getl8())
+			destval = shrd_long(destval, G32(shiftreg), G8(CL))
 			store_data_long(destoffset, destval)
 		} else {
 
@@ -939,7 +939,7 @@ func x86emuOp2_shrd_CL(_ uint8) {
 				return
 			}
 			destval := fetch_data_word(destoffset)
-			destval = shrd_word(destval, shiftreg.Get(), M.x86.gen.C.Getl8())
+			destval = shrd_word(destval, G16(shiftreg), G8(CL))
 			store_data_word(destoffset, destval)
 		}
 	} else { /* register to register */
@@ -953,7 +953,7 @@ func x86emuOp2_shrd_CL(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			destreg.Set(shrd_long(destreg.Get(), shiftreg.Get(), M.x86.gen.C.Getl8()))
+			S32(destreg, shrd_long(G32(destreg), G32(shiftreg), G8(CL)))
 		} else {
 
 			destreg := decode_rm_word_register(rl)
@@ -964,7 +964,7 @@ func x86emuOp2_shrd_CL(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			destreg.Set(shrd_word(destreg.Get(), shiftreg.Get(), M.x86.gen.C.Getl8()))
+			S16(destreg, shrd_word(G16(destreg), G16(shiftreg), G8(CL)))
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -991,7 +991,7 @@ func x86emuOp2_imul_R_RM(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			imul_long_direct(&res_lo, &res_hi, destreg.Get(), srcval)
+			imul_long_direct(&res_lo, &res_hi, G32(destreg), srcval)
 			if res_hi != 0 {
 				SET_FLAG(F_CF)
 				SET_FLAG(F_OF)
@@ -999,7 +999,7 @@ func x86emuOp2_imul_R_RM(_ uint8) {
 				CLEAR_FLAG(F_CF)
 				CLEAR_FLAG(F_OF)
 			}
-			destreg.Set32(uint32(res_lo))
+			S32(destreg,uint32(res_lo))
 		} else {
 
 			destreg := decode_rm_word_register(rh)
@@ -1010,7 +1010,7 @@ func x86emuOp2_imul_R_RM(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			res := uint32(destreg.Get()) * uint32(srcval)
+			res := uint32(G(destreg)) * uint32(srcval)
 			if res > 0xFFFF {
 				SET_FLAG(F_CF)
 				SET_FLAG(F_OF)
@@ -1018,7 +1018,7 @@ func x86emuOp2_imul_R_RM(_ uint8) {
 				CLEAR_FLAG(F_CF)
 				CLEAR_FLAG(F_OF)
 			}
-			destreg.Set16(uint16(res))
+			S16(destreg,uint16(res))
 		}
 	} else { /* register to register */
 		if M.x86.mode&SYSMODE_PREFIX_DATA != 0 {
@@ -1030,7 +1030,7 @@ func x86emuOp2_imul_R_RM(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			imul_long_direct(&res_lo, &res_hi, destreg.Get(), srcreg.Get())
+			imul_long_direct(&res_lo, &res_hi, G32(destreg), G32(srcreg))
 			if res_hi != 0 {
 				SET_FLAG(F_CF)
 				SET_FLAG(F_OF)
@@ -1038,13 +1038,13 @@ func x86emuOp2_imul_R_RM(_ uint8) {
 				CLEAR_FLAG(F_CF)
 				CLEAR_FLAG(F_OF)
 			}
-			destreg.Set32(uint32(res_lo))
+			S32(destreg,uint32(res_lo))
 		} else {
 
 			destreg := decode_rm_word_register(rh)
 			DECODE_PRINTF(",")
 			srcreg := decode_rm_word_register(rl)
-			res := uint32(destreg.Get()) * uint32(srcreg.Get())
+			res := uint32(G(destreg)) * uint32(G(srcreg))
 			if res > 0xFFFF {
 				SET_FLAG(F_CF)
 				SET_FLAG(F_OF)
@@ -1052,7 +1052,7 @@ func x86emuOp2_imul_R_RM(_ uint8) {
 				CLEAR_FLAG(F_CF)
 				CLEAR_FLAG(F_OF)
 			}
-			destreg.Set(uint16(res))
+			S(destreg,uint16(res))
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -1077,8 +1077,8 @@ func x86emuOp2_lss_R_IMM(_ uint8) {
 			END_OF_INSTR()
 			return
 		}
-		dstreg.Set(fetch_data_word(srcoffset))
-		M.x86.seg.SS.Set(fetch_data_word(srcoffset + 2))
+		S(dstreg,fetch_data_word(srcoffset))
+		S16(SS, fetch_data_word(srcoffset + 2))
 	} else { /* register to register */
 		/* UNDEFINED! */
 		if TRACE_AND_STEP() {
@@ -1109,8 +1109,8 @@ func x86emuOp2_btr_R(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			bit := shiftreg.Get() & 0x1F
-			disp := int16(shiftreg.Get()) >> 5
+			bit := G(shiftreg) & 0x1F
+			disp := int16(G(shiftreg)) >> 5
 			srcval := fetch_data_long(srcoffset + uint32(disp))
 			mask := uint32(0x1 << bit)
 			CONDITIONAL_SET_FLAG(srcval&mask, F_CF)
@@ -1122,8 +1122,8 @@ func x86emuOp2_btr_R(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			bit := shiftreg.Get() & 0xF
-			disp := int16(shiftreg.Get()) >> 4
+			bit := G(shiftreg) & 0xF
+			disp := int16(G(shiftreg)) >> 4
 			srcval := fetch_data_word(srcoffset + uint32(disp))
 			mask := uint16(0x1 << bit)
 			CONDITIONAL_SET_FLAG(srcval&mask, F_CF)
@@ -1139,10 +1139,10 @@ func x86emuOp2_btr_R(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			bit := shiftreg.Get() & 0x1F
+			bit := G(shiftreg) & 0x1F
 			mask := uint32(0x1 << bit)
-			CONDITIONAL_SET_FLAG(srcreg.Get()&mask, F_CF)
-			srcreg.Set(srcreg.Get() & ^mask)
+			CONDITIONAL_SET_FLAG(G(srcreg)&mask, F_CF)
+			S(srcreg,G(srcreg) & ^mask)
 		} else {
 
 			srcreg := decode_rm_word_register(rl)
@@ -1152,10 +1152,10 @@ func x86emuOp2_btr_R(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			bit := shiftreg.Get() & 0xF
+			bit := G(shiftreg) & 0xF
 			mask := uint16(0x1 << bit)
-			CONDITIONAL_SET_FLAG(srcreg.Get()&mask, F_CF)
-			srcreg.Set(srcreg.Get() & ^mask)
+			CONDITIONAL_SET_FLAG(G(srcreg)&mask, F_CF)
+			S(srcreg,G(srcreg) & ^mask)
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -1180,8 +1180,8 @@ func x86emuOp2_lfs_R_IMM(_ uint8) {
 			END_OF_INSTR()
 			return
 		}
-		dstreg.Set(fetch_data_word(srcoffset))
-		M.x86.seg.FS.Set(fetch_data_word(srcoffset + 2))
+		S(dstreg,fetch_data_word(srcoffset))
+		S16(FS, fetch_data_word(srcoffset + 2))
 	} else { /* register to register */
 		/* UNDEFINED! */
 		if TRACE_AND_STEP() {
@@ -1211,8 +1211,8 @@ func x86emuOp2_lgs_R_IMM(_ uint8) {
 			END_OF_INSTR()
 			return
 		}
-		dstreg.Set(fetch_data_word(srcoffset))
-		M.x86.seg.GS.Set(fetch_data_word(srcoffset + 2))
+		S(dstreg,fetch_data_word(srcoffset))
+		S16(GS, fetch_data_word(srcoffset + 2))
 	} else { /* register to register */
 		/* UNDEFINED! */
 		if TRACE_AND_STEP() {
@@ -1245,7 +1245,7 @@ func x86emuOp2_movzx_byte_R_RM(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			destreg.Set(srcval)
+			S(destreg,srcval)
 		} else {
 
 			destreg := decode_rm_word_register(rh)
@@ -1257,7 +1257,7 @@ func x86emuOp2_movzx_byte_R_RM(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			destreg.Set(uint16(srcval))
+			S(destreg,uint16(srcval))
 		}
 	} else { /* register to register */
 		if M.x86.mode&SYSMODE_PREFIX_DATA != 0 {
@@ -1270,7 +1270,7 @@ func x86emuOp2_movzx_byte_R_RM(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			destreg.Set(srcreg.Get())
+			S(destreg,G(srcreg))
 		} else {
 
 			destreg := decode_rm_word_register(rh)
@@ -1281,7 +1281,7 @@ func x86emuOp2_movzx_byte_R_RM(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			destreg.Set(uint16(srcreg.Get()))
+			S(destreg,uint16(G(srcreg)))
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -1307,7 +1307,7 @@ func x86emuOp2_movzx_word_R_RM(_ uint8) {
 			END_OF_INSTR()
 			return
 		}
-		destreg.Set(srcval)
+		S(destreg,srcval)
 	} else { /* register to register */
 		destreg := decode_rm_long_register(rh)
 		DECODE_PRINTF(",")
@@ -1317,7 +1317,7 @@ func x86emuOp2_movzx_word_R_RM(_ uint8) {
 			END_OF_INSTR()
 			return
 		}
-		destreg.Set(srcreg.Get())
+		S(destreg,G(srcreg))
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -1351,7 +1351,7 @@ func x86emuOp2_btX_I(op2 uint8) {
 			return
 		}
 		fmt.Printf("%04x:%04x: %02X%02X ILLEGAL EXTENDED X86 OPCODE EXTENSION!\n",
-			M.x86.seg.CS.Get(), M.x86.spc.IP.Get16()-3, op2, (mod<<6)|(rh<<3)|rl)
+			G16(CS), G16(IP)-3, op2, (mod<<6)|(rh<<3)|rl)
 		HALT_SYS()
 	}
 	if mod < 3 {
@@ -1415,16 +1415,16 @@ func x86emuOp2_btX_I(op2 uint8) {
 			}
 			bit := shift & 0x1F
 			mask := uint32(0x1 << bit)
-			CONDITIONAL_SET_FLAG(srcreg.Get()&mask, F_CF)
+			CONDITIONAL_SET_FLAG(G(srcreg)&mask, F_CF)
 			switch rh {
 			case 5:
-				srcreg.Set(srcreg.Get() | mask)
+				S(srcreg,G(srcreg) | mask)
 				break
 			case 6:
-				srcreg.Set(srcreg.Get() & mask)
+				S(srcreg,G(srcreg) & mask)
 				break
 			case 7:
-				srcreg.Set(srcreg.Get() ^ mask)
+				S(srcreg,G(srcreg) ^ mask)
 				break
 			default:
 				break
@@ -1440,16 +1440,16 @@ func x86emuOp2_btX_I(op2 uint8) {
 			}
 			bit := shift & 0xF
 			mask := uint16(0x1 << bit)
-			CONDITIONAL_SET_FLAG(srcreg.Get()&mask, F_CF)
+			CONDITIONAL_SET_FLAG(G(srcreg)&mask, F_CF)
 			switch rh {
 			case 5:
-				srcreg.Set(srcreg.Get() | mask)
+				S(srcreg,G(srcreg) | mask)
 				break
 			case 6:
-				srcreg.Set(srcreg.Get() & mask)
+				S(srcreg,G(srcreg) & mask)
 				break
 			case 7:
-				srcreg.Set(srcreg.Get() ^ mask)
+				S(srcreg,G(srcreg) ^ mask)
 				break
 			default:
 				break
@@ -1479,8 +1479,8 @@ func x86emuOp2_btc_R(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			bit := shiftreg.Get() & 0x1F
-			disp := int16(shiftreg.Get()) >> 5
+			bit := G(shiftreg) & 0x1F
+			disp := int16(G(shiftreg)) >> 5
 			srcval := fetch_data_long(srcoffset + uint32(disp))
 			mask := uint32(0x1 << bit)
 			CONDITIONAL_SET_FLAG(srcval&mask, F_CF)
@@ -1492,8 +1492,8 @@ func x86emuOp2_btc_R(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			bit := shiftreg.Get() & 0xF
-			disp := int16(shiftreg.Get()) >> 4
+			bit := G(shiftreg) & 0xF
+			disp := int16(G(shiftreg)) >> 4
 			srcval := fetch_data_word(srcoffset + uint32(disp))
 			mask := uint16(0x1 << bit)
 			CONDITIONAL_SET_FLAG(srcval&mask, F_CF)
@@ -1509,10 +1509,10 @@ func x86emuOp2_btc_R(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			bit := shiftreg.Get() & 0x1F
+			bit := G(shiftreg) & 0x1F
 			mask := uint32(0x1 << bit)
-			CONDITIONAL_SET_FLAG(srcreg.Get()&mask, F_CF)
-			srcreg.Set(srcreg.Get() ^ mask)
+			CONDITIONAL_SET_FLAG(G(srcreg)&mask, F_CF)
+			S(srcreg,G(srcreg) ^ mask)
 		} else {
 
 			srcreg := decode_rm_word_register(rl)
@@ -1522,10 +1522,10 @@ func x86emuOp2_btc_R(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			bit := shiftreg.Get() & 0xF
+			bit := G(shiftreg) & 0xF
 			mask := uint16(0x1 << bit)
-			CONDITIONAL_SET_FLAG(srcreg.Get()&mask, F_CF)
-			srcreg.Set(srcreg.Get() ^ mask)
+			CONDITIONAL_SET_FLAG(G(srcreg)&mask, F_CF)
+			S(srcreg,G(srcreg) ^ mask)
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -1552,8 +1552,8 @@ func x86emuOp2_bsf(_ uint8) {
 			}
 			srcval := fetch_data_long(srcoffset)
 			CONDITIONAL_SET_FLAG(srcval == 0, F_ZF)
-			for dstreg.Set(0); dstreg.Get() < 32; dstreg.Set(dstreg.Get() + 1) {
-				if ((srcval >> dstreg.Get()) & 1) != 0 {
+			for S(dstreg,0); G(dstreg) < 32; dstS(reg,dstG(reg) + 1) {
+				if ((srcval >> G(dstreg)) & 1) != 0 {
 					break
 				}
 			}
@@ -1566,8 +1566,8 @@ func x86emuOp2_bsf(_ uint8) {
 			}
 			srcval := fetch_data_word(srcoffset)
 			CONDITIONAL_SET_FLAG(srcval == 0, F_ZF)
-			for dstreg.Set(0); dstreg.Get() < 16; dstreg.Set(dstreg.Get() + 1) {
-				if ((srcval >> dstreg.Get()) & 1) != 0 {
+			for S(dstreg,0); G(dstreg) < 16; dstS(reg,dstG(reg) + 1) {
+				if ((srcval >> G(dstreg)) & 1) != 0 {
 					break
 				}
 			}
@@ -1583,8 +1583,8 @@ func x86emuOp2_bsf(_ uint8) {
 				return
 			}
 			CONDITIONAL_SET_FLAG(srcval == 0, F_ZF)
-			for dstreg.Set(0); dstreg.Get() < 32; dstreg.Set(dstreg.Get() + 1) {
-				if ((srcval >> dstreg.Get()) & 1) != 0 {
+			for S(dstreg,0); G(dstreg) < 32; dstS(reg,dstG(reg) + 1) {
+				if ((srcval >> G(dstreg)) & 1) != 0 {
 					break
 				}
 			}
@@ -1598,8 +1598,8 @@ func x86emuOp2_bsf(_ uint8) {
 				return
 			}
 			CONDITIONAL_SET_FLAG(srcval == 0, F_ZF)
-			for dstreg.Set(0); dstreg.Get() < 16; dstreg.Set(dstreg.Get() + 1) {
-				if ((srcval >> dstreg.Get()) & 1) != 0 {
+			for S(dstreg,0); G(dstreg) < 16; dstS(reg,dstG(reg) + 1) {
+				if ((srcval >> G(dstreg)) & 1) != 0 {
 					break
 				}
 			}
@@ -1631,8 +1631,8 @@ func x86emuOp2_bsr(_ uint8) {
 			}
 			srcval := fetch_data_long(srcoffset)
 			CONDITIONAL_SET_FLAG(srcval == 0, F_ZF)
-			for dstreg.Set(31); dstreg.Get() > 0; dstreg.Set(dstreg.Get() - 1) {
-				if ((srcval >> dstreg.Get()) & 1) != 0 {
+			for S(dstreg,31); G(dstreg) > 0; dstS(reg,dstG(reg) - 1) {
+				if ((srcval >> G(dstreg)) & 1) != 0 {
 					break
 				}
 			}
@@ -1645,8 +1645,8 @@ func x86emuOp2_bsr(_ uint8) {
 			}
 			srcval := fetch_data_word(srcoffset)
 			CONDITIONAL_SET_FLAG(srcval == 0, F_ZF)
-			for dstreg.Set(15); dstreg.Get() > 0; dstreg.Set(dstreg.Get() - 1) {
-				if ((srcval >> dstreg.Get()) & 1) != 0 {
+			for S(dstreg,15); G(dstreg) > 0; dstS(reg,dstG(reg) - 1) {
+				if ((srcval >> G(dstreg)) & 1) != 0 {
 					break
 				}
 			}
@@ -1662,8 +1662,8 @@ func x86emuOp2_bsr(_ uint8) {
 				return
 			}
 			CONDITIONAL_SET_FLAG(srcval == 0, F_ZF)
-			for dstreg.Set(31); dstreg.Get() > 0; dstreg.Set(dstreg.Get() - 1) {
-				if ((srcval >> dstreg.Get()) & 1) != 0 {
+			for S(dstreg,31); G(dstreg) > 0; dstS(reg,dstG(reg) - 1) {
+				if ((srcval >> G(dstreg)) & 1) != 0 {
 					break
 				}
 			}
@@ -1677,8 +1677,8 @@ func x86emuOp2_bsr(_ uint8) {
 				return
 			}
 			CONDITIONAL_SET_FLAG(srcval == 0, F_ZF)
-			for dstreg.Set(15); dstreg.Get() > 0; dstreg.Set(dstreg.Get() - 1) {
-				if ((srcval >> dstreg.Get()) & 1) != 0 {
+			for S(dstreg,15); G(dstreg) > 0; dstS(reg,dstG(reg) - 1) {
+				if ((srcval >> G(dstreg)) & 1) != 0 {
 					break
 				}
 			}
@@ -1709,7 +1709,7 @@ func x86emuOp2_movsx_byte_R_RM(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			destreg.Set(srcval)
+			S(destreg,srcval)
 		} else {
 
 			destreg := decode_rm_word_register(rh)
@@ -1721,7 +1721,7 @@ func x86emuOp2_movsx_byte_R_RM(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			destreg.Set(srcval)
+			S(destreg,srcval)
 		}
 	} else { /* register to register */
 		if M.x86.mode&SYSMODE_PREFIX_DATA != 0 {
@@ -1734,7 +1734,7 @@ func x86emuOp2_movsx_byte_R_RM(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			destreg.Set(int32(srcreg.Get()))
+			S(destreg,int32(G(srcreg)))
 		} else {
 
 			destreg := decode_rm_word_register(rh)
@@ -1745,7 +1745,7 @@ func x86emuOp2_movsx_byte_R_RM(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			destreg.Set(uint16(srcreg.Get()))
+			S(destreg,uint16(G(srcreg)))
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -1771,7 +1771,7 @@ func x86emuOp2_movsx_word_R_RM(_ uint8) {
 			END_OF_INSTR()
 			return
 		}
-		destreg.Set(srcval)
+		S(destreg,srcval)
 	} else { /* register to register */
 		destreg := decode_rm_long_register(rh)
 		DECODE_PRINTF(",")
@@ -1781,7 +1781,7 @@ func x86emuOp2_movsx_word_R_RM(_ uint8) {
 			END_OF_INSTR()
 			return
 		}
-		destreg.Set(int32(srcreg.Get()))
+		S(destreg,int32(G(srcreg)))
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
