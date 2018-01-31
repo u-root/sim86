@@ -6,13 +6,57 @@ sed -i 's/M.x86.....\(..\).Get32()/G(\1)/' $1
 sed -i 's/M.x86.....\(..\).Set32(\(.*\))/S(\1, \2)/' $1
 sed -i 's/M.x86.....\(..\).Get16()/G16(\1)/' $1
 sed -i 's/M.x86.....\(..\).Set16(\(.*\))/S16(\1, \2)/' $1
-sed -i 's/M.x86.....\(..\).Get8()/G16(\1)/' $1
-sed -i 's/M.x86.....\(..\).Set8(\(.*\))/S16(\1, \2)/' $1
+sed -i 's/M.x86.....\(..\).Get8()/G8(\1)/' $1
+sed -i 's/M.x86.....\(.\).Getl8()/G8(\1L)/' $1
+sed -i 's/M.x86.....\(.\).Geth8()/G8(\1H)/' $1
+sed -i 's/M.x86.....\(..\).Set8(\(.*\))/S8(\1, \2)/' $1
+sed -i 's/M.x86.....\(.\).Setl8(\(.*\))/S8(\1L, \2)/' $1
+sed -i 's/M.x86.....\(.\).Seth8(\(.*\))/S8(\1H, \2)/' $1
 sed -i 's/M.x86.....\(..\).Get()/G(\1)/' $1
 sed -i 's/M.x86.....\(..\).Set(\(.*\))/S(\1, \2)/' $1
 
 sed -i 's/M.x86.....\(.\).Get8()/G8(\1X)/' $1
 sed -i 's/M.x86.....\(.\).Get16()/G16(\1X)/' $1
 sed -i 's/M.x86.....\(.\).Get32()/G32(E\1X)/' $1
+sed -i 's/M.x86.....\(.\).Set32(\(.*\))/S(E\1X, \2)/' $1
+sed -i 's/M.x86.....\(.\).Set16(\(.*\))/S(\1X, \2)/' $1
 sed -i 's/M.x86.spc.FLAGS/G(FLAGS)/' $1
 sed -i 's/M.x86.spc.EFLAGS/G(EFLAGS)/' $1
+
+sed -i 's/\(.*byte.*\)srcreg\.Get()/\1G8(srcreg)/g' $1
+sed -i 's/\(.*word.*\)srcreg\.Get()/\1G16(srcreg)/g' $1
+sed -i 's/\(.*long.*\)srcreg\.Get()/\1G32(srcreg)/g' $1
+
+sed -i 's/\(.*byte.*\)dstreg\.Get()/\1G8(dstreg)/g' $1
+sed -i 's/\(.*word.*\)dstreg\.Get()/\1G16(dstreg)/g' $1
+sed -i 's/\(.*long.*\)dstreg\.Get()/\1G32(dstreg)/g' $1
+sed -i 's/\(.*byte.*\)destreg\.Get()/\1G8(destreg)/g' $1
+sed -i 's/\(.*word.*\)destreg\.Get()/\1G16(destreg)/g' $1
+sed -i 's/\(.*long.*\)destreg\.Get()/\1G32(destreg)/g' $1
+
+sed -i 's/destreg.Set(\(.*byte.*\)/S8(destreg, \1/g' $1
+sed -i 's/destreg.Set(\(.*word.*\)/S16(destreg, \1/g' $1
+sed -i 's/destreg.Set(\(.*long.*\)/S32(destreg, \1/g' $1
+
+sed -i 's/destreg.Set(/S(destreg,/' $1
+sed -i 's/dstreg.Set(/S(destreg,/' $1
+sed -i 's/dstreg.Get()/G(destreg()/' $1
+
+sed -i 's/srcreg.Set(/S(srcreg,/' $1
+sed -i 's/srcreg.Get()/G(srcreg)/' $1
+
+sed -i 's/\(.*byte.*\)reg\.Get()/\1G8(reg)/g' $1
+sed -i 's/\(.*word.*\)reg\.Get()/\1G16(reg)/g' $1
+sed -i 's/\(.*long.*\)reg\.Get()/\1G32(reg)/g' $1
+sed -i 's/reg.Set(\(.*byte.*\)/S8(reg, \1/g' $1
+sed -i 's/reg.Set(\(.*word.*\)/S16(reg, \1/g' $1
+sed -i 's/reg.Set(\(.*long.*\)/S32(reg, \1/g' $1
+
+sed -i 's/\(de*streg\).Set\([31][26]\)(/S\2(\1,/' $1
+sed -i 's/\(de*streg\).Get\([31][26]\)()/G\2(\1)/' $1
+sed -i 's/\(srcreg\).Set\([31][26]\)(/S\2(\1,/' $1
+sed -i 's/\(srcreg\).Get\([31][26]\)()/G\2(\1)/' $1
+ 
+exit
+sed -i 's/reg.Get()/G(reg)/' $1
+
