@@ -59,7 +59,7 @@ func x86emuOp2_illegal_op(op2 uint8) {
 		return
 	}
 	fmt.Printf("%04x:%04x: %02X ILLEGAL EXTENDED X86 OPCODE!\n",
-		M.x86.seg.CS.Get(), M.x86.spc.IP.Get16()-2, op2)
+		G16(CS), G16(IP)-2, op2)
 	HALT_SYS()
 	END_OF_INSTR()
 }
@@ -95,7 +95,7 @@ func x86emuOp2_opc_01(op2 uint8) {
 			break
 		case 3:
 			destreg := decode_rm_word_register(rl)
-			destreg.Set(SMSW_INITIAL_VALUE)
+			S16(destreg,SMSW_INITIAL_VALUE)
 			break
 		}
 		if TRACE_AND_STEP() {
@@ -112,7 +112,7 @@ func x86emuOp2_opc_01(op2 uint8) {
 			return
 		}
 		fmt.Printf("%04x:%04x: %02X ILLEGAL EXTENDED X86 OPCODE!\n",
-			M.x86.seg.CS.Get(), M.x86.spc.IP.Get16()-2, op2)
+			G16(CS), M.x86.spc.IP.Get16()-2, op2)
 		HALT_SYS()
 		break
 	}

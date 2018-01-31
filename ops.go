@@ -317,7 +317,7 @@ func x86emuOp_genop_byte_R_RM(op1 uint8) {
 	} else { /* register to register */
 		DECODE_PRINTF(",")
 		srcreg := decode_rm_byte_register(uint32(rl))
-		srcval = G(srcreg)
+		srcval = G8(srcreg)
 	}
 	DECODE_PRINTF("\n")
 	if TRACE_AND_STEP() {
@@ -1086,7 +1086,7 @@ func x86emuOp_imul_word_IMM(_ uint8) {
 			srcreg := decode_rm_word_register(uint32(rl))
 			imm := fetch_word_imm()
 			DECODE_PRINTF2(",%d\n", int32(imm))
-			res = G(srcreg) * uint16(imm)
+			res = G16(srcreg) * uint16(imm)
 			if (((res & 0x8000) == 0) && ((res >> 16) == 0x0000)) ||
 				(((res & 0x8000) != 0) && ((res >> 16) == 0xFFFF)) {
 				CLEAR_FLAG(F_CF)
@@ -1814,7 +1814,7 @@ func x86emuOp_xchg_byte_RM_R(_ uint8) {
 			END_OF_INSTR()
 			return
 		}
-		tmp := G(srcreg)
+		tmp := G8(srcreg)
 		S(srcreg,destval)
 		destval = tmp
 		store_data_byte(destoffset, destval)
@@ -1827,7 +1827,7 @@ func x86emuOp_xchg_byte_RM_R(_ uint8) {
 			END_OF_INSTR()
 			return
 		}
-		tmp = G(srcreg)
+		tmp = G8(srcreg)
 		S(srcreg,G(destreg))
 		S(destreg,tmp)
 	}
@@ -2119,7 +2119,7 @@ func x86emuOp_mov_word_RM_SR(_ uint8) {
 			END_OF_INSTR()
 			return
 		}
-		destval := G(srcreg)
+		destval := G16(srcreg)
 		store_data_word(destoffset, destval)
 	} else { /* register to register */
 		destreg := decode_rm_word_register(uint32(rl))
@@ -3200,7 +3200,7 @@ func x86emuOp_mov_byte_register_IMM(op1 uint8) {
 		END_OF_INSTR()
 		return
 	}
-	ptr.Set(imm)
+	S8(ptr, imm)
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -3433,7 +3433,7 @@ func x86emuOp_ret_near_IMM(_ uint8) {
 	}
 	S(IP, pop_word())
 	RETURN_TRACE(M.x86.saved_cs, M.x86.saved_ip, G16(CS), G16(IP), "NEAR")
-	M.x86.spc.SP.Add(imm)
+	Change(SP, int(imm))
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -3670,7 +3670,7 @@ func x86emuOp_ret_far_IMM(_ uint8) {
 	S(IP, pop_word())
 	S16(CS, pop_word())
 	RETURN_TRACE(M.x86.saved_cs, M.x86.saved_ip, G16(CS), G16(IP), "FAR")
-	M.x86.spc.SP.Add(imm)
+	Change(SP, int(imm))
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -4594,7 +4594,7 @@ func x86emuOp_out_word_DX_AX(_ uint8) {
 	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
 		sys_outl(G16(DX), G32(EAX))
 	} else {
-		sys_outw(G16(DX), M.x86.gen.A.Get16())
+		sys_outw(G16(DX), G16(AX))
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
