@@ -63,9 +63,9 @@ func x86emu_intr_handle() {
 			CLEAR_FLAG(F_IF)
 			CLEAR_FLAG(F_TF)
 			push_word(G16(CS))
-			S16(CS, mem_access_word(uint32(intno*4 + 2)))
+			S16(CS, mem_access_word(uint32(intno*4+2)))
 			push_word(G16(IP))
-			S16(IP, mem_access_word(uint32(intno * 4)))
+			S16(IP, mem_access_word(uint32(intno*4)))
 			M.x86.intr = 0
 		}
 	}
@@ -125,7 +125,7 @@ func X86EMU_exec() {
 		ip := G16(IP)
 		op1 = sys_rdb((uint32(G16(CS))<<4 + uint32(ip)))
 		fmt.Printf("Set ip to %d\n", ip)
-		S16(IP, ip + 1)
+		S16(IP, ip+1)
 		ip = G16(IP)
 		fmt.Printf("Set ip to %d\n", ip)
 		x86emu_dump_regs()
@@ -167,7 +167,7 @@ func fetch_decode_modrm() (uint32, uint32, uint32) {
 
 	ip := G16(IP)
 	fetched = sys_rdb(uint32(G16(CS))<<4 + uint32(ip))
-	S16(IP, ip + 1)
+	S16(IP, ip+1)
 	INC_DECODED_INST_LEN(1)
 	mod := uint32((fetched >> 6) & 0x03)
 	regh := uint32((fetched >> 3) & 0x07)
@@ -194,7 +194,7 @@ func fetch_byte_imm() uint8 {
 
 	ip := G16(IP)
 	fetched = sys_rdb((uint32(G16(CS)) << 4) + uint32(ip))
-	S16(IP, ip + 1)
+	S16(IP, ip+1)
 	INC_DECODED_INST_LEN(1)
 	return fetched
 }
@@ -217,7 +217,7 @@ func fetch_word_imm() uint16 {
 	}
 	ip := G16(IP)
 	fetched = sys_rdw((uint32(G16(CS)) << 4) + uint32(ip))
-	S16(IP, ip + 2)
+	S16(IP, ip+2)
 	INC_DECODED_INST_LEN(2)
 	return fetched
 }
@@ -240,7 +240,7 @@ func fetch_long_imm() uint32 {
 	}
 	ip := G16(IP)
 	fetched = sys_rdl((uint32(G16(CS)) << 4) + uint32(ip))
-	S16(IP, ip + 4)
+	S16(IP, ip+4)
 	INC_DECODED_INST_LEN(4)
 	return fetched
 }
@@ -485,6 +485,7 @@ func store_data_long_abs(segment uint16, offset uint16, val uint32) {
 	sysw((uint32(segment)<<4)+uint32(offset), val)
 
 }
+
 type regmap struct {
 	n string
 	r regtype
@@ -545,7 +546,7 @@ Return a pointer to the register given by the R/RM field of the
 modrm byte, for word operands.  Also enables the decoding of instructions.
 ****************************************************************************/
 func decode_rm_word_register(reg uint32) regtype {
-	var rmap = [...]regmap {
+	var rmap = [...]regmap{
 		{"AX", AX},
 		{"CX", CX},
 		{"DX", DX},
@@ -576,7 +577,7 @@ Return a pointer to the register given by the R/RM field of the
 modrm byte, for dword operands.  Also enables the decoding of instructions.
 ****************************************************************************/
 func decode_rm_long_register(reg uint32) regtype {
-	var rmap = [...]regmap {
+	var rmap = [...]regmap{
 		{"EAX", EAX},
 		{"ECX", ECX},
 		{"EDX", EDX},
@@ -608,7 +609,7 @@ modrm byte, for word operands, modified from above for the weirdo
 special case of segreg operands.  Also enables the decoding of instructions.
 ****************************************************************************/
 func decode_rm_seg_register(reg uint32) regtype {
-	var rmap = [...]regmap {
+	var rmap = [...]regmap{
 		{"ES", ES},
 		{"CS", CS},
 		{"SS", SS},

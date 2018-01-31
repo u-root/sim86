@@ -503,7 +503,7 @@ Handles opcode 0x0f. Escape for two-byte opcode (286 or better)
 ****************************************************************************/
 func x86emuOp_two_byte(_ uint8) {
 	op2 := sys_rdb((uint32(G16(CS)) << 4) + (G(IP)))
-	S16(IP, G16(IP) + 1)
+	S16(IP, G16(IP)+1)
 	INC_DECODED_INST_LEN(1)
 	x86emu_optab2[op2](op2)
 }
@@ -880,7 +880,7 @@ func x86emuOp_pop_all(_ uint8) {
 		S(DI, pop_long())
 		S(SI, pop_long())
 		S(BP, pop_long())
-		S(SP, G(SP) + 4) /* skip ESP */
+		S(SP, G(SP)+4) /* skip ESP */
 		S(EBX, pop_long())
 		S(EDX, pop_long())
 		S(ECX, pop_long())
@@ -889,7 +889,7 @@ func x86emuOp_pop_all(_ uint8) {
 		S16(DI, pop_word())
 		S16(SI, pop_word())
 		S16(BP, pop_word())
-		S16(SP, G16(SP) + 2) /* skip SP */
+		S16(SP, G16(SP)+2) /* skip SP */
 		S(BX, pop_word())
 		S(DX, pop_word())
 		S(CX, pop_word())
@@ -1031,7 +1031,7 @@ func x86emuOp_imul_word_IMM(_ uint8) {
 				SET_FLAG(F_CF)
 				SET_FLAG(F_OF)
 			}
-			S32(destreg,uint32(res_lo))
+			S32(destreg, uint32(res_lo))
 		} else {
 			var res uint32
 
@@ -1053,7 +1053,7 @@ func x86emuOp_imul_word_IMM(_ uint8) {
 				SET_FLAG(F_CF)
 				SET_FLAG(F_OF)
 			}
-			S16(destreg,uint16(res))
+			S16(destreg, uint16(res))
 		}
 	} else { /* register to register */
 		if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
@@ -1077,7 +1077,7 @@ func x86emuOp_imul_word_IMM(_ uint8) {
 				SET_FLAG(F_CF)
 				SET_FLAG(F_OF)
 			}
-			S32(destreg,uint32(res_lo))
+			S32(destreg, uint32(res_lo))
 		} else {
 			var res uint16
 
@@ -1095,7 +1095,7 @@ func x86emuOp_imul_word_IMM(_ uint8) {
 				SET_FLAG(F_CF)
 				SET_FLAG(F_OF)
 			}
-			S16(destreg,uint16(res))
+			S16(destreg, uint16(res))
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -1156,7 +1156,7 @@ func x86emuOp_imul_byte_IMM(_ uint8) {
 				SET_FLAG(F_CF)
 				SET_FLAG(F_OF)
 			}
-			S32(destreg,uint32(res_lo))
+			S32(destreg, uint32(res_lo))
 		} else {
 
 			destreg := decode_rm_word_register(uint32(rh))
@@ -1177,7 +1177,7 @@ func x86emuOp_imul_byte_IMM(_ uint8) {
 				SET_FLAG(F_CF)
 				SET_FLAG(F_OF)
 			}
-			S16(destreg,uint16(res))
+			S16(destreg, uint16(res))
 		}
 	} else { /* register to register */
 		if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
@@ -1201,7 +1201,7 @@ func x86emuOp_imul_byte_IMM(_ uint8) {
 				SET_FLAG(F_CF)
 				SET_FLAG(F_OF)
 			}
-			S32(destreg,uint32(res_lo))
+			S32(destreg, uint32(res_lo))
 		} else {
 
 			destreg := decode_rm_word_register(uint32(rh))
@@ -1222,7 +1222,7 @@ func x86emuOp_imul_byte_IMM(_ uint8) {
 				SET_FLAG(F_CF)
 				SET_FLAG(F_OF)
 			}
-			S16(destreg,res)
+			S16(destreg, res)
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -1815,7 +1815,7 @@ func x86emuOp_xchg_byte_RM_R(_ uint8) {
 			return
 		}
 		tmp := G8(srcreg)
-		S(srcreg,destval)
+		S(srcreg, destval)
 		destval = tmp
 		store_data_byte(destoffset, destval)
 	} else { /* register to register */
@@ -1828,8 +1828,8 @@ func x86emuOp_xchg_byte_RM_R(_ uint8) {
 			return
 		}
 		tmp = G8(srcreg)
-		S(srcreg,G(destreg))
-		S(destreg,tmp)
+		S(srcreg, G(destreg))
+		S(destreg, tmp)
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -1856,7 +1856,7 @@ func x86emuOp_xchg_word_RM_R(_ uint8) {
 				return
 			}
 			tmp := G32(srcreg)
-			S(srcreg,destval)
+			S(srcreg, destval)
 			destval = tmp
 			store_data_long(destoffset, destval)
 		} else {
@@ -1869,7 +1869,7 @@ func x86emuOp_xchg_word_RM_R(_ uint8) {
 				return
 			}
 			tmp := G16(srcreg)
-			S(srcreg,destval)
+			S(srcreg, destval)
 			destval = tmp
 			store_data_word(destoffset, destval)
 		}
@@ -1886,8 +1886,8 @@ func x86emuOp_xchg_word_RM_R(_ uint8) {
 				return
 			}
 			tmp = G32(srcreg)
-			S(srcreg,G(destreg))
-			S(destreg,tmp)
+			S(srcreg, G(destreg))
+			S(destreg, tmp)
 		} else {
 			var tmp uint16
 
@@ -1900,8 +1900,8 @@ func x86emuOp_xchg_word_RM_R(_ uint8) {
 				return
 			}
 			tmp = G16(srcreg)
-			S(srcreg,G16(destreg))
-			S(destreg,tmp)
+			S(srcreg, G16(destreg))
+			S(destreg, tmp)
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -1936,7 +1936,7 @@ func x86emuOp_mov_byte_RM_R(_ uint8) {
 			END_OF_INSTR()
 			return
 		}
-		S(destreg,G(srcreg))
+		S(destreg, G(srcreg))
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -1985,7 +1985,7 @@ func x86emuOp_mov_word_RM_R(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			S(destreg,G32(srcreg))
+			S(destreg, G32(srcreg))
 		} else {
 
 			destreg := decode_rm_word_register(uint32(rl))
@@ -1996,7 +1996,7 @@ func x86emuOp_mov_word_RM_R(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			S(destreg,G16(srcreg))
+			S(destreg, G16(srcreg))
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -2022,7 +2022,7 @@ func x86emuOp_mov_byte_R_RM(_ uint8) {
 			END_OF_INSTR()
 			return
 		}
-		S(destreg,srcval)
+		S(destreg, srcval)
 	} else { /* register to register */
 		destreg := decode_rm_byte_register(uint32(rh))
 		DECODE_PRINTF(",")
@@ -2032,7 +2032,7 @@ func x86emuOp_mov_byte_R_RM(_ uint8) {
 			END_OF_INSTR()
 			return
 		}
-		S(destreg,G(srcreg))
+		S(destreg, G(srcreg))
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -2059,7 +2059,7 @@ func x86emuOp_mov_word_R_RM(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			S(destreg,srcval)
+			S(destreg, srcval)
 		} else {
 
 			destreg := decode_rm_word_register(uint32(rh))
@@ -2071,7 +2071,7 @@ func x86emuOp_mov_word_R_RM(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			S(destreg,srcval)
+			S(destreg, srcval)
 		}
 	} else { /* register to register */
 		if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
@@ -2084,7 +2084,7 @@ func x86emuOp_mov_word_R_RM(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			S(destreg,G32(srcreg))
+			S(destreg, G32(srcreg))
 		} else {
 
 			destreg := decode_rm_word_register(uint32(rh))
@@ -2095,7 +2095,7 @@ func x86emuOp_mov_word_R_RM(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			S(destreg,G16(srcreg))
+			S(destreg, G16(srcreg))
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -2130,7 +2130,7 @@ func x86emuOp_mov_word_RM_SR(_ uint8) {
 			END_OF_INSTR()
 			return
 		}
-		S(destreg,G(srcreg))
+		S(destreg, G(srcreg))
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -2155,7 +2155,7 @@ func x86emuOp_lea_word_R_M(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			S32(srcreg,uint32(destoffset))
+			S32(srcreg, uint32(destoffset))
 		} else {
 			srcreg := decode_rm_word_register(uint32(rh))
 			DECODE_PRINTF(",")
@@ -2165,7 +2165,7 @@ func x86emuOp_lea_word_R_M(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			S(srcreg,uint16(destoffset))
+			S(srcreg, uint16(destoffset))
 		}
 	}
 	/* else { undefined.  Do nothing. } */
@@ -2192,7 +2192,7 @@ func x86emuOp_mov_word_SR_RM(_ uint8) {
 			END_OF_INSTR()
 			return
 		}
-		S(destreg,srcval)
+		S(destreg, srcval)
 	} else { /* register to register */
 		destreg := decode_rm_seg_register(rh)
 		DECODE_PRINTF(",")
@@ -2202,7 +2202,7 @@ func x86emuOp_mov_word_SR_RM(_ uint8) {
 			END_OF_INSTR()
 			return
 		}
-		S(destreg,G(srcreg))
+		S(destreg, G(srcreg))
 	}
 	/*
 	 * Clean up, and reset all the R_xSP pointers to the correct
@@ -2304,7 +2304,7 @@ func x86emuOp_xchg_word_AX_register(op1 uint8) {
 		}
 		tmp := G32(EAX)
 		S(EAX, G(reg))
-		S(reg,tmp)
+		S(reg, tmp)
 	} else {
 		DECODE_PRINTF("XCHG\tAX,")
 		reg := decode_rm_word_register(uint32(op1))
@@ -2315,7 +2315,7 @@ func x86emuOp_xchg_word_AX_register(op1 uint8) {
 		}
 		tmp := G16(AX)
 		S(AX, G(reg))
-		S(reg,tmp)
+		S(reg, tmp)
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -2338,9 +2338,9 @@ func x86emuOp_cbw(_ uint8) {
 	}
 	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
 		if G16(AX)&0x8000 != 0 {
-			S(EAX, G32(EAX) | 0xffff0000)
+			S(EAX, G32(EAX)|0xffff0000)
 		} else {
-			S(EAX, G32(EAX) & 0x0000ffff)
+			S(EAX, G32(EAX)&0x0000ffff)
 		}
 	} else {
 		if G8(AL)&0x80 != 0 {
@@ -2423,7 +2423,7 @@ func x86emuOp_call_far_IMM(_ uint8) {
 	} else {
 		push_word(G16(IP))
 	}
-	S(IP, uint32(faroff & 0xffff))
+	S(IP, uint32(faroff&0xffff))
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -2527,7 +2527,7 @@ func x86emuOp_lahf(_ uint8) {
 		END_OF_INSTR()
 		return
 	}
-	S8(AH, (uint8)(M.x86.FLAGS & 0xff))
+	S8(AH, (uint8)(M.x86.FLAGS&0xff))
 	/*undocumented TC++ behavior??? Nope.  It's documented, but
 	  you have too look real hard to notice it. */
 	S8(AH, 0x2)
@@ -2661,8 +2661,8 @@ func x86emuOp_movs_byte(_ uint8) {
 		count--
 		val := fetch_data_byte(uint32(G16(SI)))
 		store_data_byte_abs(G16(ES), G16(DI), val)
-		Change(SI,inc)
-		Change(DI,inc)
+		Change(SI, inc)
+		Change(DI, inc)
 		if halted() {
 			break
 		}
@@ -2728,8 +2728,8 @@ func x86emuOp_movs_word(_ uint8) {
 			val := fetch_data_word(uint32(G16(SI)))
 			store_data_word_abs(G16(ES), G16(DI), val)
 		}
-		Change(SI,inc)
-		Change(DI,inc)
+		Change(SI, inc)
+		Change(DI, inc)
 		if halted() {
 			break
 		}
@@ -2765,8 +2765,8 @@ func x86emuOp_cmps_byte(_ uint8) {
 			val2 := fetch_data_byte_abs(G16(ES), G16(DI))
 			cmp_byte(val1, val2)
 			Dec(CX)
-			Change(SI,inc)
-			Change(DI,inc)
+			Change(SI, inc)
+			Change(DI, inc)
 			if ((M.x86.mode&SYSMODE_PREFIX_REPE != 0) &&
 				(!ACCESS_FLAG(F_ZF))) ||
 				((M.x86.mode&SYSMODE_PREFIX_REPNE != 0) && ACCESS_FLAG(F_ZF)) ||
@@ -2781,8 +2781,8 @@ func x86emuOp_cmps_byte(_ uint8) {
 		val1 := fetch_data_byte(uint32(G16(SI)))
 		val2 := fetch_data_byte_abs(G16(ES), G16(DI))
 		cmp_byte(val1, val2)
-		Change(SI,inc)
-		Change(DI,inc)
+		Change(SI, inc)
+		Change(DI, inc)
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -2825,8 +2825,8 @@ func x86emuOp_cmps_word(_ uint8) {
 				cmp_word(uint16(val1), uint16(val2))
 			}
 			Dec(CX)
-			Change(SI,inc)
-			Change(DI,inc)
+			Change(SI, inc)
+			Change(DI, inc)
 			if ((M.x86.mode&SYSMODE_PREFIX_REPE != 0) &&
 				(!ACCESS_FLAG(F_ZF))) ||
 				((M.x86.mode&SYSMODE_PREFIX_REPNE != 0) && ACCESS_FLAG(F_ZF)) ||
@@ -2847,8 +2847,8 @@ func x86emuOp_cmps_word(_ uint8) {
 			val2 := fetch_data_word_abs(G16(ES), G16(DI))
 			cmp_word(uint16(val1), uint16(val2))
 		}
-		Change(SI,inc)
-		Change(DI,inc)
+		Change(SI, inc)
+		Change(DI, inc)
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -2921,7 +2921,7 @@ func x86emuOp_stos_byte(_ uint8) {
 		for Count(SYSMODE_32BIT_REP) != 0 {
 			store_data_byte_abs(G16(ES), G16(DI), G8(AL))
 			Dec(CX)
-			Change(DI,inc)
+			Change(DI, inc)
 			if halted() {
 				break
 			}
@@ -2929,7 +2929,7 @@ func x86emuOp_stos_byte(_ uint8) {
 		M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)
 	} else {
 		store_data_byte_abs(G16(ES), G16(DI), G8(AL))
-		Change(DI,inc)
+		Change(DI, inc)
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -2969,7 +2969,7 @@ func x86emuOp_stos_word(_ uint8) {
 		} else {
 			store_data_word_abs(G16(ES), G16(DI), G16(AX))
 		}
-		Change(DI,inc)
+		Change(DI, inc)
 		if Halted() {
 			break
 		}
@@ -2998,7 +2998,7 @@ func x86emuOp_lods_byte(_ uint8) {
 		for Count(SYSMODE_32BIT_REP) != 0 {
 			S8(AL, fetch_data_byte(uint32(G16(SI))))
 			Dec(CX)
-			Change(SI,inc)
+			Change(SI, inc)
 			if Halted() {
 				break
 			}
@@ -3006,7 +3006,7 @@ func x86emuOp_lods_byte(_ uint8) {
 		M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)
 	} else {
 		S8(AL, fetch_data_byte(uint32(G16(SI))))
-		Change(SI,inc)
+		Change(SI, inc)
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -3045,7 +3045,7 @@ func x86emuOp_lods_word(_ uint8) {
 		} else {
 			S(AX, fetch_data_word(uint32(G16(SI))))
 		}
-		Change(SI,inc)
+		Change(SI, inc)
 		if Halted() {
 			break
 		}
@@ -3075,7 +3075,7 @@ func x86emuOp_scas_byte(_ uint8) {
 			val2 := fetch_data_byte_abs(G16(ES), G16(DI))
 			cmp_byte(G8(AL), val2)
 			Dec(CX)
-			Change(DI,inc)
+			Change(DI, inc)
 			if ACCESS_FLAG(F_ZF) {
 				break
 			}
@@ -3092,7 +3092,7 @@ func x86emuOp_scas_byte(_ uint8) {
 			val2 := fetch_data_byte_abs(G16(ES), G16(DI))
 			cmp_byte(G8(AL), val2)
 			Dec(CX)
-			Change(DI,inc)
+			Change(DI, inc)
 			if ACCESS_FLAG(F_ZF) {
 				break
 			} /* zero flag set means equal */
@@ -3104,7 +3104,7 @@ func x86emuOp_scas_byte(_ uint8) {
 	} else {
 		val2 := fetch_data_byte_abs(G16(ES), G16(DI))
 		cmp_byte(G8(AL), val2)
-		Change(DI,inc)
+		Change(DI, inc)
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -3141,7 +3141,7 @@ func x86emuOp_scas_word(_ uint8) {
 				cmp_word(G16(AX), uint16(val))
 			}
 			Dec(CX)
-			Change(DI,inc)
+			Change(DI, inc)
 			if ACCESS_FLAG(F_ZF) {
 				break
 			}
@@ -3162,7 +3162,7 @@ func x86emuOp_scas_word(_ uint8) {
 				cmp_word(G16(AX), uint16(val))
 			}
 			Dec(CX)
-			Change(DI,inc)
+			Change(DI, inc)
 			if ACCESS_FLAG(F_ZF) {
 				break
 			} /* zero flag set means equal */
@@ -3179,7 +3179,7 @@ func x86emuOp_scas_word(_ uint8) {
 			val := fetch_data_word_abs(G16(ES), G16(DI))
 			cmp_word(G16(AX), uint16(val))
 		}
-		Change(DI,inc)
+		Change(DI, inc)
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -3222,7 +3222,7 @@ func x86emuOp_mov_word_register_IMM(op1 uint8) {
 			END_OF_INSTR()
 			return
 		}
-		S(reg,srcval)
+		S(reg, srcval)
 	} else {
 		reg := decode_rm_word_register(uint32(op1))
 		srcval := fetch_word_imm()
@@ -3231,7 +3231,7 @@ func x86emuOp_mov_word_register_IMM(op1 uint8) {
 			END_OF_INSTR()
 			return
 		}
-		S(reg,uint16(srcval))
+		S(reg, uint16(srcval))
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -3307,7 +3307,7 @@ func x86emuOp_opcC0_byte_RM_MEM(_ uint8) {
 			return
 		}
 		destval := opcD0_byte_operation[rh](G8(destreg), amt)
-		S(destreg,destval)
+		S(destreg, destval)
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -3473,7 +3473,7 @@ func x86emuOp_les_R_IMM(_ uint8) {
 			END_OF_INSTR()
 			return
 		}
-		S(dstreg,fetch_data_word(srcoffset))
+		S(dstreg, fetch_data_word(srcoffset))
 		S16(ES, fetch_data_word((srcoffset + 2)))
 	}
 	/* else UNDEFINED!                   register to register */
@@ -3500,7 +3500,7 @@ func x86emuOp_lds_R_IMM(_ uint8) {
 			END_OF_INSTR()
 			return
 		}
-		S(dstreg,fetch_data_word(srcoffset))
+		S(dstreg, fetch_data_word(srcoffset))
 		S16(DS, fetch_data_word((srcoffset + 2)))
 	}
 	/* else UNDEFINED! */
@@ -3538,7 +3538,7 @@ func x86emuOp_mov_byte_RM_IMM(_ uint8) {
 			END_OF_INSTR()
 			return
 		}
-		S(destreg,imm)
+		S(destreg, imm)
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -3590,7 +3590,7 @@ func x86emuOp_mov_word_RM_IMM(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			S(destreg,imm)
+			S(destreg, imm)
 		} else {
 			destreg := decode_rm_word_register(uint32(rl))
 			imm := fetch_word_imm()
@@ -3599,7 +3599,7 @@ func x86emuOp_mov_word_RM_IMM(_ uint8) {
 				END_OF_INSTR()
 				return
 			}
-			S(destreg,imm)
+			S(destreg, imm)
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -3625,7 +3625,7 @@ func x86emuOp_enter(_ uint8) {
 	frame_pointer := G16(SP)
 	if nesting > 0 {
 		for i := uint8(1); i < nesting; i++ {
-			Change(BP,-2)
+			Change(BP, -2)
 			push_word(fetch_data_word_abs(G16(SS), G16(BP)))
 		}
 		push_word(frame_pointer)
@@ -3715,9 +3715,9 @@ func x86emuOp_int3(_ uint8) {
 		CLEAR_FLAG(F_IF)
 		CLEAR_FLAG(F_TF)
 		push_word(G16(CS))
-		S16(CS, mem_access_word(3*4 + 2))
+		S16(CS, mem_access_word(3*4+2))
 		push_word(G16(IP))
-		S16(IP, mem_access_word(3 * 4))
+		S16(IP, mem_access_word(3*4))
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -3745,9 +3745,9 @@ func x86emuOp_int_IMM(_ uint8) {
 		CLEAR_FLAG(F_IF)
 		CLEAR_FLAG(F_TF)
 		push_word(G16(CS))
-		S16(CS, mem_access_word(uint32(intnum)*4 + 2))
+		S16(CS, mem_access_word(uint32(intnum)*4+2))
 		push_word(G16(IP))
-		S16(IP, mem_access_word(uint32(intnum) * 4))
+		S16(IP, mem_access_word(uint32(intnum)*4))
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -3774,9 +3774,9 @@ func x86emuOp_into(_ uint8) {
 			CLEAR_FLAG(F_IF)
 			CLEAR_FLAG(F_TF)
 			push_word(G16(CS))
-			S16(CS, mem_access_word(4*4 + 2))
+			S16(CS, mem_access_word(4*4+2))
 			push_word(G16(IP))
-			S16(IP, mem_access_word(4 * 4))
+			S16(IP, mem_access_word(4*4))
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -3871,7 +3871,7 @@ func x86emuOp_opcD0_byte_RM_1(_ uint8) {
 			return
 		}
 		destval := opcD0_byte_operation[rh](G8(destreg), 1)
-		S(destreg,destval)
+		S(destreg, destval)
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -3962,7 +3962,7 @@ func x86emuOp_opcD1_word_RM_1(_ uint8) {
 				return
 			}
 			destval := opcD1_long_operation[rh](G32(destreg), 1)
-			S(destreg,destval)
+			S(destreg, destval)
 		} else {
 			destreg := decode_rm_word_register(uint32(rl))
 			DECODE_PRINTF(",1\n")
@@ -3971,7 +3971,7 @@ func x86emuOp_opcD1_word_RM_1(_ uint8) {
 				return
 			}
 			destval := opcD1_word_operation[rh](G16(destreg), 1)
-			S(destreg,destval)
+			S(destreg, destval)
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
@@ -4047,7 +4047,7 @@ func x86emuOp_opcD2_byte_RM_CL(_ uint8) {
 			return
 		}
 		destval := opcD0_byte_operation[rh](G8(destreg), amt)
-		S(destreg,destval)
+		S(destreg, destval)
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -4492,7 +4492,7 @@ func x86emuOp_jump_far_IMM(_ uint8) {
 		END_OF_INSTR()
 		return
 	}
-	S16(IP, uint16(ip & 0xffff))
+	S16(IP, uint16(ip&0xffff))
 	S16(CS, cs)
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()

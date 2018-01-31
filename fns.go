@@ -135,24 +135,24 @@ var M = &_X86EMU_env
 
 func TOGGLE_FLAG(flag uint32) {
 	f := G(EFLAGS)
-f ^= flag
-S(EFLAGS,f)
+	f ^= flag
+	S(EFLAGS, f)
 }
 func SET_FLAG(flag uint32) {
 	f := G(EFLAGS)
-f |= flag
-S(EFLAGS,f)
+	f |= flag
+	S(EFLAGS, f)
 }
 func CLEAR_FLAG(flag uint32) {
 	f := G(EFLAGS)
-f &= flag
-S(EFLAGS,f)
+	f &= flag
+	S(EFLAGS, f)
 }
 func ACCESS_FLAG(flag uint32) bool {
 	return G(EFLAGS)&flag != 0
 }
 func CLEARALL_FLAG(_ uint32) {
-	S(EFLAGS,0)
+	S(EFLAGS, 0)
 }
 
 // :.,$s/func \(.*\) {^M\(.*\)/func \1() {\2}/^M}

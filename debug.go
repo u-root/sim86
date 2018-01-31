@@ -135,7 +135,7 @@ func disassemble_forward(seg uint16, off uint16, n int) {
 	for i := 0; i < n; i += 1 {
 		ip := G(IP)
 		op1 = sys_rdb(uint32(G(CS))<<4 + uint32(ip))
-		S(IP, ip + 1)
+		S(IP, ip+1)
 		x86emu_optab[op1](op1)
 	}
 	*M = tregs

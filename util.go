@@ -25,10 +25,10 @@ func ClrCount(mode uint32) {
 // DecCount decrements count, depending on the mode.
 func DecCount() {
 	if Mode(SYSMODE_PREFIX_ADDR) {
-		S(CX, G16(CX) - 1)
+		S(CX, G16(CX)-1)
 		return
 	}
-	S(ECX, G32(ECX) - 1)
+	S(ECX, G32(ECX)-1)
 }
 
 // GetClrCount gets the c/cx register and clears it, as well as

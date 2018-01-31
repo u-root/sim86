@@ -1817,7 +1817,7 @@ func imul_word(s uint16) {
 	res := uint32(int16(G16(AX)) * int16(s))
 
 	S(AX, uint16(res))
-	S(DX, uint16(res >> 16))
+	S(DX, uint16(res>>16))
 	if ((G16(AX)&0x8000) == 0 && G16(DX) == 0x0000) ||
 		((G16(AX)&0x8000) != 0 && G16(DX) == 0xFFFF) {
 		CLEAR_FLAG(F_CF)
@@ -1884,7 +1884,7 @@ func mul_word(s uint16) {
 	res := uint32(G16(AX)) * uint32(s)
 
 	S(AX, uint16(res))
-	S(DX, uint16(res >> 16))
+	S(DX, uint16(res>>16))
 	if G16(DX) == 0 {
 		CLEAR_FLAG(F_CF)
 		CLEAR_FLAG(F_OF)
@@ -1902,7 +1902,7 @@ func mul_long(s uint32) {
 	res := uint64(G32(EAX)) * uint64(s)
 
 	S(EAX, uint32(res))
-	S(EDX, uint32(res >> 32))
+	S(EDX, uint32(res>>32))
 	if G32(EDX) == 0 {
 		CLEAR_FLAG(F_CF)
 		CLEAR_FLAG(F_OF)
@@ -2099,7 +2099,7 @@ func ins(size int) {
 		}
 	} else {
 		single_in(size)
-		Change(DI,inc)
+		Change(DI, inc)
 	}
 }
 
@@ -2132,7 +2132,7 @@ func outs(size int) {
 		for count > 0 {
 			count--
 			single_out(size)
-			Change(SI,int(inc))
+			Change(SI, int(inc))
 		}
 	} else {
 		single_out(size)
@@ -2164,7 +2164,7 @@ func push_word(w uint16) {
 	if CHECK_SP_ACCESS() {
 		x86emu_check_sp_access()
 	}
-	Change(SP,int(-2))
+	Change(SP, int(-2))
 	sysw(uint32(G16(SS))<<4+uint32(G16(SP)), w)
 }
 
@@ -2178,7 +2178,7 @@ func push_long(w uint32) {
 	if CHECK_SP_ACCESS() {
 		x86emu_check_sp_access()
 	}
-	Change(SP,int(-4))
+	Change(SP, int(-4))
 	sysw(uint32(G16(SS))<<4+uint32(G16(SP)), w)
 }
 
@@ -2195,7 +2195,7 @@ func pop_word() uint16 {
 		x86emu_check_sp_access()
 	}
 	sysr((uint32(G16(SS))<<4)+uint32(G16(SP)), &res)
-	Change(SP,int(2))
+	Change(SP, int(2))
 	return res
 }
 
@@ -2212,7 +2212,7 @@ func pop_long() uint32 {
 		x86emu_check_sp_access()
 	}
 	sysr(uint32(G16(SS))<<4+uint32(G16(SP)), &res)
-	Change(SP,int(4))
+	Change(SP, int(4))
 	return res
 }
 
@@ -2246,7 +2246,7 @@ func x86emu_cpuid() {
 		/* In the case that we have hardware CPUID instruction, we make sure
 		 * that the features reported are limited to TSC and VME.
 		 */
-		S(EDX, G32(EDX) & 0x00000012)
+		S(EDX, G32(EDX)&0x00000012)
 		break
 	default:
 		/* Finally, we don't support any additional features.  Most CPUs

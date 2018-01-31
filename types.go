@@ -45,7 +45,7 @@ func S16(r regtype, val uint16) {
 	S(r, val)
 }
 
-func G16(r regtype) uint16{
+func G16(r regtype) uint16 {
 	return uint16(G(r))
 }
 
@@ -163,8 +163,8 @@ const (
 )
 
 type X86EMU_regs struct {
-	regs      [64]uint32
-	FLAGS		uint32
+	regs        [64]uint32
+	FLAGS       uint32
 	mode        uint32
 	intr        uint32
 	debug       uint32
