@@ -4,7 +4,6 @@
 
 package main
 
-import "fmt"
 import "log"
 
 type register interface {
@@ -48,75 +47,70 @@ type reg8 struct {
 	reg uint32
 }
 
-//func (r *reg32) Get() uint32 {
+//func (r reg32) Get() uint32 {
 //	return r.reg32
 //}
 
-func (r *reg32) Set32(i uint32) {
-	fmt.Printf("Set: %v\n", i)
+func (r reg32) Set32(i uint32) {
 	r.reg = i
 }
-func (r *reg32) Get32() uint32 {
-	fmt.Printf("Get: %v\n", r.reg)
+func (r reg32) Get32() uint32 {
 	return r.reg
 }
 
-func (r *reg32) Set16(i uint16) {
+func (r reg32) Set16(i uint16) {
 	r.reg = uint32(i)
-	fmt.Printf("After Set16: %v", r.reg)
 }
-func (r *reg32) Get16() uint16 {
-	fmt.Printf("Get16: %v", r.reg)
+func (r reg32) Get16() uint16 {
 	return uint16(r.reg)
 }
 
-func (r *reg16) Set(i uint16) {
+func (r reg16) Set(i uint16) {
 	r.reg = (r.reg & 0xffff0000) | uint32(i)
 }
-func (r *reg16) Get() uint16 {
+func (r reg16) Get() uint16 {
 	return uint16(r.reg)
 }
-func (r *reg16) Set16(i uint16) {
+func (r reg16) Set16(i uint16) {
 	r.Set(i)
 }
-func (r *reg16) Get16() uint16 {
+func (r reg16) Get16() uint16 {
 	return r.Get()
 }
 
-func (r *reg8) Set(i uint8) {
+func (r reg8) Set(i uint8) {
 	r.reg = (r.reg & 0xffffff00) | uint32(i)
 }
-func (r *reg8) Get() uint8 {
+func (r reg8) Get() uint8 {
 	return uint8(r.reg)
 }
-func (r *reg8) Set8(i uint8) {
+func (r reg8) Set8(i uint8) {
 	r.Set(i)
 }
-func (r *reg8) Get8() uint8 {
+func (r reg8) Get8() uint8 {
 	return r.Get()
 }
-func (r *reg8) Seth8(i uint8) {
+func (r reg8) Seth8(i uint8) {
 	r.reg = (r.reg & 0xfff00ff) | uint32(i)<<8
 }
-func (r *reg8) Geth8() uint8 {
+func (r reg8) Geth8() uint8 {
 	return uint8(r.reg >> 8)
 }
 
-func (r *reg32) Seth8(i uint8) {
+func (r reg32) Seth8(i uint8) {
 	r.reg = (r.reg & 0x0000ff00) | uint32(i)<<8
 }
-func (r *reg32) Geth8() uint8 {
+func (r reg32) Geth8() uint8 {
 	return uint8(r.reg >> 8)
 }
-func (r *reg32) Setl8(i uint8) {
+func (r reg32) Setl8(i uint8) {
 	r.reg = (r.reg & 0xffffff00) | uint32(i)
 }
-func (r *reg32) Getl8() uint8 {
+func (r reg32) Getl8() uint8 {
 	return uint8(r.reg >> 8)
 }
 
-func (r *reg32) Set(v interface{}) {
-	fmt.Printf("Befoer set: %v", r.Get())
+func (r reg32) Set(v interface{}) {
 	switch i := v.(type) {
 	case uint32:
 		r.Set32(i)
@@ -127,10 +121,9 @@ func (r *reg32) Set(v interface{}) {
 	default:
 		log.Fatalf("Can't set register with %v", v)
 	}
-	fmt.Printf("After set: %v", r.Get())
 }
 
-func (r *reg32) Add(v interface{}) {
+func (r reg32) Add(v interface{}) {
 	switch i := v.(type) {
 	case uint32:
 		r.Set32(r.Get32() + i)
@@ -146,19 +139,17 @@ func (r *reg32) Add(v interface{}) {
 // Get gets the register as uint32. The amount of data depends on the SYSMODE.
 // Note you can't just return the u32, always, in the none 32-bit case you have to
 // return the low 16 bits, upper 16 0.
-func (r *reg32) Get() uint32 {
+func (r reg32) Get() uint32 {
 	if M.x86.mode&SYSMODE_32BIT_REP != 0 {
-		fmt.Printf("Get: %v\n", r.Get32())
 		return r.Get32()
 	}
-		fmt.Printf("Get: %v\n", r.Get16())
 	return uint32(r.Get16())
 }
 
 // Changes takes a variable and adds it. It can be negative.
 // In this case, due to the mode, we use the ability to override
 // the number of bits in the register.
-func (r *reg32) Change(i int) {
+func (r reg32) Change(i int) {
 	if M.x86.mode&SYSMODE_32BIT_REP != 0 {
 		r.Set32(r.Get32() + uint32(i))
 	} else {
@@ -166,11 +157,11 @@ func (r *reg32) Change(i int) {
 	}
 }
 
-func (r *reg32) Dec() {
+func (r reg32) Dec() {
 	r.Change(-1)
 }
 
-func (r *reg32) Inc() {
+func (r reg32) Inc() {
 	r.Change(1)
 }
 
