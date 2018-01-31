@@ -10,25 +10,25 @@ func incamount(scale int) int {
 // Count returns cx/x depending on mode
 func Count(mode uint32) uint32 {
 	if Mode(mode) {
-		return M.x86.gen.C.Get32()
+		return G32(ECX)
 	}
-	return uint32(M.x86.gen.C.Get16())
+	return uint32(G16(CX))
 }
 func ClrCount(mode uint32) {
 	if Mode(mode) {
-		M.x86.gen.C.Set32(0)
+		S(ECX, 0)
 		return
 	}
-	M.x86.gen.C.Set16(0)
+	S(CX, 0)
 }
 
 // DecCount decrements count, depending on the mode.
 func DecCount() {
 	if Mode(SYSMODE_PREFIX_ADDR) {
-		M.x86.gen.C.Set16(M.x86.gen.C.Get16() - 1)
+		S(CX, G16(CX) - 1)
 		return
 	}
-	M.x86.gen.C.Set32(M.x86.gen.C.Get32() - 1)
+	S(ECX, G32(ECX) - 1)
 }
 
 // GetClrCount gets the c/cx register and clears it, as well as
@@ -37,11 +37,11 @@ func GetClrCount() uint32 {
 	M.x86.mode &= ^(SYSMODE_PREFIX_REPE | SYSMODE_PREFIX_REPNE)
 	var count uint32
 	if M.x86.mode&SYSMODE_32BIT_REP == 0 {
-		count = uint32(M.x86.gen.C.Get16())
-		M.x86.gen.C.Set16(0)
+		count = uint32(G16(CX))
+		S(CX, 0)
 	} else {
-		count = M.x86.gen.C.Get32()
-		M.x86.gen.C.Set32(0)
+		count = G32(ECX)
+		S(ECX, 0)
 	}
 
 	return count

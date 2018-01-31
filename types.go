@@ -78,8 +78,8 @@ func S(r regtype, val interface{}) {
 			log.Panicf("R %x: Can't assign 16 bits to %d bits", size)
 		}
 	case uint8:
-		mask := 0xff << shift
-		M.x86.regs[reg] = (M.x86.regs[reg] &^ mask) | v<<shift
+		mask := uint32(0xff) << shift
+		M.x86.regs[reg] = (M.x86.regs[reg] &^ mask) | uint32(v)<<shift
 	default:
 		log.Panicf("Can't assign type %T to register", val)
 	}
@@ -163,7 +163,7 @@ const (
 )
 
 type X86EMU_regs struct {
-	regmem      [64]uint32
+	regs      [64]uint32
 	FLAGS		uint32
 	mode        uint32
 	intr        uint32
