@@ -11,9 +11,9 @@ type regtype uint16
 // a value holds a number in the low 32 bits and a size in the upper 64.
 type value uint64
 const (
-	vd uint64 = 4
-	vw = 2
-	vb = 1
+	vd uint64 = 4 << 32
+	vw = 2 << 32
+	vb = 1 << 32
 )
 
 // A regtype encodes width in low byte and shift amount in high byte

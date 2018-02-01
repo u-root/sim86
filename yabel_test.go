@@ -51,8 +51,10 @@ func TestBinary(t *testing.T) {
 	S(IP, uint16(0))
 	M.x86.debug |= DEBUG_DISASSEMBLE_F | DEBUG_DECODE_F | DEBUG_TRACE_F
 	for _, c := range checks {
-		t.Logf("Test %s", c.n)
+		t.Logf("Start Test %s", c.n)
+                x86emu_dump_xregs()
 		X86EMU_exec()
+		t.Logf("Done Test %s", c.n)
 		for i, r := range c.r {
 			if G32(r.r) != r.v {
 				t.Errorf("%v: %d'th test fails: reg %04x got %04x, want %04x", c.n, i, r.r, G(r.r), r.v)
