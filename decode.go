@@ -42,7 +42,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"os"
 )
 
 /*----------------------------- Implementation ----------------------------*/
@@ -1040,14 +1039,18 @@ func INC_DECODED_INST_LEN(amt uint16) {
 	}
 }
 func sys_rdw(add uint32) uint16 {
-	panic("fix me")
+	var i uint16
+	sysr(add, &i)
+	return i
 }
 func sys_rdl(add uint32) uint32 {
-	panic("fix me")
+	var i uint32
+	sysr(add, &i)
+	return i
 }
 
 func HALT_SYS() {
-	os.Exit(0)
+	M.x86.intr |= INTR_HALTED
 }
 
 func DECODE_PRINTF(x string, y ...interface{}) {

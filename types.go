@@ -68,14 +68,14 @@ func S(r regtype, val interface{}) {
 			}
 			M.x86.regs[reg] = M.x86.regs[reg]&0xffff0000 | uint32(v)
 		default:
-			log.Panicf("R %x: Can't assign 32 bits to %d bits", size)
+			log.Panicf("R %x: Can't assign 4 bytes to %d bytes", reg, size)
 		}
 	case uint16:
 		switch size {
 		case 4, 2:
 			M.x86.regs[reg] = M.x86.regs[reg]&0xffff0000 | uint32(v)
 		default:
-			log.Panicf("R %x: Can't assign 16 bits to %d bits", size)
+			log.Panicf("R %x: Can't assign 2 bytes to %d bytes", reg, size)
 		}
 	case uint8:
 		mask := uint32(0xff) << shift

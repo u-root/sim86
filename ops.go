@@ -2202,7 +2202,7 @@ func x86emuOp_mov_word_SR_RM(_ uint8) {
 			END_OF_INSTR()
 			return
 		}
-		S(destreg, G(srcreg))
+		S(destreg, G16(srcreg))
 	}
 	/*
 	 * Clean up, and reset all the R_xSP pointers to the correct

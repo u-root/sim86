@@ -355,7 +355,16 @@ func sysw(addr uint32, i interface{}) {
 	}
 }
 func sysr(addr uint32, i interface{}) {
-	panic("sysr")
+	switch v := i.(type) {
+	case *uint32:
+		*v = uint32(memory[addr+3])<<24 | uint32(memory[addr+2])<<16 | uint32(memory[addr+1])<<8 | uint32(memory[addr+0])
+	case *uint16:
+		*v = uint16(memory[addr+1])<<8 | uint16(memory[addr+0])
+	case *uint8:
+		*v = memory[addr]
+	default:
+		log.Panicf("sysr: %T", v)
+	}
 }
 func CONDITIONAL_SET_FLAG_BOOL(cond bool, flag uint32) {
 	if cond {
