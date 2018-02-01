@@ -19,7 +19,7 @@ func TestEAX(t *testing.T) {
 	S(EAX, eax)
 	S(AL, uint8(0xaa))
 	S(AH, uint8(0x44))
-	if G(EAX) != 0x44aa {
+	if G32(EAX) != 0x44aa {
 		t.Errorf("EAX: got %08x, want %08x", G(EAX), 0x44aa)
 		x86emu_dump_xregs()
 	}
@@ -52,13 +52,12 @@ func TestBinary(t *testing.T) {
 	M.x86.debug |= DEBUG_DISASSEMBLE_F | DEBUG_DECODE_F | DEBUG_TRACE_F
 	for _, c := range checks {
 		t.Logf("Start Test %s", c.n)
-                x86emu_dump_xregs()
 		X86EMU_exec()
-		t.Logf("Done Test %s", c.n)
 		for i, r := range c.r {
 			if G32(r.r) != r.v {
 				t.Errorf("%v: %d'th test fails: reg %04x got %04x, want %04x", c.n, i, r.r, G(r.r), r.v)
 			}
 		}
+		t.Logf("Done Test %s", c.n)
 	}
 }
