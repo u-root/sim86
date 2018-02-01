@@ -70,7 +70,7 @@ func S(r regtype, val interface{}) {
 	switch v := val.(type) {
 		// clean this up later, just get it working now.
 	case value:
-		switch uint64(v) >> 4 {
+		switch uint64(v) & 0xffffffff00000000 {
 		case 4:
 			S(r, uint32(v))
 		case 2:
