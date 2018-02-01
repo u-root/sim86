@@ -8,6 +8,14 @@ import "log"
 
 type regtype uint16
 
+// a value holds a number in the low 32 bits and a size in the upper 64.
+type value uint64
+const (
+	vd uint64 = 4
+	vw = 2
+	vb = 1
+)
+
 // A regtype encodes width in low byte and shift amount in high byte
 const (
 	d  regtype = 32
@@ -38,7 +46,7 @@ func S32(r regtype, val uint32) {
 }
 
 func G32(r regtype) uint32 {
-	return G(r)
+	return uint32(G(r))
 }
 
 func S16(r regtype, val uint16) {
@@ -60,6 +68,18 @@ func G8(r regtype) uint8 {
 func S(r regtype, val interface{}) {
 	reg, shift, size := R(r)
 	switch v := val.(type) {
+		// clean this up later, just get it working now.
+	case value:
+		switch uint64(v) >> 4 {
+		case 4:
+			S(r, uint32(v))
+		case 2:
+			S(r, uint16(v))
+		case 1:
+			S(r, uint8(v))
+		default:
+			log.Panicf("Bogus size in value %#x: %d", uint64(v), uint8(uint64(v)>>4))
+		}
 	case uint32:
 		switch size {
 		case 4:
@@ -88,29 +108,30 @@ func S(r regtype, val interface{}) {
 // Get gets the register as uint32. The amount of data depends on the SYSMODE.
 // Note you can't just return the uint32, always, in the none 32-bit case you have to
 // return the low 16 bits, upper 16 0.
-func G(r regtype) uint32 {
+func G(r regtype) value {
 	reg, shift, size := R(r)
 	v := M.x86.regs[reg]
 	switch {
 	case size == 4:
 		if M.x86.mode&SYSMODE_32BIT_REP != 0 {
-			return v
+			return value(uint64(v) | vd)
 		}
-		return uint32(uint16(v))
+		return value(uint16(v)) | vw
 	case size == 2:
-		return uint32(uint16(v))
+		return value(uint16(v)) | vw
 	case size == 1 && shift == 0:
-		return uint32(uint8(v))
+		return value(uint8(v)) | vb
 	default:
-		return uint32(uint8(v >> 8))
+		log.Panicf("G: Can't handle reg %04x size %d", r, size)
 	}
+	return value(0)
 }
 
 // Changes takes a variable and adds it. It can be negative.
 // In this case, due to the mode, we use the ability to override
 // the number of bits in the register.
 func Change(r regtype, i int) {
-	S(r, G(r)+uint32(i))
+	S(r, G32(r)+uint32(i))
 }
 
 func Dec(r regtype) {

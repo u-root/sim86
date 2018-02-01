@@ -58,7 +58,7 @@ func x86emu_intr_handle() {
 		if _X86EMU_intrTab[intno] != nil {
 			panic("_X86EMU_intrTab[intno](intno)")
 		} else {
-			push_word(uint16(G(FLAGS)))
+			push_word(G16(FLAGS))
 			CLEAR_FLAG(F_IF)
 			CLEAR_FLAG(F_TF)
 			push_word(G16(CS))
@@ -658,13 +658,13 @@ func decode_sib_si(scale uint32, index uint32) uint32 {
 		return 0
 	case 5:
 		DECODE_PRINTF("EBP]")
-		return G(BP) * index
+		return G32(BP) * index
 	case 6:
 		DECODE_PRINTF("ESI]")
-		return G(SI) * index
+		return G32(SI) * index
 	case 7:
 		DECODE_PRINTF("EDI]")
-		return G(DI) * index
+		return G32(DI) * index
 	}
 	HALT_SYS()
 	log.Panicf("decode_sib_si bad index register %d\n", index)
@@ -708,7 +708,7 @@ func decode_sib_address(mod uint32) uint32 {
 		break
 	case 4:
 		DECODE_PRINTF("[ESP]")
-		offset = G(SP)
+		offset = G32(SP)
 		break
 	case 5:
 		switch mod {
@@ -720,12 +720,12 @@ func decode_sib_address(mod uint32) uint32 {
 		case 1:
 			displacement = uint32(fetch_byte_imm())
 			DECODE_PRINTF2("[%d][EBP]", displacement)
-			offset = G(BP) + displacement
+			offset = G32(BP) + displacement
 			break
 		case 2:
 			displacement = fetch_long_imm()
 			DECODE_PRINTF2("[%d][EBP]", displacement)
-			offset = G(BP) + displacement
+			offset = G32(BP) + displacement
 			break
 		default:
 			HALT_SYS()
@@ -735,11 +735,11 @@ func decode_sib_address(mod uint32) uint32 {
 		break
 	case 6:
 		DECODE_PRINTF("[ESI]")
-		offset = G(SI)
+		offset = G32(SI)
 		break
 	case 7:
 		DECODE_PRINTF("[EDI]")
-		offset = G(DI)
+		offset = G32(DI)
 		break
 	default:
 		HALT_SYS()
@@ -794,10 +794,10 @@ func decode_rm00_address(rm uint32) uint32 {
 			return offset
 		case 6:
 			DECODE_PRINTF("[ESI]")
-			return G(SI)
+			return G32(SI)
 		case 7:
 			DECODE_PRINTF("[EDI]")
-			return G(DI)
+			return G32(DI)
 		}
 	} else {
 		/* 16-bit addressing */
@@ -877,13 +877,13 @@ func decode_rm01_address(rm uint32) uint32 {
 			}
 		case 5:
 			DECODE_PRINTF2("%d[EBP]", displacement)
-			return G(BP) + displacement
+			return G32(BP) + displacement
 		case 6:
 			DECODE_PRINTF2("%d[ESI]", displacement)
-			return G(SI) + displacement
+			return G32(SI) + displacement
 		case 7:
 			DECODE_PRINTF2("%d[EDI]", displacement)
-			return G(DI) + displacement
+			return G32(DI) + displacement
 		}
 	} else {
 		/* 16-bit addressing */
@@ -964,13 +964,13 @@ func decode_rm10_address(rm uint32) uint32 {
 			}
 		case 5:
 			DECODE_PRINTF2("%d[EBP]", displacement)
-			return G(BP) + displacement
+			return G32(BP) + displacement
 		case 6:
 			DECODE_PRINTF2("%d[ESI]", displacement)
-			return G(SI) + displacement
+			return G32(SI) + displacement
 		case 7:
 			DECODE_PRINTF2("%d[EDI]", displacement)
-			return G(DI) + displacement
+			return G32(DI) + displacement
 		}
 	} else {
 		var displacement = uint16(fetch_word_imm())

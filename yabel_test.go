@@ -54,7 +54,7 @@ func TestBinary(t *testing.T) {
 		t.Logf("Test %s", c.n)
 		X86EMU_exec()
 		for i, r := range c.r {
-			if G(r.r) != r.v {
+			if G32(r.r) != r.v {
 				t.Errorf("%v: %d'th test fails: reg %04x got %04x, want %04x", c.n, i, r.r, G(r.r), r.v)
 			}
 		}

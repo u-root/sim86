@@ -134,22 +134,22 @@ var notyet = `
 var M = &_X86EMU_env
 
 func TOGGLE_FLAG(flag uint32) {
-	f := G(EFLAGS)
+	f := G32(EFLAGS)
 	f ^= flag
 	S(EFLAGS, f)
 }
 func SET_FLAG(flag uint32) {
-	f := G(EFLAGS)
+	f := G32(EFLAGS)
 	f |= flag
 	S(EFLAGS, f)
 }
 func CLEAR_FLAG(flag uint32) {
-	f := G(EFLAGS)
+	f := G32(EFLAGS)
 	f &= flag
 	S(EFLAGS, f)
 }
 func ACCESS_FLAG(flag uint32) bool {
-	return G(EFLAGS)&flag != 0
+	return G32(EFLAGS)&flag != 0
 }
 func CLEARALL_FLAG(_ uint32) {
 	S(EFLAGS, 0)

@@ -2401,6 +2401,24 @@ DB( if (CHECK_SP_ACCESS())
 
 /****************************************************************************
 REMARKS:
+Pushes a value onto the stack.
+
+NOTE: Do not inline this, as (*sys_wrX) is already inline!
+****************************************************************************/
+
+void push(v value) {
+	switch v>>4 {
+		case 4:
+			push_long(uint32(v))
+		case 2:
+			push_word(uint32(v))
+		default:
+				log.Panicf("bogus value: %#x", v)
+	}
+}
+
+/****************************************************************************
+REMARKS:
 Pushes a long onto the stack.
 
 NOTE: Do not inline this, as (*sys_wrX) is already inline!

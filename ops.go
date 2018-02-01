@@ -502,7 +502,7 @@ REMARKS:
 Handles opcode 0x0f. Escape for two-byte opcode (286 or better)
 ****************************************************************************/
 func x86emuOp_two_byte(_ uint8) {
-	op2 := sys_rdb((uint32(G16(CS)) << 4) + (G(IP)))
+	op2 := sys_rdb((uint32(G16(CS)) << 4) + (G32(IP)))
 	S16(IP, G16(IP)+1)
 	INC_DECODED_INST_LEN(1)
 	x86emu_optab2[op2](op2)
@@ -842,9 +842,9 @@ func x86emuOp_push_all(_ uint8) {
 		push_long(G32(EDX))
 		push_long(G32(EBX))
 		push_long(old_sp)
-		push_long(G(BP))
-		push_long(G(SI))
-		push_long(G(DI))
+		push_long(G32(BP))
+		push_long(G32(SI))
+		push_long(G32(DI))
 	} else {
 		old_sp := uint16(G(SP))
 
@@ -2419,7 +2419,7 @@ func x86emuOp_call_far_IMM(_ uint8) {
 	push_word(G16(CS))
 	S16(CS, farseg)
 	if Mode(SYSMODE_PREFIX_DATA) {
-		push_long(G(IP))
+		push_long(G32(IP))
 	} else {
 		push_word(G16(IP))
 	}
@@ -4421,7 +4421,7 @@ func x86emuOp_call_near_IMM(_ uint8) {
 			END_OF_INSTR()
 			return
 		}
-		push_long(G(IP))
+		push_long(G32(IP))
 		S(IP, uint32(ip32))
 	} else {
 		ip16 := int16(fetch_word_imm())
