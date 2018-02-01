@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"io/ioutil"
+	"testing"
+)
 
 func TestIP(t *testing.T) {
 	ip := uint16(0x1234)
@@ -21,4 +24,16 @@ func TestEAX(t *testing.T) {
 		x86emu_dump_xregs()
 	}
 	// TODO: change mode, check G again
+}
+
+func TestBinary(t *testing.T) {
+	b, err := ioutil.ReadFile("test.bin")
+	if err != nil {
+		t.Fatal(err)
+	}
+	copy(memory[:], b)
+	S(CS, uint16(0))
+	S(IP, uint16(0))
+	M.x86.debug |= DEBUG_DISASSEMBLE_F | DEBUG_DECODE_F | DEBUG_TRACE_F
+	X86EMU_exec()
 }

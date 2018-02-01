@@ -1,0 +1,4 @@
+.globl Halt
+Halt:hlt
+
+

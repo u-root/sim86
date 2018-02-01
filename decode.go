@@ -107,7 +107,7 @@ func X86EMU_exec() {
 		SAVE_IP_CS(G16(CS), G16(IP))
 		INC_DECODED_INST_LEN(1)
 		if M.x86.intr != 0 {
-			if (M.x86.intr & INTR_HALTED) != 0 {
+			if halted() {
 				if G16(SP) != 0 {
 					fmt.Printf("halted\n")
 					X86EMU_trace_regs()

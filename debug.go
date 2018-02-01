@@ -138,10 +138,11 @@ func disassemble_forward(seg uint16, off uint16, n int) {
 		S(IP, ip+1)
 		x86emu_optab[op1](op1)
 	}
-	ip, cs := G(IP), G(CS)
+	intr, ip, cs := M.x86.intr, G(IP), G(CS)
 	*M = tregs
 	S(IP, ip)
 	S(CS, cs)
+	M.x86.intr = intr
 	/* end major hack mode. */
 }
 

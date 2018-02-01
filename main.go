@@ -1,3 +1,5 @@
+//go:generate as -o test.elf test.S
+//go:generate objcopy -O binary test.elf test.bin
 package main
 
 import (
