@@ -2423,7 +2423,7 @@ func x86emuOp_call_far_IMM(_ uint8) {
 	} else {
 		push_word(G16(IP))
 	}
-	S(IP, uint32(faroff&0xffff))
+	S(IP, uint16(faroff&0xffff))
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }

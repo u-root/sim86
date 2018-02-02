@@ -41,6 +41,7 @@ func TestBinary(t *testing.T) {
 		{n: "Halt", r: []regval{{IP, 1}, {SP, 0x2000}}},
 		{n: "seg", r: []regval{{AX, 0x23}, {SS, 0x20}, {ES, 0x21}, {FS, 0x22}, {IP, 0x13}}},
 		{n: "jmpcsip", r: []regval{{CS, 0x2}, {IP, 0x1}}},
+		{n: "pushpop", r: []regval{{EBX, 0x12345678}, {CX, 0x1234}, {EDX, 0x12345678},}},
 		{n: "qemu-test-i386-1", r: []regval{{CS, 0x2}, {IP, 0x8}, {EAX, 1}}},
 		{n: "qemu-test-i386-2", r: []regval{{CS, 0x2}, {IP, 0x1a}, {EAX, 1}, {EBX, 0x12345678}, {ECX, 0x2000},}},
 		{n: "qemu-test-i386-3", r: []regval{{CS, 0x2}, {IP, 0x1}}},

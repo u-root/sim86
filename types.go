@@ -30,7 +30,7 @@ func R(r regtype) (regtype, regtype, regtype) {
 	if reg < 0 || reg > 15 {
 		log.Panicf("R %x: bogus register # %02x", r, reg)
 	}
-	if shift != 0 && shift != 8 {
+	if shift != 0 && shift != 1 {
 		log.Panicf("R %x: bogus register shift %d", r, shift)
 	}
 	if size != 1 && size != 2 && size != 4 {
@@ -125,6 +125,8 @@ func G(r regtype) value {
 		return value(uint16(v)) | vw
 	case size == 1 && shift == 0:
 		return value(uint8(v)) | vb
+	case size == 1 && shift == 1:
+		return value(uint8(v>>8)) | vb
 	default:
 		x86emu_dump_xregs()
 		log.Panicf("G: Can't handle reg %04x size %d", r, size)
@@ -159,19 +161,19 @@ func Inc(r regtype) {
 // reg # is next byte
 const (
 	AL     regtype = 0x0001
-	AH             = 0x0081
+	AH             = 0x0011
 	AX             = 0x0002
 	EAX            = 0x0004
 	BL             = 0x0101
-	BH             = 0x0181
+	BH             = 0x0111
 	BX             = 0x0102
 	EBX            = 0x0104
 	CL             = 0x0201
-	CH             = 0x0281
+	CH             = 0x0211
 	CX             = 0x0202
 	ECX            = 0x0204
 	DL             = 0x0301
-	DH             = 0x0381
+	DH             = 0x0311
 	DX             = 0x0302
 	EDX            = 0x0304
 	SP             = 0x0402

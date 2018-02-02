@@ -16,6 +16,12 @@ Segs:
 	.=32
 newcs:
 	hlt
+pushpop:
+	movl $0x12345678, %ebx
+	pushl %ebx
+	popw %cx
+	popl %edx
+	hlt
 // This file is from qemu/tests/tcg. It had no license header.
 // A note from qemu says it is released under the BSD.
         .globl code16_start
