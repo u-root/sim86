@@ -10,10 +10,11 @@ type regtype uint16
 
 // a value holds a number in the low 32 bits and a size in the upper 64.
 type value uint64
+
 const (
 	vd uint64 = 4 << 32
-	vw = 2 << 32
-	vb = 1 << 32
+	vw        = 2 << 32
+	vb        = 1 << 32
 )
 
 // A regtype encodes width in low byte and shift amount in high byte
@@ -68,7 +69,7 @@ func G8(r regtype) uint8 {
 func S(r regtype, val interface{}) {
 	reg, shift, size := R(r)
 	switch v := val.(type) {
-		// clean this up later, just get it working now.
+	// clean this up later, just get it working now.
 	case value:
 		switch uint64(v) & 0xffffffff00000000 {
 		case 4:
@@ -78,6 +79,7 @@ func S(r regtype, val interface{}) {
 		case 1:
 			S(r, uint8(v))
 		default:
+			_X86EMU_trace_regs()
 			log.Panicf("Bogus size in value %#x: %d", uint64(v), uint8(uint64(v)>>4))
 		}
 	case uint32:
@@ -88,6 +90,7 @@ func S(r regtype, val interface{}) {
 			}
 			M.x86.regs[reg] = M.x86.regs[reg]&0xffff0000 | uint32(v)
 		default:
+			_X86EMU_trace_regs()
 			log.Panicf("R %x: Can't assign 4 bytes to %d bytes", reg, size)
 		}
 	case uint16:
@@ -95,6 +98,7 @@ func S(r regtype, val interface{}) {
 		case 4, 2:
 			M.x86.regs[reg] = M.x86.regs[reg]&0xffff0000 | uint32(v)
 		default:
+			_X86EMU_trace_regs()
 			log.Panicf("R %x: Can't assign 2 bytes to %d bytes", reg, size)
 		}
 	case uint8:
@@ -122,6 +126,7 @@ func G(r regtype) value {
 	case size == 1 && shift == 0:
 		return value(uint8(v)) | vb
 	default:
+		x86emu_dump_xregs()
 		log.Panicf("G: Can't handle reg %04x size %d", r, size)
 	}
 	return value(0)
@@ -131,7 +136,13 @@ func G(r regtype) value {
 // In this case, due to the mode, we use the ability to override
 // the number of bits in the register.
 func Change(r regtype, i int) {
-	S(r, G32(r)+uint32(i))
+	_, _, size := R(r)
+	switch size {
+	case 4:
+		S(r, G32(r)+uint32(i))
+	case 2:
+		S(r, G16(r)+uint16(i))
+	}
 }
 
 func Dec(r regtype) {

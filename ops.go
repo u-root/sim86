@@ -4433,7 +4433,7 @@ func x86emuOp_call_near_IMM(_ uint8) {
 			return
 		}
 		push_word(G16(IP))
-		S(IP, uint32(ip16))
+		S(IP, uint16(ip16))
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()

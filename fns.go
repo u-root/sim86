@@ -341,15 +341,15 @@ func sys_outl(i uint16, v uint32) {
 func sysw(addr uint32, i interface{}) {
 	switch v := i.(type) {
 	case uint32:
-		memory[addr] = uint8(v)
-		memory[addr] = uint8(v >> 8)
-		memory[addr] = uint8(v >> 16)
-		memory[addr] = uint8(v >> 24)
+		memory[addr+0] = uint8(v)
+		memory[addr+1] = uint8(v >> 8)
+		memory[addr+2] = uint8(v >> 16)
+		memory[addr+3] = uint8(v >> 24)
 	case uint16:
-		memory[addr] = uint8(v)
-		memory[addr] = uint8(v >> 8)
+		memory[addr+0] = uint8(v)
+		memory[addr+1] = uint8(v >> 8)
 	case uint8:
-		memory[addr] = v
+		memory[addr+0] = v
 	default:
 		log.Panicf("sysw: %T", v)
 	}
@@ -360,6 +360,7 @@ func sysr(addr uint32, i interface{}) {
 		*v = uint32(memory[addr+3])<<24 | uint32(memory[addr+2])<<16 | uint32(memory[addr+1])<<8 | uint32(memory[addr+0])
 	case *uint16:
 		*v = uint16(memory[addr+1])<<8 | uint16(memory[addr+0])
+		log.Printf("sysr: addr 0x%x val %04x", addr, *v)
 	case *uint8:
 		*v = memory[addr]
 	default:

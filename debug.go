@@ -66,6 +66,18 @@ func X86EMU_trace_regs() {
 	}
 }
 
+func _X86EMU_trace_regs() {
+	if (M.x86.mode & uint32(SYSMODE_PREFIX_DATA|SYSMODE_PREFIX_ADDR)) != 0 {
+		x86emu_dump_xregs()
+	} else {
+		x86emu_dump_regs()
+	}
+	fmt.Printf("trace regs DD %v DDD %v\n", DEBUG_DECODE(), DEBUG_DECODE_NOPRINT())
+	fmt.Printf("%04x:%04x ", M.x86.saved_cs, M.x86.saved_ip)
+	print_encoded_bytes(M.x86.saved_cs, M.x86.saved_ip)
+	print_decoded_instruction()
+}
+
 func X86EMU_trace_xregs() {
 	if DEBUG_TRACE() {
 		x86emu_dump_xregs()

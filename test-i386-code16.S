@@ -1,3 +1,5 @@
+// This file is from qemu/tests/tcg. It had no license header.
+// A note from qemu says it is released under the BSD.
         .code16
         .globl code16_start
         .globl code16_end
@@ -11,7 +13,7 @@ code16_start:
         /* basic test */
 code16_func1 = . - code16_start
         mov $1, %eax
-        data32 lret
+	hlt
 
 /* test push/pop in 16 bit mode */
         .globl code16_func2
@@ -22,7 +24,7 @@ code16_func2 = . - code16_start
         push %bx
         subl %esp, %ecx
         pop %ax
-        data32 lret
+	hlt
 
 /* test various jmp opcodes */
         .globl code16_func3
@@ -49,7 +51,7 @@ myjmp1_next:
         cs ljmp *myjmp2_addr - code16_start
 myjmp2_next:
 
-        data32 lret
+	hlt
 
 myfunc2_addr:
         .short myfunc2 - code16_start
@@ -73,7 +75,7 @@ myfunc:
 
 myfunc2:
         add $4, %ax
-        lret
+	hlt
 
 
 code16_end:

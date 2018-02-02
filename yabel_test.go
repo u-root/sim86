@@ -28,7 +28,7 @@ func TestEAX(t *testing.T) {
 
 type regval struct {
 	r regtype
-	v uint16
+	v uint32
 }
 
 type check struct {
@@ -38,9 +38,13 @@ type check struct {
 
 func TestBinary(t *testing.T) {
 	var checks = []check{
-		{n: "Halt", r: []regval{{IP, 1}}},
+		{n: "Halt", r: []regval{{IP, 1}, {SP, 0x2000}}},
 		{n: "seg", r: []regval{{AX, 0x23}, {SS, 0x20}, {ES, 0x21}, {FS, 0x22}, {IP, 0x13}}},
 		{n: "jmpcsip", r: []regval{{CS, 0x2}, {IP, 0x1}}},
+		{n: "qemu-test-i386-1", r: []regval{{CS, 0x2}, {IP, 0x8}, {EAX, 1}}},
+		{n: "qemu-test-i386-2", r: []regval{{CS, 0x2}, {IP, 0x1a}, {EAX, 1}, {EBX, 0x12345678}, {ECX, 0x2000},}},
+		{n: "qemu-test-i386-3", r: []regval{{CS, 0x2}, {IP, 0x1}}},
+		{n: "qemu-test-i386-4", r: []regval{{CS, 0x2}, {IP, 0x8}}},
 	}
 
 	b, err := ioutil.ReadFile("test.bin")
@@ -50,13 +54,15 @@ func TestBinary(t *testing.T) {
 	copy(memory[:], b)
 	S(CS, uint16(0))
 	S(IP, uint16(0))
+	S(SP, uint16(0x2000))
 	M.x86.debug |= DEBUG_DISASSEMBLE_F | DEBUG_DECODE_F | DEBUG_TRACE_F
 	for _, c := range checks {
+		S(SS, uint16(0))
 		t.Logf("Start Test %s", c.n)
 		X86EMU_exec()
 		for i, r := range c.r {
-			if G16(r.r) != r.v {
-				t.Errorf("%v: %d'th test fails: reg %04x got %04x, want %04x", c.n, i, r.r, G16(r.r), r.v)
+			if G32(r.r) != r.v {
+				t.Errorf("%v: %d'th test fails: reg %04x got %04x, want %04x", c.n, i, r.r, G32(r.r), r.v)
 			}
 		}
 		t.Logf("Done Test %s", c.n)
