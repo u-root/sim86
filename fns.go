@@ -394,3 +394,8 @@ func CONDITIONAL_SET_FLAG(cond interface{}, flag uint32) {
 func Mode(m uint32) bool {
 	return M.x86.mode&m == m
 }
+
+func PC() uint32 {
+	return uint32(G16(CS))<<4+uint32(G16(IP))
+}
+

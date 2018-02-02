@@ -52,6 +52,12 @@ func TestBinary(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	// Fill memory with hlt.
+	for i := range memory {
+		memory[i] = 0xf4
+	}
+
 	copy(memory[:], b)
 	S(CS, uint16(0))
 	S(IP, uint16(0))
@@ -64,6 +70,9 @@ func TestBinary(t *testing.T) {
 		for i, r := range c.r {
 			if G32(r.r) != r.v {
 				t.Errorf("%v: %d'th test fails: reg %04x got %04x, want %04x", c.n, i, r.r, G32(r.r), r.v)
+			}
+			if PC() > uint32(len(b)) {
+				t.Fatalf("PC %08x: ran off the end of the test", PC())
 			}
 		}
 		t.Logf("Done Test %s", c.n)
