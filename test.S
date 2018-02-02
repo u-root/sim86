@@ -11,5 +11,14 @@ Segs:
 	addb $1, %al
 	movw %AX, %GS
 	hlt
+	// This is a jmp to 32. Remember the segmentation brain damage
+	jmp $2, $0
+	.=32
+newcs:
+	hlt
+	hlt
+	hlt
+	
+	
 
 

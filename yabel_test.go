@@ -40,6 +40,7 @@ func TestBinary(t *testing.T) {
 	var checks = []check{
 		{n: "Halt", r: []regval{{IP, 1}}},
 		{n: "seg", r: []regval{{AX, 0x23}, {SS, 0x20}, {ES, 0x21}, {FS, 0x22}, {IP, 0x13}}},
+		{n: "jmpcsip", r: []regval{{CS, 0x2}, {IP, 0x1}}},
 	}
 
 	b, err := ioutil.ReadFile("test.bin")
