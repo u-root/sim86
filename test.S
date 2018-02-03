@@ -1,4 +1,5 @@
 .code16
+code16_start:
 .globl Halt
 Halt:hlt
 Segs:
@@ -20,6 +21,7 @@ pushpop:
 	movl $0x12345678, %ebx
 	pushl %ebx
 	popw %cx
+	pushl %ebx
 	popl %edx
 	hlt
 // This file is from qemu/tests/tcg. It had no license header.
@@ -27,9 +29,8 @@ pushpop:
         .globl code16_start
         .globl code16_end
 
-CS_SEG = 0xf
+CS_SEG = 0x0
 
-code16_start:
 
         .globl code16_func1
 
@@ -98,7 +99,7 @@ myfunc:
 
 myfunc2:
         add $4, %ax
-	hlt
+	lret
 
 
 code16_end:

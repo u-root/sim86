@@ -4507,8 +4507,8 @@ func x86emuOp_jump_byte_IMM(_ uint8) {
 
 	START_OF_INSTR()
 	DECODE_PRINTF("JMP\t")
-	offset := int16(fetch_byte_imm())
-	target = uint16(int16(G16(IP)) + offset)
+	offset := int8(fetch_byte_imm())
+	target = uint16(int16(G16(IP)) + int16(offset))
 	DECODE_PRINTF2("%x\n", target)
 	JMP_TRACE(M.x86.saved_cs, M.x86.saved_ip, G16(CS), target, " BYTE ")
 	if TRACE_AND_STEP() {

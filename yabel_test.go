@@ -16,11 +16,12 @@ func TestIP(t *testing.T) {
 
 func TestEAX(t *testing.T) {
 	eax := uint32(0xdeadbeef)
+	M.x86.mode |= SYSMODE_PREFIX_DATA
 	S(EAX, eax)
 	S(AL, uint8(0xaa))
 	S(AH, uint8(0x44))
-	if G32(EAX) != 0x44aa {
-		t.Errorf("EAX: got %08x, want %08x", G(EAX), 0x44aa)
+	if G32(EAX) != 0xdead44aa {
+		t.Errorf("EAX: got %08x, want %08x", G32(EAX), 0xdead44aa)
 		x86emu_dump_xregs()
 	}
 	// TODO: change mode, check G again
@@ -41,11 +42,11 @@ func TestBinary(t *testing.T) {
 		{n: "Halt", r: []regval{{IP, 1}, {SP, 0x2000}}},
 		{n: "seg", r: []regval{{AX, 0x23}, {SS, 0x20}, {ES, 0x21}, {FS, 0x22}, {IP, 0x13}}},
 		{n: "jmpcsip", r: []regval{{CS, 0x2}, {IP, 0x1}}},
-		{n: "pushpop", r: []regval{{EBX, 0x12345678}, {CX, 0x1234}, {EDX, 0x12345678},}},
-		{n: "qemu-test-i386-1", r: []regval{{CS, 0x2}, {IP, 0x8}, {EAX, 1}}},
-		{n: "qemu-test-i386-2", r: []regval{{CS, 0x2}, {IP, 0x1a}, {EAX, 1}, {EBX, 0x12345678}, {ECX, 0x2000},}},
-		{n: "qemu-test-i386-3", r: []regval{{CS, 0x2}, {IP, 0x1}}},
-		{n: "qemu-test-i386-4", r: []regval{{CS, 0x2}, {IP, 0x8}}},
+		{n: "pushpop", r: []regval{{EBX, 0x12345678}, {CX, 0x5678}, {EDX, 0x12345678},}},
+		{n: "qemu-test-i386-1", r: []regval{{CS, 0x2}, {IP, 0x16}, {EAX, 1}}},
+		{n: "qemu-test-i386-2", r: []regval{{CS, 0x2}, {IP, 0x28},  {EBX, 0x12345678}, {ECX, 0x2},}},
+		{n: "qemu-test-i386-3", r: []regval{{CS, 0x0}, {IP, 0x76}}},
+{n: "qemu-test-i386-4", r: []regval{{CS, 0x0}, {IP, 0x76}, {AX, 0x39},}},
 	}
 
 	b, err := ioutil.ReadFile("test.bin")
@@ -60,7 +61,7 @@ func TestBinary(t *testing.T) {
 
 	copy(memory[:], b)
 	S(CS, uint16(0))
-	S(IP, uint16(0))
+	S(IP, uint16(0x0))
 	S(SP, uint16(0x2000))
 	M.x86.debug |= DEBUG_DISASSEMBLE_F | DEBUG_DECODE_F | DEBUG_TRACE_F
 	for _, c := range checks {
@@ -68,8 +69,12 @@ func TestBinary(t *testing.T) {
 		t.Logf("Start Test %s", c.n)
 		X86EMU_exec()
 		for i, r := range c.r {
+			M.x86.mode &= ^SYSMODE_PREFIX_DATA
+			if _, _, size := R(r.r); size == 4 { // simulate prefix
+				M.x86.mode |= SYSMODE_PREFIX_DATA
+			}
 			if G32(r.r) != r.v {
-				t.Errorf("%v: %d'th test fails: reg %04x got %04x, want %04x", c.n, i, r.r, G32(r.r), r.v)
+				t.Errorf("%v: %d'th test fails: reg %s got %08x, want %08x", c.n, i, r.r.String(), G32(r.r), r.v)
 			}
 			if PC() > uint32(len(b)) {
 				t.Fatalf("PC %08x: ran off the end of the test", PC())

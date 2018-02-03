@@ -25,7 +25,7 @@ const (
 	bh         = 0x808
 )
 
-func R(r regtype) (regtype, regtype, regtype) {
+func R(r regtype) (uint, uint, uint) {
 	reg, shift, size := r>>8, (r>>4)&0xf, (r & 0xf)
 	if reg < 0 || reg > 15 {
 		log.Panicf("R %x: bogus register # %02x", r, reg)
@@ -36,7 +36,7 @@ func R(r regtype) (regtype, regtype, regtype) {
 	if size != 1 && size != 2 && size != 4 {
 		log.Panicf("R %x: bogus register size %d", r, size)
 	}
-	return reg, shift, size
+	return uint(reg), uint(shift*8), uint(size)
 
 }
 
@@ -71,7 +71,7 @@ func S(r regtype, val interface{}) {
 	switch v := val.(type) {
 	// clean this up later, just get it working now.
 	case value:
-		switch uint64(v) & 0xffffffff00000000 {
+		switch uint64(v) & (vb|vw|vb) {
 		case 4:
 			S(r, uint32(v))
 		case 2:
@@ -85,8 +85,9 @@ func S(r regtype, val interface{}) {
 	case uint32:
 		switch size {
 		case 4:
-			if M.x86.mode&SYSMODE_32BIT_REP != 0 {
+			if M.x86.mode&SYSMODE_PREFIX_DATA != 0 {
 				M.x86.regs[reg] = v
+				return
 			}
 			M.x86.regs[reg] = M.x86.regs[reg]&0xffff0000 | uint32(v)
 		default:
@@ -117,7 +118,7 @@ func G(r regtype) value {
 	v := M.x86.regs[reg]
 	switch {
 	case size == 4:
-		if M.x86.mode&SYSMODE_32BIT_REP != 0 {
+		if M.x86.mode&SYSMODE_PREFIX_DATA != 0 {
 			return value(uint64(v) | vd)
 		}
 		return value(uint16(v)) | vw
@@ -195,6 +196,47 @@ const (
 	FS             = 0x00E02
 	GS             = 0x00F02
 )
+
+var regnames = map[regtype] string {
+	AL: "AL",
+	AH: "AH",
+	AX: "AX",
+	EAX: "EAX",
+	BL: "BL",
+	BH: "BH",
+	BX: "BX",
+	EBX: "EBX",
+	CL: "CL",
+	CH: "CH",
+	CX: "CX",
+	ECX: "ECX",
+	DL: "DL",
+	DH: "DH",
+	DX: "DX",
+	EDX: "EDX",
+	SP: "SP",
+	ESP: "ESP",
+	BP: "BP",
+	EBP: "EBP",
+	SI: "SI",
+	ESI: "ESI",
+	DI: "DI",
+	EDI: "EDI",
+	IP: "IP",
+	EIP: "EIP",
+	FLAGS: "FLAGS",
+	EFLAGS: "EFLAGS",
+	CS: "CS",
+	DS: "DS",
+	SS: "SS",
+	ES: "ES",
+	FS: "FS",
+	GS: "GS",
+}
+
+func (r regtype) String() string {
+       return regnames[r]
+}
 
 type X86EMU_regs struct {
 	regs        [64]uint32
