@@ -82,4 +82,13 @@ func TestBinary(t *testing.T) {
 		}
 		t.Logf("Done Test %s", c.n)
 	}
+
+	// test the reset vector
+	S16(CS, 0xf000)
+	S16(IP, 0xfff0)
+	X86EMU_exec()
+	if G16(CS) != 0xf000 || G16(IP) != 0x0001 {
+		t.Fatalf("reset vector test: CS:IP is %04x:%04x, want 0xf000:0x0001", G16(CS), G16(IP))
+	}
+
 }

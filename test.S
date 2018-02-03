@@ -105,6 +105,11 @@ myfunc2:
 code16_end:
 	hlt
 	hlt
+.=0xf0000
+reset:
+hlt
+.=0xffff0
+ljmp $0xf000,$0
 	
 	
 
