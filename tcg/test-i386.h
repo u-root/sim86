@@ -11,10 +11,10 @@
          stringify(OP) size " %" rsize "2, %" rsize "0\n\t" \
          "pushf\n\t"\
          "pop %1\n\t"\
+    "hlt\n\t.asciz \"" \
+		    stringify(OP) "\"\n\t" \
          : "=q" (res), "=g" (flags)\
-         : "q" (s1), "0" (res), "1" (flags)); \
-    printf("%-10s A=" FMTLX " B=" FMTLX " R=" FMTLX " CCIN=%04lx CC=%04lx\n", \
-           stringify(OP) size, s0, s1, res, iflags, flags & CC_MASK);
+	 : "q" (s1), "0" (res), "1" (flags));
 
 #define EXECOP1(size, rsize, res, flags) \
     asm ("push %3\n\t"\
@@ -22,21 +22,12 @@
          stringify(OP) size " %" rsize "0\n\t" \
          "pushf\n\t"\
          "pop %1\n\t"\
+         "hlt\n\t.asciz \"" \
+    stringify(OP) "\"\n\t" \
          : "=q" (res), "=g" (flags)\
-         : "0" (res), "1" (flags)); \
-    printf("%-10s A=" FMTLX " R=" FMTLX " CCIN=%04lx CC=%04lx\n", \
-           stringify(OP) size, s0, res, iflags, flags & CC_MASK);
+	 : "0" (res), "1" (flags));
 
 #ifdef OP1
-#if defined(__x86_64__)
-void exec_opq(long s0, long s1, long iflags)
-{
-    long res, flags;
-    res = s0;
-    flags = iflags;
-    EXECOP1("q", "", res, flags);
-}
-#endif
 
 void exec_opl(long s0, long s1, long iflags)
 {
@@ -62,16 +53,6 @@ void exec_opb(long s0, long s1, long iflags)
     EXECOP1("b", "b", res, flags);
 }
 #else
-#if defined(__x86_64__)
-void exec_opq(long s0, long s1, long iflags)
-{
-    long res, flags;
-    res = s0;
-    flags = iflags;
-    EXECOP2("q", "", res, s1, flags);
-}
-#endif
-
 void exec_opl(long s0, long s1, long iflags)
 {
     long res, flags;
@@ -101,16 +82,10 @@ void exec_op(long s0, long s1)
 {
     s0 = i2l(s0);
     s1 = i2l(s1);
-#if defined(__x86_64__)
-    exec_opq(s0, s1, 0);
-#endif
     exec_opl(s0, s1, 0);
     exec_opw(s0, s1, 0);
     exec_opb(s0, s1, 0);
 #ifdef OP_CC
-#if defined(__x86_64__)
-    exec_opq(s0, s1, CC_C);
-#endif
     exec_opl(s0, s1, CC_C);
     exec_opw(s0, s1, CC_C);
     exec_opb(s0, s1, CC_C);
