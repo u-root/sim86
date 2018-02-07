@@ -354,118 +354,129 @@ func parse_line(r *bufio.Reader) (string, []uint16, error) {
 }
 
 func x86emu_dump_regs() {
-	fmt.Printf("\tAX=%04x  ", G16(AX))
-	fmt.Printf("BX=%04x  ", G16(BX))
-	fmt.Printf("CX=%04x  ", G16(CX))
-	fmt.Printf("DX=%04x  ", G16(DX))
-	fmt.Printf("SP=%04x  ", G16(SP))
-	fmt.Printf("BP=%04x  ", G16(BP))
-	fmt.Printf("SI=%04x  ", G16(SI))
-	fmt.Printf("DI=%04x\n", G16(DI))
-	fmt.Printf("\tDS=%04x  ", G16(DS))
-	fmt.Printf("ES=%04x  ", G16(ES))
-	fmt.Printf("SS=%04x  ", G16(SS))
-	fmt.Printf("CS=%04x  ", G16(CS))
-	fmt.Printf("IP=%04x   ", G16(IP))
+	fx86emu_dump_regs(func(s string, a ...interface{}) {
+		fmt.Printf(s, a...)
+	})
+}
+
+func fx86emu_dump_regs(f func(string, ...interface{})) {
+	f("\tAX=%04x  ", G16(AX))
+	f("BX=%04x  ", G16(BX))
+	f("CX=%04x  ", G16(CX))
+	f("DX=%04x  ", G16(DX))
+	f("SP=%04x  ", G16(SP))
+	f("BP=%04x  ", G16(BP))
+	f("SI=%04x  ", G16(SI))
+	f("DI=%04x\n", G16(DI))
+	f("\tDS=%04x  ", G16(DS))
+	f("ES=%04x  ", G16(ES))
+	f("SS=%04x  ", G16(SS))
+	f("CS=%04x  ", G16(CS))
+	f("IP=%04x   ", G16(IP))
 	/* CHECKED... */
 	if ACCESS_FLAG(F_OF) {
-		fmt.Printf("OV ")
+		f("OV ")
 	} else {
-		fmt.Printf("NV ")
+		f("NV ")
 	}
 	if ACCESS_FLAG(F_DF) {
-		fmt.Printf("DN ")
+		f("DN ")
 	} else {
-		fmt.Printf("UP ")
+		f("UP ")
 	}
 	if ACCESS_FLAG(F_IF) {
-		fmt.Printf("EI ")
+		f("EI ")
 	} else {
-		fmt.Printf("DI ")
+		f("DI ")
 	}
 	if ACCESS_FLAG(F_SF) {
-		fmt.Printf("NG ")
+		f("NG ")
 	} else {
-		fmt.Printf("PL ")
+		f("PL ")
 	}
 	if ACCESS_FLAG(F_ZF) {
-		fmt.Printf("ZR ")
+		f("ZR ")
 	} else {
-		fmt.Printf("NZ ")
+		f("NZ ")
 	}
 	if ACCESS_FLAG(F_AF) {
-		fmt.Printf("AC ")
+		f("AC ")
 	} else {
-		fmt.Printf("NA ")
+		f("NA ")
 	}
 	if ACCESS_FLAG(F_PF) {
-		fmt.Printf("PE ")
+		f("PE ")
 	} else {
-		fmt.Printf("PO ")
+		f("PO ")
 	}
 	if ACCESS_FLAG(F_CF) {
-		fmt.Printf("CY ")
+		f("CY ")
 	} else {
-		fmt.Printf("NC ")
+		f("NC ")
 	}
-	fmt.Printf("\n")
+	f("\n")
 }
 
 func x86emu_dump_xregs() {
-	fmt.Printf("\tAX=%08x  ", G32(EAX))
-	fmt.Printf("BX=%08x  ", G32(EBX))
-	fmt.Printf("CX=%08x  ", G32(ECX))
-	fmt.Printf("DX=%08x  ", G32(EDX))
-	fmt.Printf("SP=%08x  ", G32(SP))
-	fmt.Printf("BP=%08x  ", G32(BP))
-	fmt.Printf("SI=%08x  ", G32(SI))
-	fmt.Printf("DI=%08x\n", G32(DI))
-	fmt.Printf("\tDS=%04x  ", G32(DS))
-	fmt.Printf("ES=%04x  ", G32(ES))
-	fmt.Printf("SS=%04x  ", G32(SS))
-	fmt.Printf("CS=%04x  ", G32(CS))
-	fmt.Printf("IP=%08x   ", G32(IP))
+	fx86emu_dump_xregs(func(s string, a ...interface{}) {
+		fmt.Printf(s, a...)
+	})
+}
+func fx86emu_dump_xregs(f func(string, ...interface{})) {
+	f("\tAX=%08x  ", G32(EAX))
+	f("BX=%08x  ", G32(EBX))
+	f("CX=%08x  ", G32(ECX))
+	f("DX=%08x  ", G32(EDX))
+	f("SP=%08x  ", G32(SP))
+	f("BP=%08x  ", G32(BP))
+	f("SI=%08x  ", G32(SI))
+	f("DI=%08x\n", G32(DI))
+	f("\tDS=%04x  ", G32(DS))
+	f("ES=%04x  ", G32(ES))
+	f("SS=%04x  ", G32(SS))
+	f("CS=%04x  ", G32(CS))
+	f("IP=%08x   ", G32(IP))
 
 	/* CHECKED... */
 	if ACCESS_FLAG(F_OF) {
-		fmt.Printf("OV ")
+		f("OV ")
 	} else {
-		fmt.Printf("NV ")
+		f("NV ")
 	}
 	if ACCESS_FLAG(F_DF) {
-		fmt.Printf("DN ")
+		f("DN ")
 	} else {
-		fmt.Printf("UP ")
+		f("UP ")
 	}
 	if ACCESS_FLAG(F_IF) {
-		fmt.Printf("EI ")
+		f("EI ")
 	} else {
-		fmt.Printf("DI ")
+		f("DI ")
 	}
 	if ACCESS_FLAG(F_SF) {
-		fmt.Printf("NG ")
+		f("NG ")
 	} else {
-		fmt.Printf("PL ")
+		f("PL ")
 	}
 	if ACCESS_FLAG(F_ZF) {
-		fmt.Printf("ZR ")
+		f("ZR ")
 	} else {
-		fmt.Printf("NZ ")
+		f("NZ ")
 	}
 	if ACCESS_FLAG(F_AF) {
-		fmt.Printf("AC ")
+		f("AC ")
 	} else {
-		fmt.Printf("NA ")
+		f("NA ")
 	}
 	if ACCESS_FLAG(F_PF) {
-		fmt.Printf("PE ")
+		f("PE ")
 	} else {
-		fmt.Printf("PO ")
+		f("PO ")
 	}
 	if ACCESS_FLAG(F_CF) {
-		fmt.Printf("CY ")
+		f("CY ")
 	} else {
-		fmt.Printf("NC ")
+		f("NC ")
 	}
-	fmt.Printf("\n")
+	f("\n")
 }

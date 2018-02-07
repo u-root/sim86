@@ -45,7 +45,7 @@ static inline long i2l(long v)
 {\
     long res, val, resz;\
     val = op0;\
-    asm("xor %1, %1\n"\
+    asm(".code16\n\nxor %1, %1\n"\
         "mov $0x12345678, %0\n"\
         #op " %" size "2, %" size "0 ; setz %b1\n\t" \
 	"hlt\n\t.asciz \"" stringify(op) "\" \n\t"	     \

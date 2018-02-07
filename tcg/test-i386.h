@@ -6,7 +6,7 @@
 #define exec_opb glue(glue(exec_, OP), b)
 
 #define EXECOP2(size, rsize, res, s1, flags) \
-    asm ("push %4\n\t"\
+    asm (".code16\n\npush %4\n\t"\
          "popf\n\t"\
          stringify(OP) size " %" rsize "2, %" rsize "0\n\t" \
          "pushf\n\t"\
@@ -17,7 +17,7 @@
 	 : "q" (s1), "0" (res), "1" (flags));
 
 #define EXECOP1(size, rsize, res, flags) \
-    asm ("push %3\n\t"\
+    asm (".code16\n\npush %3\n\t"\
          "popf\n\t"\
          stringify(OP) size " %" rsize "0\n\t" \
          "pushf\n\t"\

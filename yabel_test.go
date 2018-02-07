@@ -1,6 +1,8 @@
 package main
 
 import (
+	"debug/elf"
+	"io"
 	"io/ioutil"
 	"testing"
 )
@@ -10,7 +12,7 @@ func TestIP(t *testing.T) {
 	S(IP, ip)
 	if G16(IP) != ip {
 		t.Errorf("ip: got %04x, want %04x", G(IP), ip)
-		x86emu_dump_regs()
+		fx86emu_dump_regs(t.Logf)
 	}
 }
 
@@ -22,7 +24,7 @@ func TestEAX(t *testing.T) {
 	S(AH, uint8(0x44))
 	if G32(EAX) != 0xdead44aa {
 		t.Errorf("EAX: got %08x, want %08x", G32(EAX), 0xdead44aa)
-		x86emu_dump_xregs()
+		fx86emu_dump_xregs(t.Logf)
 	}
 	// TODO: change mode, check G again
 }
@@ -42,11 +44,11 @@ func TestBinary(t *testing.T) {
 		{n: "Halt", r: []regval{{IP, 1}, {SP, 0x2000}}},
 		{n: "seg", r: []regval{{AX, 0x23}, {SS, 0x20}, {ES, 0x21}, {FS, 0x22}, {IP, 0x13}}},
 		{n: "jmpcsip", r: []regval{{CS, 0x2}, {IP, 0x1}}},
-		{n: "pushpop", r: []regval{{EBX, 0x12345678}, {CX, 0x5678}, {EDX, 0x12345678},}},
+		{n: "pushpop", r: []regval{{EBX, 0x12345678}, {CX, 0x5678}, {EDX, 0x12345678}}},
 		{n: "qemu-test-i386-1", r: []regval{{CS, 0x2}, {IP, 0x16}, {EAX, 1}}},
-		{n: "qemu-test-i386-2", r: []regval{{CS, 0x2}, {IP, 0x28},  {EBX, 0x12345678}, {ECX, 0x2},}},
+		{n: "qemu-test-i386-2", r: []regval{{CS, 0x2}, {IP, 0x28}, {EBX, 0x12345678}, {ECX, 0x2}}},
 		{n: "qemu-test-i386-3", r: []regval{{CS, 0x0}, {IP, 0x76}}},
-{n: "qemu-test-i386-4", r: []regval{{CS, 0x0}, {IP, 0x76}, {AX, 0x39},}},
+		{n: "qemu-test-i386-4", r: []regval{{CS, 0x0}, {IP, 0x76}, {AX, 0x39}}},
 	}
 
 	b, err := ioutil.ReadFile("test.bin")
@@ -91,4 +93,70 @@ func TestBinary(t *testing.T) {
 		t.Fatalf("reset vector test: CS:IP is %04x:%04x, want 0xf000:0x0001", G16(CS), G16(IP))
 	}
 
+	// qemu tests
+	f, err := elf.Open("tcg/a.out")
+	if err != nil {
+		t.Fatalf("elf")
+	}
+	s := f.Section("initcall")
+	if s == nil {
+		t.Fatal(err)
+	}
+	for _, p := range f.Progs {
+		if p.Type != elf.PT_LOAD {
+			continue
+		}
+		if p.Vaddr > uint64(len(memory)) {
+			t.Fatalf("p.Vaddr (%#x) > len(memory) %#x", p.Vaddr, len(memory))
+		}
+		if p.Vaddr+p.Filesz > uint64(len(memory)) {
+			t.Fatalf("p.Vaddr (%#x) + p.Filesz %#x  len(memory) %#x", p.Vaddr, p.Filesz, len(memory))
+		}
+		t.Logf("Read in %d bytes at %#x", p.Filesz, p.Vaddr)
+		b := make([]byte, p.Filesz)
+		n, err := p.ReadAt(b, 0)
+		// The elf package is strangely disfunctional
+		if n < len(b) || (err != nil && err != io.EOF) {
+			t.Fatalf("got %d bytes, err %v: wanted %d, nil", n, err, p.Filesz)
+		}
+		t.Logf("b is %02x:", b)
+		copy(memory[p.Vaddr:], b)
+		t.Logf("memory is now %d", len(memory))
+	}
+
+	syms, err := f.Symbols()
+	if err != nil {
+		t.Fatal(err)
+	}
+	var si, ei *elf.Symbol
+	for i, s := range syms {
+		t.Logf("Check %v", s)
+		if s.Name == "__start_initcall" {
+			si = &syms[i]
+		}
+		if s.Name == "__stop_initcall" {
+			ei = &syms[i]
+		}
+		if si != nil && ei != nil {
+			break
+		}
+	}
+	if si == nil || ei == nil {
+		t.Fatalf("si %v ei %v both have to be non-nil", si, ei)
+	}
+	t.Logf("si %v, ei %v", si, ei)
+
+	t.Logf("Now run a.out")
+
+	for i := si.Value; i < ei.Value; i += 2 {
+		S16(CS, 0)
+		ip := uint16(memory[i]) | uint16(memory[i+1])<<8
+		if ip == 0 {
+			break
+		}
+		t.Logf("Get entry at %#x; Start at %04x:%04x", i, 0, ip)
+		S16(IP, ip)
+		X86EMU_exec()
+		fx86emu_dump_xregs(t.Logf)
+	}
 }

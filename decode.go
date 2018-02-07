@@ -368,9 +368,7 @@ NOTE: Do not inline this function as sys_rdX is already inline!
 ****************************************************************************/
 func fetch_data_word_abs(segment uint16, offset uint16) uint16 {
 
-	panic("fix mdecoe")
-	return 0
-	//return sys_rdw((uint32(segment) << 4) + offset);
+	return sys_rdw((uint32(segment) << 4) + uint32(offset))
 }
 
 /****************************************************************************

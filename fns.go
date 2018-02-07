@@ -396,6 +396,5 @@ func Mode(m uint32) bool {
 }
 
 func PC() uint32 {
-	return uint32(G16(CS))<<4+uint32(G16(IP))
+	return uint32(G16(CS))<<4 + uint32(G16(IP))
 }
-

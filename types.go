@@ -36,7 +36,7 @@ func R(r regtype) (uint, uint, uint) {
 	if size != 1 && size != 2 && size != 4 {
 		log.Panicf("R %x: bogus register size %d", r, size)
 	}
-	return uint(reg), uint(shift*8), uint(size)
+	return uint(reg), uint(shift * 8), uint(size)
 
 }
 
@@ -71,7 +71,7 @@ func S(r regtype, val interface{}) {
 	switch v := val.(type) {
 	// clean this up later, just get it working now.
 	case value:
-		switch uint64(v) & (vb|vw|vb) {
+		switch uint64(v) & (vb | vw | vb) {
 		case 4:
 			S(r, uint32(v))
 		case 2:
@@ -197,45 +197,45 @@ const (
 	GS             = 0x00F02
 )
 
-var regnames = map[regtype] string {
-	AL: "AL",
-	AH: "AH",
-	AX: "AX",
-	EAX: "EAX",
-	BL: "BL",
-	BH: "BH",
-	BX: "BX",
-	EBX: "EBX",
-	CL: "CL",
-	CH: "CH",
-	CX: "CX",
-	ECX: "ECX",
-	DL: "DL",
-	DH: "DH",
-	DX: "DX",
-	EDX: "EDX",
-	SP: "SP",
-	ESP: "ESP",
-	BP: "BP",
-	EBP: "EBP",
-	SI: "SI",
-	ESI: "ESI",
-	DI: "DI",
-	EDI: "EDI",
-	IP: "IP",
-	EIP: "EIP",
-	FLAGS: "FLAGS",
+var regnames = map[regtype]string{
+	AL:     "AL",
+	AH:     "AH",
+	AX:     "AX",
+	EAX:    "EAX",
+	BL:     "BL",
+	BH:     "BH",
+	BX:     "BX",
+	EBX:    "EBX",
+	CL:     "CL",
+	CH:     "CH",
+	CX:     "CX",
+	ECX:    "ECX",
+	DL:     "DL",
+	DH:     "DH",
+	DX:     "DX",
+	EDX:    "EDX",
+	SP:     "SP",
+	ESP:    "ESP",
+	BP:     "BP",
+	EBP:    "EBP",
+	SI:     "SI",
+	ESI:    "ESI",
+	DI:     "DI",
+	EDI:    "EDI",
+	IP:     "IP",
+	EIP:    "EIP",
+	FLAGS:  "FLAGS",
 	EFLAGS: "EFLAGS",
-	CS: "CS",
-	DS: "DS",
-	SS: "SS",
-	ES: "ES",
-	FS: "FS",
-	GS: "GS",
+	CS:     "CS",
+	DS:     "DS",
+	SS:     "SS",
+	ES:     "ES",
+	FS:     "FS",
+	GS:     "GS",
 }
 
 func (r regtype) String() string {
-       return regnames[r]
+	return regnames[r]
 }
 
 type X86EMU_regs struct {

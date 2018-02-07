@@ -16,7 +16,7 @@ var (
 	cmds        = bufio.NewReader(os.Stdin)
 )
 
-var memory [1 << 20]byte
+var memory = [1 << 20]byte{}
 
 func init() {
 	// due to init loop
