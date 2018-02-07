@@ -4,6 +4,15 @@
 #define exec_opl glue(glue(exec_, OP), l)
 #define exec_opw glue(glue(exec_, OP), w)
 #define exec_opb glue(glue(exec_, OP), b)
+#define result(n, s, o, a, b, r, i, f)		\
+	TestOutput[0] = n;\
+	TestOutput[1] = (unsigned int)s;\
+	TestOutput[2] = (unsigned int)o;\
+	TestOutput[3] = (unsigned int)a;\
+	TestOutput[4] = (unsigned int)b;\
+	TestOutput[5] = (unsigned int)r;\
+	TestOutput[6] = (unsigned int)i;\
+	TestOutput[7] = (unsigned int)f;
 
 #define EXECOP2(size, rsize, res, s1, flags) \
     asm (".code16\n\npush %4\n\t"\
@@ -11,10 +20,11 @@
          stringify(OP) size " %" rsize "2, %" rsize "0\n\t" \
          "pushf\n\t"\
          "pop %1\n\t"\
-    "hlt\n\t.asciz \"" \
-		    stringify(OP) "\"\n\t" \
          : "=q" (res), "=g" (flags)\
-	 : "q" (s1), "0" (res), "1" (flags));
+	 : "q" (s1), "0" (res), "1" (flags));\
+    result(7, "%-10s A=" FMTLX " B=" FMTLX " R=" FMTLX " CCIN=%04lx CC=%04lx\n", \
+           stringify(OP) size, s0, s1, res, iflags, flags & CC_MASK); \
+	asm ("hlt\n")
 
 #define EXECOP1(size, rsize, res, flags) \
     asm (".code16\n\npush %3\n\t"\
@@ -22,10 +32,11 @@
          stringify(OP) size " %" rsize "0\n\t" \
          "pushf\n\t"\
          "pop %1\n\t"\
-         "hlt\n\t.asciz \"" \
-    stringify(OP) "\"\n\t" \
          : "=q" (res), "=g" (flags)\
-	 : "0" (res), "1" (flags));
+	 : "0" (res), "1" (flags));\
+    result(6, "%-10s A=" FMTLX " R=" FMTLX " CCIN=%04lx CC=%04lx\n",	\
+           stringify(OP) size, s0, res, iflags, flags & CC_MASK, 0); \
+	asm ("hlt\n")
 
 #ifdef OP1
 
@@ -125,3 +136,4 @@ void *glue(_test_, OP) __init_call = glue(test_, OP);
 
 #undef OP
 #undef OP_CC
+#undef result

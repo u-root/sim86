@@ -339,6 +339,9 @@ func sys_outl(i uint16, v uint32) {
 	panic("io")
 }
 func sysw(addr uint32, i interface{}) {
+	if addr > uint32(len(memory))-4 {
+		log.Panicf("sysw: address %#x out of range; max is %#x", addr, len(memory))
+	}
 	switch v := i.(type) {
 	case uint32:
 		memory[addr+0] = uint8(v)

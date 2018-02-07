@@ -29,9 +29,12 @@
 #define CC_O    0x0800
 
 #undef __x86_64__
+#define FMTLX "%08lx"
 #define __init_call	__attribute__ ((unused,__section__ ("initcall")))
 
 #define CC_MASK (CC_C | CC_P | CC_Z | CC_S | CC_O | CC_A)
+
+unsigned int TestOutput[16];
 
 static inline long i2l(long v)
 {
@@ -41,6 +44,7 @@ static inline long i2l(long v)
 #define OP add
 #include "test-i386.h"
 
+#if 0
 #define OP sub
 #include "test-i386.h"
 
@@ -83,6 +87,7 @@ static inline long i2l(long v)
 #define OP_CC
 #define OP1
 #include "test-i386.h"
+#endif
 
 #undef CC_MASK
 #define CC_MASK (CC_C | CC_P | CC_Z | CC_S | CC_O)
@@ -142,7 +147,6 @@ static inline long i2l(long v)
 #define OP_NOBYTE
 #include "test-i386-shift.h"
 #endif
-
 #define TEST_BSX(op, size, op0)			\
 {\
     long res, val, resz;\

@@ -4,6 +4,7 @@ import (
 	"debug/elf"
 	"io"
 	"io/ioutil"
+	"strings"
 	"testing"
 )
 
@@ -119,31 +120,51 @@ func TestBinary(t *testing.T) {
 		if n < len(b) || (err != nil && err != io.EOF) {
 			t.Fatalf("got %d bytes, err %v: wanted %d, nil", n, err, p.Filesz)
 		}
-		t.Logf("b is %02x:", b)
+		//t.Logf("b is %02x:", b)
 		copy(memory[p.Vaddr:], b)
-		t.Logf("memory is now %d", len(memory))
 	}
 
 	syms, err := f.Symbols()
 	if err != nil {
 		t.Fatal(err)
 	}
-	var addrs []uint16
+	var addrs []elf.Symbol
+	var TestOutput uint32
 	for _, s := range syms {
 		t.Logf("Check %v", s)
+		if s.Name == "TestOutput" {
+			TestOutput = uint32(s.Value)
+			continue
+		}
 		if len(s.Name) < 5 || s.Name[:5] != "test_" {
 			continue
 		}
-		addrs = append(addrs, uint16(s.Value))
+		addrs = append(addrs, s)
 	}
 
 	t.Logf("Now run a.out")
 
-	for _, ip := range addrs {
+	for _, s := range addrs {
 		S16(CS, 0)
-		t.Logf("Start at %04x:%04x", 0, ip)
+		ip := uint16(s.Value)
+		t.Logf("Start %s at %04x:%04x", s.Name, 0, ip)
 		S16(IP, ip)
 		X86EMU_exec()
+		t.Logf("Finished")
 		fx86emu_dump_xregs(t.Logf)
+		narg := uint32(sys_rdw(TestOutput))
+		t.Fatalf("nargs at %#x is %d", TestOutput, narg)
+		if narg < 1 {
+			continue
+		}
+		f := strings.TrimSpace(string(memory[sys_rdw(TestOutput+2):]))
+		o := strings.TrimSpace(string(memory[sys_rdw(TestOutput+4):]))
+		args := []interface{}{o}
+		for i := uint32(0); i < narg - 2; i++ {
+			args = append(args, uint32(sys_rdw(TestOutput+6+i)))
+		}
+		t.Logf("f is %s and o is %s", f, o)
+		t.Logf(f, args...)
+
 	}
 }

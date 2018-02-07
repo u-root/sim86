@@ -4,6 +4,26 @@
 #define exec_opl glue(glue(exec_, OP), l)
 #define exec_opw glue(glue(exec_, OP), w)
 #define exec_opb glue(glue(exec_, OP), b)
+#define result(n, s, o, a, b, r, i, f)		\
+	TestOutput[0] = n;\
+	TestOutput[1] = (unsigned int)s;\
+	TestOutput[2] = (unsigned int)o;\
+	TestOutput[3] = (unsigned int)a;\
+	TestOutput[4] = (unsigned int)b;\
+	TestOutput[5] = (unsigned int)r;\
+	TestOutput[6] = (unsigned int)i;\
+	TestOutput[7] = (unsigned int)f;
+
+#define result9(n, s, s2, o, a, b, r, i, f)	\
+	TestOutput[0] = n;\
+	TestOutput[1] = (unsigned int)s;\
+	TestOutput[2] = (unsigned int)s2;	\
+	TestOutput[3] = (unsigned int)o;\
+	TestOutput[4] = (unsigned int)a;\
+	TestOutput[5] = (unsigned int)b;\
+	TestOutput[6] = (unsigned int)r;\
+	TestOutput[7] = (unsigned int)i;\
+	TestOutput[8] = (unsigned int)f;
 
 #ifndef OP_SHIFTD
 
@@ -27,21 +47,6 @@
          : "c" (s1), "0" (res), "1" (flags));
 #endif
 
-#if defined(__x86_64__)
-void exec_opq(long s2, long s0, long s1, long iflags)
-{
-    long res, flags;
-    res = s0;
-    flags = iflags;
-    EXECSHIFT("q", "", res, s1, s2, flags);
-    /* overflow is undefined if count != 1 */
-    if (s1 != 1)
-      flags &= ~CC_O;
-    printf("%-10s A=" FMTLX " B=" FMTLX " R=" FMTLX " CCIN=%04lx CC=%04lx\n",
-           stringify(OP) "q", s0, s1, res, iflags, flags & CC_MASK);
-}
-#endif
-
 void exec_opl(long s2, long s0, long s1, long iflags)
 {
     long res, flags;
@@ -51,7 +56,7 @@ void exec_opl(long s2, long s0, long s1, long iflags)
     /* overflow is undefined if count != 1 */
     if (s1 != 1)
       flags &= ~CC_O;
-    printf("%-10s A=" FMTLX " B=" FMTLX " R=" FMTLX " CCIN=%04lx CC=%04lx\n",
+    result(7, "%-10s A=" FMTLX " B=" FMTLX " R=" FMTLX " CCIN=%04lx CC=%04lx\n",
            stringify(OP) "l", s0, s1, res, iflags, flags & CC_MASK);
 }
 
@@ -64,7 +69,7 @@ void exec_opw(long s2, long s0, long s1, long iflags)
     /* overflow is undefined if count != 1 */
     if (s1 != 1)
       flags &= ~CC_O;
-    printf("%-10s A=" FMTLX " B=" FMTLX " R=" FMTLX " CCIN=%04lx CC=%04lx\n",
+    result(7, "%-10s A=" FMTLX " B=" FMTLX " R=" FMTLX " CCIN=%04lx CC=%04lx\n",
            stringify(OP) "w", s0, s1, res, iflags, flags & CC_MASK);
 }
 
@@ -78,21 +83,6 @@ void exec_opw(long s2, long s0, long s1, long iflags)
          : "=g" (res), "=g" (flags)\
          : "c" (s1), "0" (res), "1" (flags), "r" (s2));
 
-#if defined(__x86_64__)
-void exec_opq(long s2, long s0, long s1, long iflags)
-{
-    long res, flags;
-    res = s0;
-    flags = iflags;
-    EXECSHIFT("q", "", res, s1, s2, flags);
-    /* overflow is undefined if count != 1 */
-    if (s1 != 1)
-      flags &= ~CC_O;
-    printf("%-10s A=" FMTLX " B=" FMTLX " C=" FMTLX " R=" FMTLX " CCIN=%04lx CC=%04lx\n",
-           stringify(OP) "q", s0, s2, s1, res, iflags, flags & CC_MASK);
-}
-#endif
-
 void exec_opl(long s2, long s0, long s1, long iflags)
 {
     long res, flags;
@@ -102,7 +92,7 @@ void exec_opl(long s2, long s0, long s1, long iflags)
     /* overflow is undefined if count != 1 */
     if (s1 != 1)
       flags &= ~CC_O;
-    printf("%-10s A=" FMTLX " B=" FMTLX " C=" FMTLX " R=" FMTLX " CCIN=%04lx CC=%04lx\n",
+    result9(8, "%-10s A=" FMTLX " B=" FMTLX " C=" FMTLX " R=" FMTLX " CCIN=%04lx CC=%04lx\n",
            stringify(OP) "l", s0, s2, s1, res, iflags, flags & CC_MASK);
 }
 
@@ -115,7 +105,7 @@ void exec_opw(long s2, long s0, long s1, long iflags)
     /* overflow is undefined if count != 1 */
     if (s1 != 1)
       flags &= ~CC_O;
-    printf("%-10s A=" FMTLX " B=" FMTLX " C=" FMTLX " R=" FMTLX " CCIN=%04lx CC=%04lx\n",
+    result9(8, "%-10s A=" FMTLX " B=" FMTLX " C=" FMTLX " R=" FMTLX " CCIN=%04lx CC=%04lx\n",
            stringify(OP) "w", s0, s2, s1, res, iflags, flags & CC_MASK);
 }
 
@@ -131,7 +121,7 @@ void exec_opb(long s0, long s1, long iflags)
     /* overflow is undefined if count != 1 */
     if (s1 != 1)
       flags &= ~CC_O;
-    printf("%-10s A=" FMTLX " B=" FMTLX " R=" FMTLX " CCIN=%04lx CC=%04lx\n",
+    result(7, "%-10s A=" FMTLX " B=" FMTLX " R=" FMTLX " CCIN=%04lx CC=%04lx\n",
            stringify(OP) "b", s0, s1, res, iflags, flags & CC_MASK);
 }
 #endif
