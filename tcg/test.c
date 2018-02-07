@@ -41,6 +41,9 @@ static inline long i2l(long v)
 #define OP add
 #include "test-i386.h"
 
+#define OP sub
+#include "test-i386.h"
+
 #define TEST_BSX(op, size, op0)\
 {\
     long res, val, resz;\
