@@ -44,7 +44,106 @@ static inline long i2l(long v)
 #define OP sub
 #include "test-i386.h"
 
-#define TEST_BSX(op, size, op0)\
+#define OP xor
+#include "test-i386.h"
+
+#define OP and
+#include "test-i386.h"
+
+#define OP or
+#include "test-i386.h"
+
+#define OP cmp
+#include "test-i386.h"
+
+#define OP adc
+#define OP_CC
+#include "test-i386.h"
+
+#define OP sbb
+#define OP_CC
+#include "test-i386.h"
+
+#define OP inc
+#define OP_CC
+#define OP1
+#include "test-i386.h"
+
+#define OP dec
+#define OP_CC
+#define OP1
+#include "test-i386.h"
+
+#define OP neg
+#define OP_CC
+#define OP1
+#include "test-i386.h"
+
+#define OP not
+#define OP_CC
+#define OP1
+#include "test-i386.h"
+
+#undef CC_MASK
+#define CC_MASK (CC_C | CC_P | CC_Z | CC_S | CC_O)
+
+#if 0
+#define OP shl
+
+#include "test-i386-shift.h"
+
+#define OP shr
+#include "test-i386-shift.h"
+
+#define OP sar
+#include "test-i386-shift.h"
+
+#define OP rol
+#include "test-i386-shift.h"
+
+#define OP ror
+#include "test-i386-shift.h"
+
+#define OP rcr
+#define OP_CC
+#include "test-i386-shift.h"
+
+#define OP rcl
+#define OP_CC
+#include "test-i386-shift.h"
+
+#define OP shld
+#define OP_SHIFTD
+#define OP_NOBYTE
+#include "test-i386-shift.h"
+
+#define OP shrd
+#define OP_SHIFTD
+#define OP_NOBYTE
+#include "test-i386-shift.h"
+
+/* XXX: should be more precise ? */
+#undef CC_MASK
+#define CC_MASK (CC_C)
+
+#define OP bt
+#define OP_NOBYTE
+#include "test-i386-shift.h"
+
+#define OP bts
+#define OP_NOBYTE
+#include "test-i386-shift.h"
+
+#define OP btr
+#define OP_NOBYTE
+#include "test-i386-shift.h"
+
+#define OP btc
+#define OP_NOBYTE
+#include "test-i386-shift.h"
+#endif
+
+#define TEST_BSX(op, size, op0)			\
 {\
     long res, val, resz;\
     val = op0;\
@@ -56,7 +155,7 @@ static inline long i2l(long v)
 	: "r" (val));\
 }
 
-void test_bsx(void)
+void _test_bsx(void)
 {
     TEST_BSX(bsrw, "w", 0);
     TEST_BSX(bsrw, "w", 0x12340128);
@@ -83,6 +182,5 @@ int main()
         func = *ptr++;
         func();
     }
-    test_bsx();
 }
 

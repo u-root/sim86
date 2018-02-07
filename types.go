@@ -71,12 +71,12 @@ func S(r regtype, val interface{}) {
 	switch v := val.(type) {
 	// clean this up later, just get it working now.
 	case value:
-		switch uint64(v) & (vb | vw | vb) {
-		case 4:
+		switch uint64(v) & (vd | vw | vb) {
+		case vd:
 			S(r, uint32(v))
-		case 2:
+		case vw:
 			S(r, uint16(v))
-		case 1:
+		case vb:
 			S(r, uint8(v))
 		default:
 			_X86EMU_trace_regs()

@@ -1677,8 +1677,8 @@ func x86emuOp2_bsr(_ uint8) {
 				return
 			}
 			CONDITIONAL_SET_FLAG(srcval == 0, F_ZF)
-			for S(dstreg, 15); G(dstreg) > 0; S(dstreg, G(dstreg)-1) {
-				if ((srcval >> G(dstreg)) & 1) != 0 {
+			for S(dstreg, uint16(15)); G(dstreg) > 0; S(dstreg, G(dstreg)-1) {
+				if ((srcval >> G16(dstreg)) & 1) != 0 {
 					break
 				}
 			}

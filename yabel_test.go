@@ -128,33 +128,20 @@ func TestBinary(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	var si, ei *elf.Symbol
-	for i, s := range syms {
+	var addrs []uint16
+	for _, s := range syms {
 		t.Logf("Check %v", s)
-		if s.Name == "__start_initcall" {
-			si = &syms[i]
+		if len(s.Name) < 5 || s.Name[:5] != "test_" {
+			continue
 		}
-		if s.Name == "__stop_initcall" {
-			ei = &syms[i]
-		}
-		if si != nil && ei != nil {
-			break
-		}
+		addrs = append(addrs, uint16(s.Value))
 	}
-	if si == nil || ei == nil {
-		t.Fatalf("si %v ei %v both have to be non-nil", si, ei)
-	}
-	t.Logf("si %v, ei %v", si, ei)
 
 	t.Logf("Now run a.out")
 
-	for i := si.Value; i < ei.Value; i += 2 {
+	for _, ip := range addrs {
 		S16(CS, 0)
-		ip := uint16(memory[i]) | uint16(memory[i+1])<<8
-		if ip == 0 {
-			break
-		}
-		t.Logf("Get entry at %#x; Start at %04x:%04x", i, 0, ip)
+		t.Logf("Start at %04x:%04x", 0, ip)
 		S16(IP, ip)
 		X86EMU_exec()
 		fx86emu_dump_xregs(t.Logf)
