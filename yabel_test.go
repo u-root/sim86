@@ -1,10 +1,7 @@
 package main
 
 import (
-	"debug/elf"
-	"io"
 	"io/ioutil"
-	"strings"
 	"testing"
 )
 
@@ -95,76 +92,66 @@ func TestBinary(t *testing.T) {
 	}
 
 	// qemu tests
-	f, err := elf.Open("tcg/a.out")
-	if err != nil {
-		t.Fatalf("elf")
-	}
-	s := f.Section("initcall")
-	if s == nil {
-		t.Fatal(err)
-	}
-	for _, p := range f.Progs {
-		if p.Type != elf.PT_LOAD {
-			continue
-		}
-		if p.Vaddr > uint64(len(memory)) {
-			t.Fatalf("p.Vaddr (%#x) > len(memory) %#x", p.Vaddr, len(memory))
-		}
-		if p.Vaddr+p.Filesz > uint64(len(memory)) {
-			t.Fatalf("p.Vaddr (%#x) + p.Filesz %#x  len(memory) %#x", p.Vaddr, p.Filesz, len(memory))
-		}
-		t.Logf("Read in %d bytes at %#x", p.Filesz, p.Vaddr)
-		b := make([]byte, p.Filesz)
-		n, err := p.ReadAt(b, 0)
-		// The elf package is strangely disfunctional
-		if n < len(b) || (err != nil && err != io.EOF) {
-			t.Fatalf("got %d bytes, err %v: wanted %d, nil", n, err, p.Filesz)
-		}
-		//t.Logf("b is %02x:", b)
-		copy(memory[p.Vaddr:], b)
-	}
-
-	syms, err := f.Symbols()
+	b, err = ioutil.ReadFile("tcg/test.bin")
 	if err != nil {
 		t.Fatal(err)
 	}
-	var addrs []elf.Symbol
-	var TestOutput uint32
-	for _, s := range syms {
-		t.Logf("Check %v", s)
-		if s.Name == "TestOutput" {
-			TestOutput = uint32(s.Value)
-			continue
-		}
-		if len(s.Name) < 5 || s.Name[:5] != "test_" {
-			continue
-		}
-		addrs = append(addrs, s)
-	}
+	copy(memory[0:], b)
 
-	t.Logf("Now run a.out")
-
-	for _, s := range addrs {
-		S16(CS, 0)
-		ip := uint16(s.Value)
-		t.Logf("Start %s at %04x:%04x", s.Name, 0, ip)
-		S16(IP, ip)
+	S16(CS, 0)
+	S16(IP, 0)
+	for {
 		X86EMU_exec()
 		t.Logf("Finished")
 		fx86emu_dump_xregs(t.Logf)
-		narg := uint32(sys_rdw(TestOutput))
-		t.Fatalf("nargs at %#x is %d", TestOutput, narg)
-		if narg < 1 {
-			continue
+		TestOutput := uint32(G16(IP))
+		sp := int(G16(SP))
+		t.Logf("TestOutput at %#x; sp at %#x", TestOutput, sp)
+		dsz := sys_rdb(TestOutput)
+		bits := sys_rdb(TestOutput + 1)
+		nargs := int(sys_rdb(TestOutput + 2))
+		// Can't scan for null. Damn.
+		opx := TestOutput + uint32(dsz) + 1
+		t.Logf("opx is %v", opx)
+		// Can't quite work out null terminators in strings library
+		// but as loves them. So ...
+		var opcode string
+		for {
+			b := sys_rdb(opx)
+			if b == 0 {
+				break
+			}
+			opcode = opcode + string([]byte{b})
+			opx++
 		}
-		f := strings.TrimSpace(string(memory[sys_rdw(TestOutput+2):]))
-		o := strings.TrimSpace(string(memory[sys_rdw(TestOutput+4):]))
-		args := []interface{}{o}
-		for i := uint32(0); i < narg - 2; i++ {
-			args = append(args, uint32(sys_rdw(TestOutput+6+i)))
+		opx++
+		var f string
+		for {
+			b := sys_rdb(opx)
+			if b == 0 {
+				break
+			}
+			f = f + string([]byte{b})
+			opx++
 		}
-		t.Logf("f is %s and o is %s", f, o)
-		t.Logf(f, args...)
+		t.Logf("f is %s and o is %s", f, opcode)
+		args := []interface{}{opcode}
+		for i := 0; i < nargs; i++ {
+			switch bits {
+			case 16:
+				args = append(args, uint16(memory[sp+nargs-i*2]))
+			case 32:
+				args = append(args, uint32(memory[sp+nargs-i*4]))
+			default:
+				t.Fatalf("Bogus bit size: %d", dsz)
+			}
+		}
+		// And, the iflags and flags are always there and always 16 bits
+		args = append(args, uint16(memory[sp+2]))
+		args = append(args, uint16(memory[sp+0]))
 
+		t.Logf(f, args...)
+		break
 	}
+
 }
