@@ -22,12 +22,12 @@
 	movw	$flags, %ax ;\
 	pushw %ax ;\
 	popf; \
-	OPR(mov,size) $res, REG(c, pre, rsize);	\
+	OPR(mov,size) $res, REG(a, pre, rsize);	\
 	PUSH(c,pre) ;\
 	OPR(mov,size) $s1, REG(b, pre, rsize) ;	\
 	PUSH(b,pre) ;\
-	OPR(o,size) REG(b,pre, rsize), REG(c,pre, rsize) ;	\
-	PUSH(c,pre) ;					\
+	OPR(o,size) REG(b,pre, rsize), REG(a,pre, rsize) ;	\
+	PUSH(a,pre) ;					\
 	pushf ;\
 	hlt ;\
 	.byte 2; /* number of following bytes of info */ \
@@ -36,14 +36,14 @@
 	.asciz #o ;							\
 	.asciz "%s%s A=%#x B=%#x R=%#x CCIN=%04x CC=%04x" ;
 
-#define EXECOP1(size, rsize, res, flags) \
+#define EXECOP1(o, size, rsize, bits, pre, res, flags)	\
 	movw	$flags, %ax ;\
 	pushw %ax ;\
 	popf; \
-	OPR(mov,size) $res, REG(c, pre, rsize);	\
-	PUSH(c,pre) ;\
-	OPR(o,size) REG(c,pre, rsize) ;	\
-	PUSH(c,pre) ;					\
+	OPR(mov,size) $res, REG(a, pre, rsize);	\
+	PUSH(a,pre) ;\
+	OPR(o,size) REG(a,pre, rsize) ;	\
+	PUSH(a,pre) ;					\
 	pushf ;\
 	hlt ;\
 	.byte 2; /* number of following bytes of info */ \
@@ -115,3 +115,4 @@ TNAME:
 #undef OP_CC
 #undef result
 #undef TEST
+#undef TNAME

@@ -107,7 +107,7 @@ func TestBinary(t *testing.T) {
 		fx86emu_dump_xregs(t.Logf)
 		TestOutput := uint32(G16(IP))
 		sp := int(G16(SP))
-		t.Logf("TestOutput at %#x; sp at %#x; vars %02x", TestOutput, sp, memory[TestOutput:TestOutput+4])
+		t.Logf("TestOutput at %#x; sp at %#x; vars %02x", TestOutput, sp, memory[TestOutput:TestOutput+0x10])
 		dsz := sys_rdb(TestOutput)
 		bits := sys_rdb(TestOutput + 1)
 		nargs := int(sys_rdb(TestOutput + 2))
@@ -137,6 +137,7 @@ func TestBinary(t *testing.T) {
 			opx++
 		}
 		t.Logf("f is %s and o is %s", f, opcode)
+		t.Logf("sp is %02x", memory[sp:sp+16])
 		args := []interface{}{opcode, map[byte]string{8:"b", 16:"w", 32: "l"}[bits]}
 		for i := 0; i < nargs; i++ {
 			switch bits {
