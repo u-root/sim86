@@ -100,7 +100,7 @@ func TestBinary(t *testing.T) {
 
 	S16(CS, 0)
 	S16(IP, 0)
-	for {
+	for int(G16(IP)) < len(b) {
 		X86EMU_exec()
 		t.Logf("Finished")
 		fx86emu_dump_xregs(t.Logf)
@@ -151,7 +151,6 @@ func TestBinary(t *testing.T) {
 		args = append(args, uint16(memory[sp+0]))
 
 		t.Logf(f, args...)
-		break
 	}
 
 }

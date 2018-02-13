@@ -36,22 +36,23 @@
 	.asciz #o ;							\
 	.asciz "%-10s A=%#x B=%#x R=%#x CCIN=%04x CC=%04x" ;
 
-#define EXECOP1(size, rsize, pre, res, flags)	\
-
-#if 0
 #define EXECOP1(size, rsize, res, flags) \
-    asm (".code16\n\npush %3\n\t"\
-         "popf\n\t"\
-         stringify(OP) size " %" rsize "0\n\t" \
-         "pushf\n\t"\
-         "pop %1\n\t"\
-         : "=q" (res), "=g" (flags)\
-	 : "0" (res), "1" (flags));\
-    result(6, "%-10s A=" FMTLX " R=" FMTLX " CCIN=%04lx CC=%04lx\n",	\
-           stringify(OP) size, s0, res, iflags, flags & CC_MASK, 0); \
-	asm ("hlt\n")
+	movw	$flags, %ax ;\
+	pushw %ax ;\
+	popf; \
+	OPR(mov,size) $res, REG(c, pre, rsize);	\
+	PUSH(c,pre) ;\
+	OPR(o,size) REG(c,pre, rsize) ;	\
+	PUSH(c,pre) ;					\
+	pushf ;\
+	hlt ;\
+	.byte 2; /* number of following bytes of info */ \
+	/* currently # bits per stack item, and nargs */ \
+	.byte bits, 3; \
+	.asciz #o ;							\
+	.asciz "%-10s A=" FMTLX " R=" FMTLX " CCIN=%04lx CC=%04lx\n",
 
-#endif
+
 #ifdef OP1
 
 #define exec_opl(o,s0, s1, iflags) EXECOP1(o,l, x, 32, e, res, iflags)
