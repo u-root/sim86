@@ -92,7 +92,7 @@ func TestBinary(t *testing.T) {
 	}
 
 	// qemu tests
-	b, err = ioutil.ReadFile("tcg/test.bin")
+	b, err = ioutil.ReadFile("tcg/tests.bin")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -101,18 +101,20 @@ func TestBinary(t *testing.T) {
 	S16(CS, 0)
 	S16(IP, 0)
 	for int(G16(IP)) < len(b) {
+		t.Logf("Start code at %#04x:%#04x", G16(CS), G16(IP))
 		X86EMU_exec()
-		t.Logf("Finished")
+		t.Logf("End code at %#04x:%#04x", G16(CS), G16(IP))
 		fx86emu_dump_xregs(t.Logf)
 		TestOutput := uint32(G16(IP))
 		sp := int(G16(SP))
-		t.Logf("TestOutput at %#x; sp at %#x", TestOutput, sp)
+		t.Logf("TestOutput at %#x; sp at %#x; vars %02x", TestOutput, sp, memory[TestOutput:TestOutput+4])
 		dsz := sys_rdb(TestOutput)
 		bits := sys_rdb(TestOutput + 1)
 		nargs := int(sys_rdb(TestOutput + 2))
+		t.Logf("dsz %d bits %d nargs %d", dsz, bits, nargs)
 		// Can't scan for null. Damn.
 		opx := TestOutput + uint32(dsz) + 1
-		t.Logf("opx is %v", opx)
+		t.Logf("opx is %#x", opx)
 		// Can't quite work out null terminators in strings library
 		// but as loves them. So ...
 		var opcode string
@@ -135,10 +137,10 @@ func TestBinary(t *testing.T) {
 			opx++
 		}
 		t.Logf("f is %s and o is %s", f, opcode)
-		args := []interface{}{opcode}
+		args := []interface{}{opcode, map[byte]string{8:"b", 16:"w", 32: "l"}[bits]}
 		for i := 0; i < nargs; i++ {
 			switch bits {
-			case 16:
+			case 16,8:
 				args = append(args, uint16(memory[sp+nargs-i*2]))
 			case 32:
 				args = append(args, uint32(memory[sp+nargs-i*4]))
@@ -151,6 +153,8 @@ func TestBinary(t *testing.T) {
 		args = append(args, uint16(memory[sp+0]))
 
 		t.Logf(f, args...)
+		// opx is at the null after the fmt string. Bump IP to start again.
+		S16(IP, uint16(opx+1))
 	}
 
 }
