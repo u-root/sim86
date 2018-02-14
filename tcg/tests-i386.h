@@ -77,11 +77,8 @@
 #else
 #define exec_op(s0, s1) \
     exec_opl(OP,s0, s1, 0) \
-
-/*
     exec_opw(OP,s0, s1, 0) \
     exec_opb(OP,s0, s1, 0) 
-    */
 #endif
 
 # fuck cpp.
