@@ -39,10 +39,10 @@
 #define TNAME test_add
 #include "tests-i386.h"
 
-#if 0
 #define OP sub
 #include "tests-i386.h"
 
+#if 0
 #define OP xor
 #include "tests-i386.h"
 
