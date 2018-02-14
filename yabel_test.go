@@ -62,7 +62,7 @@ func TestBinary(t *testing.T) {
 	copy(memory[:], b)
 	S(CS, uint16(0))
 	S(IP, uint16(0x0))
-	S(SP, uint16(0x2000))
+	S(SP, uint16(0xfff0))
 	M.x86.debug |= DEBUG_DISASSEMBLE_F | DEBUG_DECODE_F | DEBUG_TRACE_F
 	for _, c := range checks {
 		S(SS, uint16(0))
@@ -156,6 +156,7 @@ func TestBinary(t *testing.T) {
 		t.Logf(f, args...)
 		// opx is at the null after the fmt string. Bump IP to start again.
 		S16(IP, uint16(opx+1))
+		S(SP, uint16(0xfff0))
 	}
 
 }

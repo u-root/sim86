@@ -48,7 +48,7 @@
 	hlt ;\
 	.byte 2; /* number of following bytes of info */ \
 	/* currently # bits per stack item, and nargs */ \
-	.byte bits, 3; \
+	.byte bits, 2; \
 	.asciz #o ;							\
 	.asciz "%s%s A=%#x R=%#x CCIN=%04x CC=%04x" ;
 
