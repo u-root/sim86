@@ -64,12 +64,12 @@
 #include "tests-i386.h"
 #endif
 
+#if 0
 #define OP inc
 #define OP_CC
 #define OP1
 #include "tests-i386.h"
 
-#if 0
 #define OP dec
 #define OP_CC
 #define OP1

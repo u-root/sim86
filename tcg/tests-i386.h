@@ -23,7 +23,7 @@
 	pushw %ax ;\
 	popf; \
 	OPR(mov,size) $res, REG(a, pre, rsize);	\
-	PUSH(c,pre) ;\
+	PUSH(a,pre) ;\
 	OPR(mov,size) $s1, REG(b, pre, rsize) ;	\
 	PUSH(b,pre) ;\
 	OPR(o,size) REG(b,pre, rsize), REG(a,pre, rsize) ;	\
@@ -77,8 +77,11 @@
 #else
 #define exec_op(s0, s1) \
     exec_opl(OP,s0, s1, 0) \
+
+/*
     exec_opw(OP,s0, s1, 0) \
     exec_opb(OP,s0, s1, 0) 
+    */
 #endif
 
 # fuck cpp.
@@ -86,6 +89,7 @@
     .global TNAME
 TNAME:
     exec_op(0x12345678, 0x812FADA);
+#if 0
     exec_op(0x12341, 0x12341);
     exec_op(0x12341, -0x12341);
     exec_op(0xffffffff, 0);
@@ -110,6 +114,7 @@ TNAME:
     exec_op(0x12348080, -1);
     exec_op(0x12348080, 1);
     exec_op(0x12348080, -2);
+#endif
 
 #undef OP
 #undef OP_CC

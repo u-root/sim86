@@ -354,7 +354,7 @@ func parse_line(r *bufio.Reader) (string, []uint16, error) {
 }
 
 func x86emu_dump_regs() {
-	fx86emu_dump_regs(func(s string, a ...interface{}) {
+	fx86emu_dump_xregs(func(s string, a ...interface{}) {
 		fmt.Printf(s, a...)
 	})
 }

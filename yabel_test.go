@@ -5,6 +5,11 @@ import (
 	"testing"
 )
 
+const (
+	StackSeg uint16 = 0xa000
+	StackPointer uint16 = 0xfff0
+	TOS uint32 = 0xafff0
+)
 func TestIP(t *testing.T) {
 	ip := uint16(0x1234)
 	S(IP, ip)
@@ -101,12 +106,14 @@ func TestBinary(t *testing.T) {
 	S16(CS, 0)
 	S16(IP, 0)
 	for int(G16(IP)) < len(b) {
+		S(SS, StackSeg)
+		S(SP, StackPointer)
 		t.Logf("Start code at %#04x:%#04x", G16(CS), G16(IP))
 		X86EMU_exec()
 		t.Logf("End code at %#04x:%#04x", G16(CS), G16(IP))
 		fx86emu_dump_xregs(t.Logf)
 		TestOutput := uint32(G16(IP))
-		sp := int(G16(SP))
+		sp := int(G16(SS))<<4 + int(G16(SP))
 		t.Logf("TestOutput at %#x; sp at %#x; vars %02x", TestOutput, sp, memory[TestOutput:TestOutput+0x10])
 		dsz := sys_rdb(TestOutput)
 		bits := sys_rdb(TestOutput + 1)
@@ -137,26 +144,34 @@ func TestBinary(t *testing.T) {
 			opx++
 		}
 		t.Logf("f is %s and o is %s", f, opcode)
-		t.Logf("sp is %02x", memory[sp:sp+16])
+		t.Logf("stack at 0x%x is %02x", sp, memory[sp:sp+16])
 		args := []interface{}{opcode, map[byte]string{8:"b", 16:"w", 32: "l"}[bits]}
+		t.Logf("Process %d args ", nargs)
+		tos := TOS
 		for i := 0; i < nargs; i++ {
 			switch bits {
 			case 16,8:
-				args = append(args, uint16(memory[sp+nargs-i*2]))
+				t.Logf("word at tos %#x is %02x", tos, memory[tos-2:tos])
+				args = append(args, uint16(memory[tos-2]) | uint16(memory[tos-1])<<8)
+				tos -= 2
 			case 32:
-				args = append(args, uint32(memory[sp+nargs-i*4]))
+				t.Logf("long at tos %#x is %02x", tos, memory[tos-4:tos])
+				args = append(args, uint32(memory[tos-4]) |
+uint32(memory[tos-3])<<8 |
+uint32(memory[tos-2])<<16 |
+uint32(memory[tos-1])<<24)
+				tos -= 4
 			default:
 				t.Fatalf("Bogus bit size: %d", dsz)
 			}
 		}
 		// And, the iflags and flags are always there and always 16 bits
-		args = append(args, uint16(memory[sp+2]))
-		args = append(args, uint16(memory[sp+0]))
+		args = append(args, uint16(memory[tos-2]))
+		args = append(args, uint16(memory[tos-4]))
 
 		t.Logf(f, args...)
 		// opx is at the null after the fmt string. Bump IP to start again.
 		S16(IP, uint16(opx+1))
-		S(SP, uint16(0xfff0))
 	}
 
 }
