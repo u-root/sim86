@@ -1,15 +1,17 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"testing"
 )
 
 const (
-	StackSeg uint16 = 0xa000
+	StackSeg     uint16 = 0xa000
 	StackPointer uint16 = 0xfff0
-	TOS uint32 = 0xafff0
+	TOS          uint32 = 0xafff0
 )
+
 func TestIP(t *testing.T) {
 	ip := uint16(0x1234)
 	S(IP, ip)
@@ -144,22 +146,21 @@ func TestBinary(t *testing.T) {
 			opx++
 		}
 		t.Logf("f is %s and o is %s", f, opcode)
-		t.Logf("stack at 0x%x is %02x", sp, memory[sp:sp+16])
 		args := []interface{}{opcode, map[byte]string{8:"b", 16:"w", 32: "l"}[bits]}
 		t.Logf("Process %d args ", nargs)
 		tos := TOS
 		for i := 0; i < nargs; i++ {
 			switch bits {
-			case 16,8:
+			case 16, 8:
 				t.Logf("word at tos %#x is %02x", tos, memory[tos-2:tos])
-				args = append(args, uint16(memory[tos-2]) | uint16(memory[tos-1])<<8)
+				args = append(args, uint16(memory[tos-2])|uint16(memory[tos-1])<<8)
 				tos -= 2
 			case 32:
 				t.Logf("long at tos %#x is %02x", tos, memory[tos-4:tos])
-				args = append(args, uint32(memory[tos-4]) |
-uint32(memory[tos-3])<<8 |
-uint32(memory[tos-2])<<16 |
-uint32(memory[tos-1])<<24)
+				args = append(args, uint32(memory[tos-4])|
+					uint32(memory[tos-3])<<8|
+					uint32(memory[tos-2])<<16|
+					uint32(memory[tos-1])<<24)
 				tos -= 4
 			default:
 				t.Fatalf("Bogus bit size: %d", dsz)
@@ -168,6 +169,10 @@ uint32(memory[tos-1])<<24)
 		// And, the iflags and flags are always there and always 16 bits
 		args = append(args, uint16(memory[tos-2]))
 		args = append(args, uint16(memory[tos-4]))
+		out := fmt.Sprintf(f, args...)
+		if _, ok := testout[out]; ! ok {
+			t.Errorf("%s: can't find it in output", out)
+		}
 
 		t.Logf(f, args...)
 		// opx is at the null after the fmt string. Bump IP to start again.
