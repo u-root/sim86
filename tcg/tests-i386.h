@@ -36,7 +36,7 @@
 	/* currently # bits per stack item, and nargs */ \
 	.byte bits, 3; \
 	.asciz #o ;							\
-	.asciz "%s%s A=%#x B=%#x R=%#x CCIN=%04x CC=%04x" ;
+	.asciz "%s%s A=%08x B=%08x R=%08x CCIN=%04x CC=%04x" ;
 
 #define EXECOP1(o, size, rsize, bits, pre, res, flags)	\
 	movw	$flags, %ax ;\
@@ -52,7 +52,7 @@
 	/* currently # bits per stack item, and nargs */ \
 	.byte bits, 2; \
 	.asciz #o ;							\
-	.asciz "%s%s A=%#x R=%#x CCIN=%04x CC=%04x" ;
+	.asciz "%s%s A=%08x R=%08x CCIN=%04x CC=%04x" ;
 
 
 #ifdef OP1
