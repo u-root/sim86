@@ -373,6 +373,7 @@ func fx86emu_dump_regs(f func(string, ...interface{})) {
 	f("SS=%04x  ", G16(SS))
 	f("CS=%04x  ", G16(CS))
 	f("IP=%04x   ", G16(IP))
+	f("FLAG=%04x   ", G16(FLAGS))
 	/* CHECKED... */
 	if ACCESS_FLAG(F_OF) {
 		f("OV ")
@@ -436,6 +437,7 @@ func fx86emu_dump_xregs(f func(string, ...interface{})) {
 	f("SS=%04x  ", G32(SS))
 	f("CS=%04x  ", G32(CS))
 	f("IP=%08x   ", G32(IP))
+	f("EFLAG=%08x   ", G32(EFLAGS))
 
 	/* CHECKED... */
 	if ACCESS_FLAG(F_OF) {

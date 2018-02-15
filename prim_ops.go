@@ -99,7 +99,7 @@
 
 /*------------------------- Global Variables ------------------------------*/
 package main
-
+import "log"
 var x86emu_parity_tab = [8]uint32{
 	0x96696996,
 	0x69969669,
@@ -174,6 +174,9 @@ func no_carry_long_side_eff(res uint32) {
 func calc_carry_chain(bits uint32, d uint32, s uint32, res uint32, set_carry int) {
 
 	cc := (s & d) | ((^res) & (s | d))
+	log.Printf("s&d %08x ^res & s|d %08x",
+		(s & d) , ((^res) & (s | d)))
+	log.Printf("cc %08x cc &8 %08x", cc, cc&8)
 	CONDITIONAL_SET_FLAG(XOR2(cc>>(bits-2)), F_OF)
 	CONDITIONAL_SET_FLAG(cc&0x8, F_AF)
 	if set_carry != 0 {

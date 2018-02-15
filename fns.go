@@ -379,6 +379,7 @@ func CONDITIONAL_SET_FLAG_BOOL(cond bool, flag uint32) {
 }
 
 func CONDITIONAL_SET_FLAG(cond interface{}, flag uint32) {
+			log.Printf("CSF v %v, flag %v", cond, flag)
 	switch v := cond.(type) {
 	case bool:
 		CONDITIONAL_SET_FLAG_BOOL(v, flag)

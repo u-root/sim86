@@ -2463,7 +2463,7 @@ func x86emuOp_pushf_word(_ uint8) {
 	}
 
 	/* clear out *all* bits not representing flags, and turn on real bits */
-	flags = (M.x86.FLAGS & F_MSK) | F_ALWAYS_ON
+	flags = (uint32(G16(FLAGS)) & F_MSK) | F_ALWAYS_ON
 	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
 		push_long(flags)
 	} else {
@@ -2489,9 +2489,9 @@ func x86emuOp_popf_word(_ uint8) {
 		return
 	}
 	if (M.x86.mode & SYSMODE_PREFIX_DATA) != 0 {
-		M.x86.FLAGS = pop_long()
+		S32(FLAGS, pop_long())
 	} else {
-		M.x86.FLAGS = uint32(pop_word())
+		S16(FLAGS, pop_word())
 	}
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
@@ -2509,9 +2509,9 @@ func x86emuOp_sahf(_ uint8) {
 		return
 	}
 	/* clear the lower bits of the flag register */
-	M.x86.FLAGS &= 0xffffff00
+	f := G32(FLAGS) & 0xfffffff0
 	/* or in the AH register into the flags register */
-	M.x86.FLAGS |= uint32(G8(AH))
+	S16(FLAGS, uint16(f) | uint16(G8(AH)))
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }
@@ -2527,7 +2527,7 @@ func x86emuOp_lahf(_ uint8) {
 		END_OF_INSTR()
 		return
 	}
-	S8(AH, (uint8)(M.x86.FLAGS&0xff))
+	S8(AH, (uint8)(G16(FLAGS)&0xff))
 	/*undocumented TC++ behavior??? Nope.  It's documented, but
 	  you have too look real hard to notice it. */
 	S8(AH, 0x2)
@@ -3711,7 +3711,7 @@ func x86emuOp_int3(_ uint8) {
 	if _X86EMU_intrTab[3] != nil {
 		_X86EMU_intrTab[3](3)
 	} else {
-		push_word(uint16(M.x86.FLAGS))
+		push_word(uint16(G16(FLAGS)))
 		CLEAR_FLAG(F_IF)
 		CLEAR_FLAG(F_TF)
 		push_word(G16(CS))
@@ -3741,7 +3741,7 @@ func x86emuOp_int_IMM(_ uint8) {
 	if _X86EMU_intrTab[intnum] != nil {
 		_X86EMU_intrTab[intnum](intnum)
 	} else {
-		push_word(uint16(M.x86.FLAGS))
+		push_word(uint16(G16(FLAGS)))
 		CLEAR_FLAG(F_IF)
 		CLEAR_FLAG(F_TF)
 		push_word(G16(CS))
@@ -3770,7 +3770,7 @@ func x86emuOp_into(_ uint8) {
 		if _X86EMU_intrTab[4] != nil {
 			_X86EMU_intrTab[4](4)
 		} else {
-			push_word(uint16(M.x86.FLAGS))
+			push_word(uint16(G16(FLAGS)))
 			CLEAR_FLAG(F_IF)
 			CLEAR_FLAG(F_TF)
 			push_word(G16(CS))
@@ -3798,7 +3798,7 @@ func x86emuOp_iret(_ uint8) {
 
 	S16(IP, pop_word())
 	S16(CS, pop_word())
-	M.x86.FLAGS = uint32(pop_word())
+	S16(FLAGS, pop_word())
 	DECODE_CLEAR_SEGOVR()
 	END_OF_INSTR()
 }

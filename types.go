@@ -240,7 +240,6 @@ func (r regtype) String() string {
 
 type X86EMU_regs struct {
 	regs        [64]uint32
-	FLAGS       uint32
 	mode        uint32
 	intr        uint32
 	debug       uint32
