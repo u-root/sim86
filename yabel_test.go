@@ -171,7 +171,7 @@ func TestBinary(t *testing.T) {
 		args = append(args, uint16(memory[tos-4]))
 		out := fmt.Sprintf(f, args...)
 		if _, ok := testout[out]; ! ok {
-			t.Errorf("%s: can't find it in output", out)
+			t.Fatalf("%s: can't find it in output", out)
 		}
 
 		t.Logf(f, args...)

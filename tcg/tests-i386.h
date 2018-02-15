@@ -28,6 +28,8 @@
 	PUSH(b,pre) ;\
 	OPR(o,size) REG(b,pre, rsize), REG(a,pre, rsize) ;	\
 	PUSH(a,pre) ;					\
+	movw	$flags, %ax ;\
+	pushw %ax ;\
 	pushf ;\
 	hlt ;\
 	.byte 2; /* number of following bytes of info */ \
