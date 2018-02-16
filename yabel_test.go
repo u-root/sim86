@@ -159,8 +159,8 @@ func TestBinary(t *testing.T) {
 		}
 		t.Logf("Stack %02x:", memory[tos-4:TOS])
 		// And, the iflags and flags are always there and always 16 bits
-		args = append(args, uint16(memory[tos-4]))
-		cc := uint16(memory[tos-2])
+		args = append(args, uint16(memory[tos-4]) | uint16(memory[tos-3])<<8)
+		cc := uint16(memory[tos-2]) | uint16(memory[tos-1])<<8
 		// well, what to do with the ones always on? For this test, we turn them
 		// off. Not sure what else to do.
 		cc &= uint16(^F_ALWAYS_ON)
