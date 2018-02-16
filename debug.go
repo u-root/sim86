@@ -58,7 +58,6 @@ func X86EMU_trace_regs() {
 			x86emu_dump_regs()
 		}
 	}
-	fmt.Printf("trace regs DD %v DDD %v\n", DEBUG_DECODE(), DEBUG_DECODE_NOPRINT())
 	if DEBUG_DECODE() && !DEBUG_DECODE_NOPRINT() {
 		fmt.Printf("%04x:%04x ", M.x86.saved_cs, M.x86.saved_ip)
 		print_encoded_bytes(M.x86.saved_cs, M.x86.saved_ip)
@@ -72,7 +71,6 @@ func _X86EMU_trace_regs() {
 	} else {
 		x86emu_dump_regs()
 	}
-	fmt.Printf("trace regs DD %v DDD %v\n", DEBUG_DECODE(), DEBUG_DECODE_NOPRINT())
 	fmt.Printf("%04x:%04x ", M.x86.saved_cs, M.x86.saved_ip)
 	print_encoded_bytes(M.x86.saved_cs, M.x86.saved_ip)
 	print_decoded_instruction()
@@ -99,7 +97,6 @@ func disassemble_forward(seg uint16, off uint16, n int) {
 		tregs X86EMU_sysEnv
 		op1   uint8
 	)
-	fmt.Printf("DAF %04x:%04x %d\n", seg, off, n)
 	/*
 	 * hack, hack, hack.  What we do is use the exact machinery set up
 	 * for execution, except that now there is an additional state

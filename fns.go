@@ -142,13 +142,11 @@ func SET_FLAG(flag uint32) {
 	f := G32(EFLAGS)
 	f |= flag
 	S(EFLAGS, f)
-	log.Printf("SET_FLAG %#x", G(EFLAGS))
 }
 func CLEAR_FLAG(flag uint32) {
 	f := G32(EFLAGS)
 	f &= ^flag
 	S(EFLAGS, f)
-	log.Printf("CLR_FLAG %#x", G(EFLAGS))
 }
 func ACCESS_FLAG(flag uint32) bool {
 	return G32(EFLAGS)&flag != 0
@@ -365,7 +363,6 @@ func sysr(addr uint32, i interface{}) {
 		*v = uint32(memory[addr+3])<<24 | uint32(memory[addr+2])<<16 | uint32(memory[addr+1])<<8 | uint32(memory[addr+0])
 	case *uint16:
 		*v = uint16(memory[addr+1])<<8 | uint16(memory[addr+0])
-		log.Printf("sysr: addr 0x%x val %04x", addr, *v)
 	case *uint8:
 		*v = memory[addr]
 	default:
@@ -373,7 +370,6 @@ func sysr(addr uint32, i interface{}) {
 	}
 }
 func CONDITIONAL_SET_FLAG_BOOL(cond bool, flag uint32) {
-	log.Printf("\tcsf %v %#x", cond, flag)
 	if cond {
 		SET_FLAG(flag)
 		return
@@ -382,7 +378,6 @@ func CONDITIONAL_SET_FLAG_BOOL(cond bool, flag uint32) {
 }
 
 func CONDITIONAL_SET_FLAG(cond interface{}, flag uint32) {
-			log.Printf("CSF v %v, flag %v", cond, flag)
 	switch v := cond.(type) {
 	case bool:
 		CONDITIONAL_SET_FLAG_BOOL(v, flag)

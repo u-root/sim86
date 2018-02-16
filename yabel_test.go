@@ -70,7 +70,7 @@ func TestBinary(t *testing.T) {
 	S(CS, uint16(0))
 	S(IP, uint16(0x0))
 	S(SP, uint16(0xfff0))
-	M.x86.debug |= DEBUG_DISASSEMBLE_F | DEBUG_DECODE_F | DEBUG_TRACE_F
+	//M.x86.debug |= DEBUG_DISASSEMBLE_F | DEBUG_DECODE_F | DEBUG_TRACE_F
 	for _, c := range checks {
 		S(SS, uint16(0))
 		t.Logf("Start Test %s", c.n)
@@ -115,15 +115,15 @@ func TestBinary(t *testing.T) {
 		t.Logf("End code at %#04x:%#04x", G16(CS), G16(IP))
 		fx86emu_dump_xregs(t.Logf)
 		TestOutput := uint32(G16(IP))
-		sp := int(G16(SS))<<4 + int(G16(SP))
-		t.Logf("TestOutput at %#x; sp at %#x; vars %02x", TestOutput, sp, memory[TestOutput:TestOutput+0x10])
+		//sp := int(G16(SS))<<4 + int(G16(SP))
+		//t.Logf("TestOutput at %#x; sp at %#x; vars %02x", TestOutput, sp, memory[TestOutput:TestOutput+0x10])
 		dsz := sys_rdb(TestOutput)
 		bits := sys_rdb(TestOutput + 1)
 		nargs := int(sys_rdb(TestOutput + 2))
-		t.Logf("dsz %d bits %d nargs %d", dsz, bits, nargs)
+		//t.Logf("dsz %d bits %d nargs %d", dsz, bits, nargs)
 		// Can't scan for null. Damn.
 		opx := TestOutput + uint32(dsz) + 1
-		t.Logf("opx is %#x", opx)
+		//t.Logf("opx is %#x", opx)
 		// Can't quite work out null terminators in strings library
 		// but as loves them. So ...
 		var opcode string
@@ -145,19 +145,19 @@ func TestBinary(t *testing.T) {
 			f = f + string([]byte{b})
 			opx++
 		}
-		t.Logf("f is %s and o is %s", f, opcode)
+		//t.Logf("f is %s and o is %s", f, opcode)
 		args := []interface{}{opcode, map[byte]string{8:"b", 16:"w", 32: "l"}[bits]}
-		t.Logf("Process %d args ", nargs)
+		//t.Logf("Process %d args ", nargs)
 		tos := TOS
 		 for i := 0; i < nargs; i++ {
-				t.Logf("long at tos %#x is %02x", tos, memory[tos-4:tos])
+				//t.Logf("long at tos %#x is %02x", tos, memory[tos-4:tos])
 				args = append(args, uint32(memory[tos-4])|
 					uint32(memory[tos-3])<<8|
 					uint32(memory[tos-2])<<16|
 					uint32(memory[tos-1])<<24)
 				tos -= 4
 		}
-		t.Logf("Stack %02x:", memory[tos-4:TOS])
+		//t.Logf("Stack %02x:", memory[tos-4:TOS])
 		// And, the iflags and flags are always there and always 16 bits
 		args = append(args, uint16(memory[tos-4]) | uint16(memory[tos-3])<<8)
 		cc := uint16(memory[tos-2]) | uint16(memory[tos-1])<<8
