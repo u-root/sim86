@@ -18,19 +18,20 @@
 // pushf
 // stack now has oflags, res, 2 inargs, iflags,
 // push print string
+// For the test output, we always push and test the 32-bit register.
 #define EXECOP2(o, size, rsize, bits, pre, res, s1, flags)	\
-	movw	$flags, %ax ;\
-	pushw %ax ;\
+	movw	$flags, %dx ;\
+	pushw %dx ;\
 	popf; \
 	OPR(mov,size) $res, REG(a, pre, rsize);	\
-	PUSH(a,pre) ;\
+	PUSH(a,e) ;\
 	OPR(mov,size) $s1, REG(b, pre, rsize) ;	\
-	PUSH(b,pre) ;\
+	PUSH(b,e) ;\
 	OPR(o,size) REG(b,pre, rsize), REG(a,pre, rsize) ;	\
-	PUSH(a,pre) ;					\
-	movw	$flags, %ax ;\
-	pushw %ax ;\
+	PUSH(a,e) ;					\
 	pushf ;\
+	movw	$flags, %dx ;\
+	pushw %dx ;\
 	hlt ;\
 	.byte 2; /* number of following bytes of info */ \
 	/* currently # bits per stack item, and nargs */ \
@@ -39,14 +40,16 @@
 	.asciz "%s%s A=%08x B=%08x R=%08x CCIN=%04x CC=%04x" ;
 
 #define EXECOP1(o, size, rsize, bits, pre, res, flags)	\
-	movw	$flags, %ax ;\
-	pushw %ax ;\
+	movw	$flags, %dx ;\
+	pushw %dx ;\
 	popf; \
 	OPR(mov,size) $res, REG(a, pre, rsize);	\
-	PUSH(a,pre) ;\
+	PUSH(a,e) ;\
 	OPR(o,size) REG(a,pre, rsize) ;	\
-	PUSH(a,pre) ;					\
+	PUSH(a,e) ;					\
 	pushf ;\
+	movw	$flags, %dx ;\
+	pushw %dx ;\
 	hlt ;\
 	.byte 2; /* number of following bytes of info */ \
 	/* currently # bits per stack item, and nargs */ \

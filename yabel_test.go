@@ -149,26 +149,22 @@ func TestBinary(t *testing.T) {
 		args := []interface{}{opcode, map[byte]string{8:"b", 16:"w", 32: "l"}[bits]}
 		t.Logf("Process %d args ", nargs)
 		tos := TOS
-		for i := 0; i < nargs; i++ {
-			switch bits {
-			case 16, 8:
-				t.Logf("word at tos %#x is %02x", tos, memory[tos-2:tos])
-				args = append(args, uint16(memory[tos-2])|uint16(memory[tos-1])<<8)
-				tos -= 2
-			case 32:
+		 for i := 0; i < nargs; i++ {
 				t.Logf("long at tos %#x is %02x", tos, memory[tos-4:tos])
 				args = append(args, uint32(memory[tos-4])|
 					uint32(memory[tos-3])<<8|
 					uint32(memory[tos-2])<<16|
 					uint32(memory[tos-1])<<24)
 				tos -= 4
-			default:
-				t.Fatalf("Bogus bit size: %d", dsz)
-			}
 		}
+		t.Logf("Stack %04x:", memory[tos-4:TOS])
 		// And, the iflags and flags are always there and always 16 bits
-		args = append(args, uint16(memory[tos-2]))
 		args = append(args, uint16(memory[tos-4]))
+		cc := uint16(memory[tos-2])
+		// well, what to do with the ones always on? For this test, we turn them
+		// off. Not sure what else to do.
+		cc &= uint16(^F_ALWAYS_ON)
+		args = append(args, cc)
 		out := fmt.Sprintf(f, args...)
 		if _, ok := testout[out]; ! ok {
 			t.Fatalf("%s: can't find it in output", out)

@@ -142,11 +142,13 @@ func SET_FLAG(flag uint32) {
 	f := G32(EFLAGS)
 	f |= flag
 	S(EFLAGS, f)
+	log.Printf("SET_FLAG %#x", G(EFLAGS))
 }
 func CLEAR_FLAG(flag uint32) {
 	f := G32(EFLAGS)
-	f &= flag
+	f &= ^flag
 	S(EFLAGS, f)
+	log.Printf("CLR_FLAG %#x", G(EFLAGS))
 }
 func ACCESS_FLAG(flag uint32) bool {
 	return G32(EFLAGS)&flag != 0
@@ -371,6 +373,7 @@ func sysr(addr uint32, i interface{}) {
 	}
 }
 func CONDITIONAL_SET_FLAG_BOOL(cond bool, flag uint32) {
+	log.Printf("\tcsf %v %#x", cond, flag)
 	if cond {
 		SET_FLAG(flag)
 		return
