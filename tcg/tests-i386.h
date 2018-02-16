@@ -23,9 +23,9 @@
 	movw	$flags, %dx ;\
 	pushw %dx ;\
 	popf; \
-	OPR(mov,size) $res, REG(a, pre, rsize);	\
+	OPR(mov,l) $res, REG(a, e, x);	\
 	PUSH(a,e) ;\
-	OPR(mov,size) $s1, REG(b, pre, rsize) ;	\
+	OPR(mov,l) $s1, REG(b, e, x) ;	\
 	PUSH(b,e) ;\
 	OPR(o,size) REG(b,pre, rsize), REG(a,pre, rsize) ;	\
 	PUSH(a,e) ;					\
