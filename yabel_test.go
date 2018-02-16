@@ -46,7 +46,7 @@ type check struct {
 
 func TestBinary(t *testing.T) {
 	var checks = []check{
-		{n: "Halt", r: []regval{{IP, 1}, {SP, 0x2000}}},
+		{n: "Halt", r: []regval{{IP, 1}, {SP, 0xfff0}}},
 		{n: "seg", r: []regval{{AX, 0x23}, {SS, 0x20}, {ES, 0x21}, {FS, 0x22}, {IP, 0x13}}},
 		{n: "jmpcsip", r: []regval{{CS, 0x2}, {IP, 0x1}}},
 		{n: "pushpop", r: []regval{{EBX, 0x12345678}, {CX, 0x5678}, {EDX, 0x12345678}}},
@@ -74,7 +74,7 @@ func TestBinary(t *testing.T) {
 	for _, c := range checks {
 		S(SS, uint16(0))
 		t.Logf("Start Test %s", c.n)
-		X86EMU_exec()
+		X86EMU_exec(t.Logf)
 		for i, r := range c.r {
 			M.x86.mode &= ^SYSMODE_PREFIX_DATA
 			if _, _, size := R(r.r); size == 4 { // simulate prefix
@@ -93,7 +93,7 @@ func TestBinary(t *testing.T) {
 	// test the reset vector
 	S16(CS, 0xf000)
 	S16(IP, 0xfff0)
-	X86EMU_exec()
+	X86EMU_exec(t.Logf)
 	if G16(CS) != 0xf000 || G16(IP) != 0x0001 {
 		t.Fatalf("reset vector test: CS:IP is %04x:%04x, want 0xf000:0x0001", G16(CS), G16(IP))
 	}
@@ -111,9 +111,9 @@ func TestBinary(t *testing.T) {
 		S(SS, StackSeg)
 		S(SP, StackPointer)
 		t.Logf("Start code at %#04x:%#04x", G16(CS), G16(IP))
-		X86EMU_exec()
+		X86EMU_exec(t.Logf)
 		t.Logf("End code at %#04x:%#04x", G16(CS), G16(IP))
-		fx86emu_dump_xregs(t.Logf)
+		//fx86emu_dump_xregs(t.Logf)
 		TestOutput := uint32(G16(IP))
 		//sp := int(G16(SS))<<4 + int(G16(SP))
 		//t.Logf("TestOutput at %#x; sp at %#x; vars %02x", TestOutput, sp, memory[TestOutput:TestOutput+0x10])

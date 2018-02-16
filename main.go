@@ -5,6 +5,7 @@ package main
 import (
 	"bufio"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 )
@@ -35,6 +36,8 @@ func main() {
 	if *trace {
 		M.x86.debug |= DEBUG_TRACE_F
 	}
-	X86EMU_exec()
+	X86EMU_exec(func(s string, a ...interface{}) {
+		fmt.Printf(s, a...)
+	})
 	log.Printf("Done")
 }

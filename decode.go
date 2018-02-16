@@ -91,7 +91,7 @@ Main execution loop for the emulator. We return from here when the system
 halts, which is normally caused by a stack fault when we return from the
 original real mode call.
 ****************************************************************************/
-func X86EMU_exec() {
+func X86EMU_exec(f func(string, ...interface{})) {
 	var op1 uint8
 
 	M.x86.intr = 0
@@ -108,11 +108,13 @@ func X86EMU_exec() {
 		if M.x86.intr != 0 {
 			if halted() {
 				if G16(SP) != 0 {
-					fmt.Printf("halted\n")
-					X86EMU_trace_regs()
+					f("halted\n")
+					if M.x86.debug != 0 {
+						X86EMU_trace_regs()
+					}
 				} else {
 					if M.x86.debug != 0 {
-						fmt.Printf("Service completed successfully\n")
+						f("Service completed successfully\n")
 					}
 				}
 				return
