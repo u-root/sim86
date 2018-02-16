@@ -157,7 +157,7 @@ func TestBinary(t *testing.T) {
 					uint32(memory[tos-1])<<24)
 				tos -= 4
 		}
-		t.Logf("Stack %04x:", memory[tos-4:TOS])
+		t.Logf("Stack %02x:", memory[tos-4:TOS])
 		// And, the iflags and flags are always there and always 16 bits
 		args = append(args, uint16(memory[tos-4]))
 		cc := uint16(memory[tos-2])
