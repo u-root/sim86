@@ -43,7 +43,7 @@
 	movw	$flags, %dx ;\
 	pushw %dx ;\
 	popf; \
-	OPR(mov,size) $res, REG(a, pre, rsize);	\
+	OPR(mov,l) $res, REG(a, e, x);	\
 	PUSH(a,e) ;\
 	OPR(o,size) REG(a,pre, rsize) ;	\
 	PUSH(a,e) ;					\
@@ -60,9 +60,9 @@
 
 #ifdef OP1
 
-#define exec_opl(o,s0, s1, iflags) EXECOP1(o,l, x, 32, e, res, iflags)
-#define exec_opw(o,s0, s1, iflags) EXECOP1(o,w, x, 16,  , res, iflags)
-#define exec_opb(o,s0, s1, iflags) EXECOP1(o,b, l,  8,  , res, iflags)
+#define exec_opl(o,s0, s1, iflags) EXECOP1(o,l, x, 32, e, s0, iflags)
+#define exec_opw(o,s0, s1, iflags) EXECOP1(o,w, x, 16,  , s0, iflags)
+#define exec_opb(o,s0, s1, iflags) EXECOP1(o,b, l,  8,  , s0, iflags)
 
 #else
 #define exec_opl(o,s0, s1, iflags)  EXECOP2(o,l, x, 32, e, s0, s1, iflags)

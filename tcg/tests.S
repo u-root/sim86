@@ -86,7 +86,6 @@ test_inc:
 #define OP1
 #include "tests-i386.h"
 
-#if 0
 #define OP dec
 .global test_dec
 test_dec:
@@ -94,6 +93,7 @@ test_dec:
 #define OP1
 #include "tests-i386.h"
 
+#if 0
 #define OP neg
 .global test_neg
 test_neg:
