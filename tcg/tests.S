@@ -41,47 +41,69 @@ test_add:
 #include "tests-i386.h"
 
 #define OP sub
+.global test_sub
+test_sub:
 #include "tests-i386.h"
 
-#if 0
 #define OP xor
+.global test_xor
+test_xor:
 #include "tests-i386.h"
 
 #define OP and
+.global test_and
+test_and:
 #include "tests-i386.h"
 
 #define OP or
+.global test_or
+test_or:
 #include "tests-i386.h"
 
 #define OP cmp
+.global test_cmp
+test_cmp:
 #include "tests-i386.h"
 
+#if 0
 #define OP adc
+.global test_adc
+test_adc:
 #define OP_CC
 #include "tests-i386.h"
 
 #define OP sbb
+.global test_sbb
+test_sbb:
 #define OP_CC
 #include "tests-i386.h"
 #endif
 
 #if 0
 #define OP inc
+.global test_inc
+test_inc:
 #define OP_CC
 #define OP1
 #include "tests-i386.h"
 
 #define OP dec
+.global test_dec
+test_dec:
 #define OP_CC
 #define OP1
 #include "tests-i386.h"
 
 #define OP neg
+.global test_neg
+test_neg:
 #define OP_CC
 #define OP1
 #include "tests-i386.h"
 
 #define OP not
+.global test_not
+test_not:
 #define OP_CC
 #define OP1
 #include "tests-i386.h"
@@ -92,35 +114,53 @@ test_add:
 
 #if 0
 #define OP shl
+.global test_shl
+test_shl:
 
 #include "tests-i386-shift.h"
 
 #define OP shr
+.global test_shr
+test_shr:
 #include "tests-i386-shift.h"
 
 #define OP sar
+.global test_sar
+test_sar:
 #include "tests-i386-shift.h"
 
 #define OP rol
+.global test_rol
+test_rol:
 #include "tests-i386-shift.h"
 
 #define OP ror
+.global test_ror
+test_ror:
 #include "tests-i386-shift.h"
 
 #define OP rcr
+.global test_rcr
+test_rcr:
 #define OP_CC
 #include "tests-i386-shift.h"
 
 #define OP rcl
+.global test_rcl
+test_rcl:
 #define OP_CC
 #include "tests-i386-shift.h"
 
 #define OP shld
+.global test_shld
+test_shld:
 #define OP_SHIFTD
 #define OP_NOBYTE
 #include "tests-i386-shift.h"
 
 #define OP shrd
+.global test_shrd
+test_shrd:
 #define OP_SHIFTD
 #define OP_NOBYTE
 #include "tests-i386-shift.h"
@@ -130,18 +170,26 @@ test_add:
 #define CC_MASK (CC_C)
 
 #define OP bt
+.global test_bt
+test_bt:
 #define OP_NOBYTE
 #include "tests-i386-shift.h"
 
 #define OP bts
+.global test_bts
+test_bts:
 #define OP_NOBYTE
 #include "tests-i386-shift.h"
 
 #define OP btr
+.global test_btr
+test_btr:
 #define OP_NOBYTE
 #include "tests-i386-shift.h"
 
 #define OP btc
+.global test_btc
+test_btc:
 #define OP_NOBYTE
 #include "tests-i386-shift.h"
 #define TEST_BSX(op, size, op0)			\
