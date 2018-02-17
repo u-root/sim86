@@ -119,3 +119,8 @@
 #undef result
 #undef TEST
 #undef TNAME
+#undef OP1
+#undef exec_opl
+#undef exec_opw
+#undef exec_opb
+#undef exec_op
