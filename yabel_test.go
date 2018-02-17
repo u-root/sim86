@@ -161,6 +161,7 @@ func TestBinary(t *testing.T) {
 		// And, the iflags and flags are always there and always 16 bits
 		args = append(args, uint16(memory[tos-4]) | uint16(memory[tos-3])<<8)
 		cc := uint16(memory[tos-2]) | uint16(memory[tos-1])<<8
+		S16(IP, uint16(opx+1))
 		// well, what to do with the ones always on? For this test, we turn them
 		// off. Not sure what else to do.
 		cc &= uint16(^F_ALWAYS_ON)
@@ -168,11 +169,21 @@ func TestBinary(t *testing.T) {
 		out := fmt.Sprintf(f, args...)
 		if _, ok := testout[out]; ! ok {
 			t.Fatalf("%s: can't find it in output", out)
+			continue
 		}
-
+		testout[out] = true
 		t.Logf(f, args...)
 		// opx is at the null after the fmt string. Bump IP to start again.
-		S16(IP, uint16(opx+1))
+	}
+	var skipped int
+	for i, tt := range testout {
+		if ! tt {
+			t.Errorf("Skipped test %v", i)
+			skipped++
+		}
+	}
+	if skipped > 0 {
+		t.Errorf("Skipped %d tests", skipped)
 	}
 
 }
