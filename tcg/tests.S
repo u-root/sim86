@@ -36,7 +36,8 @@
 
 .code16
 #define OP add
-#define TNAME test_add
+.globl test_add
+test_add:
 #include "tests-i386.h"
 
 #define OP sub

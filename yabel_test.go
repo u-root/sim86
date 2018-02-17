@@ -183,7 +183,7 @@ func TestBinary(t *testing.T) {
 		}
 	}
 	if skipped > 0 {
-		t.Errorf("Skipped %d tests", skipped)
+		t.Errorf("Skipped %d of %d tests", skipped, len(testout))
 	}
 
 }

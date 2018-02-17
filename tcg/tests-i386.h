@@ -88,8 +88,6 @@
 
 # fuck cpp.
 .code16
-    .global TNAME
-TNAME:
     exec_op(0x12345678, 0x812FADA);
     exec_op(0x12341, 0x12341);
     exec_op(0x12341, -0x12341);
