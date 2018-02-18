@@ -107,6 +107,7 @@ func TestBinary(t *testing.T) {
 
 	S16(CS, 0)
 	S16(IP, 0)
+	var succ, fail int
 	for int(G16(IP)) < len(b) {
 		S(SS, StackSeg)
 		S(SP, StackPointer)
@@ -114,7 +115,7 @@ func TestBinary(t *testing.T) {
 		X86EMU_exec(t.Logf)
 		t.Logf("End code at %#04x:%#04x", G16(CS), G16(IP))
 		//fx86emu_dump_xregs(t.Logf)
-		TestOutput := uint32(G16(IP))
+		TestOutput := uint32(G16(IP))+ uint32(G16(CS))<<4
 		//sp := int(G16(SS))<<4 + int(G16(SP))
 		//t.Logf("TestOutput at %#x; sp at %#x; vars %02x", TestOutput, sp, memory[TestOutput:TestOutput+0x10])
 		dsz := sys_rdb(TestOutput)
@@ -161,29 +162,35 @@ func TestBinary(t *testing.T) {
 		// And, the iflags and flags are always there and always 16 bits
 		args = append(args, uint16(memory[tos-4]) | uint16(memory[tos-3])<<8)
 		cc := uint16(memory[tos-2]) | uint16(memory[tos-1])<<8
-		S16(IP, uint16(opx+1))
+		// use cs:ip, since this idiot architecture needs it.
+		opx++
+		S16(CS, uint16(opx>>4))
+		S16(IP, uint16(opx&15))
 		// well, what to do with the ones always on? For this test, we turn them
 		// off. Not sure what else to do.
 		cc &= uint16(^F_ALWAYS_ON)
 		args = append(args, cc)
 		out := fmt.Sprintf(f, args...)
 		if _, ok := testout[out]; ! ok {
+			fail++
 			t.Fatalf("%s: can't find it in output", out)
 			continue
 		}
 		testout[out] = true
+		succ++
 		t.Logf(f, args...)
 		// opx is at the null after the fmt string. Bump IP to start again.
 	}
 	var skipped int
 	for i, tt := range testout {
 		if ! tt {
-			t.Errorf("Skipped test %v", i)
+			t.Logf("Skipped test %v", i)
 			skipped++
 		}
 	}
 	if skipped > 0 {
 		t.Errorf("Skipped %d of %d tests", skipped, len(testout))
 	}
+	t.Logf("%d succeeded, %d failed", succ, fail)
 
 }
