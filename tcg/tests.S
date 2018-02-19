@@ -93,7 +93,6 @@ test_dec:
 #define OP1
 #include "tests-i386.h"
 
-#if 0
 #define OP neg
 .global test_neg
 test_neg:
@@ -107,7 +106,6 @@ test_not:
 #define OP_CC
 #define OP1
 #include "tests-i386.h"
-#endif
 
 #undef CC_MASK
 #define CC_MASK (CC_C | CC_P | CC_Z | CC_S | CC_O)
