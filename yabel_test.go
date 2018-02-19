@@ -108,7 +108,8 @@ func TestBinary(t *testing.T) {
 	S16(CS, 0)
 	S16(IP, 0)
 	var succ, fail int
-	for int(G16(IP)) < len(b) {
+	var opx uint32
+	for opx < uint32(len(b)) {
 		S(SS, StackSeg)
 		S(SP, StackPointer)
 		t.Logf("Start code at %#04x:%#04x", G16(CS), G16(IP))
@@ -123,7 +124,7 @@ func TestBinary(t *testing.T) {
 		nargs := int(sys_rdb(TestOutput + 2))
 		//t.Logf("dsz %d bits %d nargs %d", dsz, bits, nargs)
 		// Can't scan for null. Damn.
-		opx := TestOutput + uint32(dsz) + 1
+		opx = TestOutput + uint32(dsz) + 1
 		//t.Logf("opx is %#x", opx)
 		// Can't quite work out null terminators in strings library
 		// but as loves them. So ...
