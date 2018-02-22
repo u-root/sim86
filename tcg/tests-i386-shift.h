@@ -30,9 +30,10 @@
 	PUSH(a,e) ;					\
 	pushf ;\
 	movw	$flags, %dx ;\
-#if s1 == 1 \
-		andw $0x800, %dx		\
-#endif \
+	cmpb $1, %al;\
+	je 1f; \
+	andw $0x800, %dx;		\
+1:\
 	pushw %dx ;\
 	hlt ;\
 	.byte 2; /* number of following bytes of info */ \
@@ -55,9 +56,10 @@
 	PUSH(c,e) ;					\
 	pushf ;\
 	movw	$flags, %dx ;\
-#if s1 == 1 \
-		andw $0x800, %dx		\
-#endif
+	cmpb $1, %al;\
+	je 1f; \
+	andw $0x800, %dx;		\
+1: \
 	pushw %dx ;\
 	hlt ;\
 	.byte 2; /* number of following bytes of info */ \

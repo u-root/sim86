@@ -132,6 +132,7 @@ var notyet = `
 `
 
 var M = &_X86EMU_env
+var ro = uint32(0)
 
 func TOGGLE_FLAG(flag uint32) {
 	f := G32(EFLAGS)
@@ -341,6 +342,10 @@ func sys_outl(i uint16, v uint32) {
 func sysw(addr uint32, i interface{}) {
 	if addr > uint32(len(memory))-4 {
 		log.Panicf("sysw: address %#x out of range; max is %#x", addr, len(memory))
+	}
+	if addr < ro {
+		fx86emu_dump_regs(printer)
+		log.Panicf("sysw: address %#x in ro %#x", addr, ro)
 	}
 	switch v := i.(type) {
 	case uint32:

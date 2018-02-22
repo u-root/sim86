@@ -129,7 +129,8 @@ func G(r regtype) value {
 	case size == 1 && shift == 1:
 		return value(uint8(v>>8)) | vb
 	default:
-		x86emu_dump_xregs()
+		fx86emu_dump_xregs(printer)
+		X86EMU_dump_memory(G16(CS)-1, 0, 64)
 		log.Panicf("G: Can't handle reg %04x size %d", r, size)
 	}
 	return value(0)

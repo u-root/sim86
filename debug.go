@@ -47,6 +47,9 @@ import (
 	"strings"
 )
 
+var printer = func(s string, args ...interface{}) {
+	fmt.Printf(s, args...)
+}
 /*----------------------------- Implementation ----------------------------*/
 
 /* should look something like debug's output. */
@@ -219,15 +222,15 @@ func X86EMU_dump_memory(seg uint16, o uint16, amt uint32) {
 	)
 
 	for end <= off+amt {
-		fmt.Printf("%04x:%04x ", seg, start)
+		printer("%04x:%04x ", seg, start)
 		for i = start; i < off; i++ {
-			fmt.Printf("   ")
+			printer("   ")
 		}
 		for i < end {
-			fmt.Printf("%02x ", fetch_data_byte_abs(seg, uint16(i)))
+			printer("%02x ", fetch_data_byte_abs(seg, uint16(i)))
 			i++
 		}
-		fmt.Printf("\n")
+		printer("\n")
 		start = end
 		end = start + 16
 	}

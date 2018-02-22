@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"testing"
@@ -109,6 +110,10 @@ func TestBinary(t *testing.T) {
 	S16(IP, 0)
 	var succ, fail int
 	var opx uint32
+	cmpx := bytes.Compare(b[:], memory[:len(b)])
+	t.Logf("compare returns %d", cmpx)
+	printer = t.Logf
+	ro = uint32(len(b))
 	for opx < uint32(len(b)) {
 		S(SS, StackSeg)
 		S(SP, StackPointer)
@@ -167,6 +172,9 @@ func TestBinary(t *testing.T) {
 		opx++
 		S16(CS, uint16(opx>>4))
 		S16(IP, uint16(opx&15))
+		if x := bytes.Compare(b[:], memory[:len(b)]);x != cmpx {
+			t.Fatalf("Memory corrupted!")
+		}
 		// well, what to do with the ones always on? For this test, we turn them
 		// off. Not sure what else to do.
 		cc &= uint16(^F_ALWAYS_ON)
