@@ -65,13 +65,13 @@ test_or:
 test_cmp:
 #include "tests-i386.h"
 
-#if 0
 #define OP adc
 .global test_adc
 test_adc:
 #define OP_CC
 #include "tests-i386.h"
 
+#if 0
 #define OP sbb
 .global test_sbb
 test_sbb:
@@ -173,7 +173,6 @@ test_bt:
 #define OP_NOBYTE
 #include "tests-i386-shift.h"
 
-#if 0
 #define OP bts
 .global test_bts
 test_bts:
@@ -191,7 +190,6 @@ test_btr:
 test_btc:
 #define OP_NOBYTE
 #include "tests-i386-shift.h"
-#endif
 	
 #if 0	
 #define TEST_BSX(op, size, op0)			\

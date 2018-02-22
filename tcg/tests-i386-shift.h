@@ -174,6 +174,7 @@ void glue(test_, OP)(void)
     exec_opb(op, s0, s1, CC_C); \
 
 exec_op(OP, 0x21ad3d34, 0x12345678, 0);
+exec_op(OP, 0x21ad3d34, 0x12345678, 1);
 
 
 #undef OP
