@@ -71,13 +71,11 @@ test_adc:
 #define OP_CC
 #include "tests-i386.h"
 
-#if 0
 #define OP sbb
 .global test_sbb
 test_sbb:
 #define OP_CC
 #include "tests-i386.h"
-#endif
 
 #define OP inc
 .global test_inc
