@@ -166,12 +166,14 @@ test_shrd:
 #undef CC_MASK
 #define CC_MASK (CC_C)
 
+#endif
 #define OP bt
 .global test_bt
 test_bt:
 #define OP_NOBYTE
 #include "tests-i386-shift.h"
 
+#if 0
 #define OP bts
 .global test_bts
 test_bts:

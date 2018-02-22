@@ -573,7 +573,7 @@ func x86emuOp2_bt_R(_ uint8) {
 				return
 			}
 			bit := G32(shiftreg) & 0x1F
-			CONDITIONAL_SET_FLAG(G(srcreg)&(0x1<<bit), F_CF)
+			CONDITIONAL_SET_FLAG(G32(srcreg)&(0x1<<bit), F_CF)
 		} else {
 
 			srcreg := decode_rm_word_register(rl)
@@ -584,7 +584,7 @@ func x86emuOp2_bt_R(_ uint8) {
 				return
 			}
 			bit := G(shiftreg) & 0xF
-			CONDITIONAL_SET_FLAG(G(srcreg)&(0x1<<bit), F_CF)
+			CONDITIONAL_SET_FLAG(G16(srcreg)&(0x1<<bit), F_CF)
 		}
 	}
 	DECODE_CLEAR_SEGOVR()
