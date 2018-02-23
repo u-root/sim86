@@ -129,8 +129,68 @@ void glue(test_, OP)(void)
 
 exec_op(OP, 0x21ad3d34, 0x12345678, 0);
 exec_op(OP, 0x21ad3d34, 0x12345678, 1);
-
-
+exec_op(OP, 0x21ad3d34, 0x12345678, 2);
+exec_op(OP, 0x21ad3d34, 0x12345678, 3);
+exec_op(OP, 0x21ad3d34, 0x12345678, 4);
+exec_op(OP, 0x21ad3d34, 0x12345678, 5);
+exec_op(OP, 0x21ad3d34, 0x12345678, 6);
+exec_op(OP, 0x21ad3d34, 0x12345678, 7);
+exec_op(OP, 0x21ad3d34, 0x12345678, 8);
+exec_op(OP, 0x21ad3d34, 0x12345678, 9);
+exec_op(OP, 0x21ad3d34, 0x12345678, 10);
+exec_op(OP, 0x21ad3d34, 0x12345678, 11);
+exec_op(OP, 0x21ad3d34, 0x12345678, 12);
+exec_op(OP, 0x21ad3d34, 0x12345678, 13);
+exec_op(OP, 0x21ad3d34, 0x12345678, 14);
+exec_op(OP, 0x21ad3d34, 0x12345678, 15);
+exec_op(OP, 0x21ad3d34, 0x12345678, 16);
+exec_op(OP, 0x21ad3d34, 0x12345678, 17);
+exec_op(OP, 0x21ad3d34, 0x12345678, 18);
+exec_op(OP, 0x21ad3d34, 0x12345678, 19);
+exec_op(OP, 0x21ad3d34, 0x12345678, 20);
+exec_op(OP, 0x21ad3d34, 0x12345678, 21);
+exec_op(OP, 0x21ad3d34, 0x12345678, 22);
+exec_op(OP, 0x21ad3d34, 0x12345678, 23);
+exec_op(OP, 0x21ad3d34, 0x12345678, 24);
+exec_op(OP, 0x21ad3d34, 0x12345678, 25);
+exec_op(OP, 0x21ad3d34, 0x12345678, 26);
+exec_op(OP, 0x21ad3d34, 0x12345678, 27);
+exec_op(OP, 0x21ad3d34, 0x12345678, 28);
+exec_op(OP, 0x21ad3d34, 0x12345678, 29);
+exec_op(OP, 0x21ad3d34, 0x12345678, 30);
+exec_op(OP, 0x21ad3d34, 0x12345678, 31);
+        exec_op(OP, 0x813f3421, 0x82345679, 0);
+        exec_op(OP, 0x813f3421, 0x82345679, 1);
+        exec_op(OP, 0x813f3421, 0x82345679, 2);
+        exec_op(OP, 0x813f3421, 0x82345679, 3);
+        exec_op(OP, 0x813f3421, 0x82345679, 4);
+        exec_op(OP, 0x813f3421, 0x82345679, 5);
+        exec_op(OP, 0x813f3421, 0x82345679, 6);
+        exec_op(OP, 0x813f3421, 0x82345679, 7);
+        exec_op(OP, 0x813f3421, 0x82345679, 8);
+        exec_op(OP, 0x813f3421, 0x82345679, 9);
+        exec_op(OP, 0x813f3421, 0x82345679, 10);
+        exec_op(OP, 0x813f3421, 0x82345679, 11);
+        exec_op(OP, 0x813f3421, 0x82345679, 12);
+        exec_op(OP, 0x813f3421, 0x82345679, 13);
+        exec_op(OP, 0x813f3421, 0x82345679, 14);
+        exec_op(OP, 0x813f3421, 0x82345679, 15);
+        exec_op(OP, 0x813f3421, 0x82345679, 16);
+        exec_op(OP, 0x813f3421, 0x82345679, 17);
+        exec_op(OP, 0x813f3421, 0x82345679, 18);
+        exec_op(OP, 0x813f3421, 0x82345679, 19);
+        exec_op(OP, 0x813f3421, 0x82345679, 20);
+        exec_op(OP, 0x813f3421, 0x82345679, 21);
+        exec_op(OP, 0x813f3421, 0x82345679, 22);
+        exec_op(OP, 0x813f3421, 0x82345679, 23);
+        exec_op(OP, 0x813f3421, 0x82345679, 24);
+        exec_op(OP, 0x813f3421, 0x82345679, 25);
+        exec_op(OP, 0x813f3421, 0x82345679, 26);
+        exec_op(OP, 0x813f3421, 0x82345679, 27);
+        exec_op(OP, 0x813f3421, 0x82345679, 28);
+        exec_op(OP, 0x813f3421, 0x82345679, 29);
+        exec_op(OP, 0x813f3421, 0x82345679, 30);
+        exec_op(OP, 0x813f3421, 0x82345679, 31);
 #undef OP
 #undef OP_CC
 #undef OP_SHIFTD
