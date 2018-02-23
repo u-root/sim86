@@ -180,10 +180,14 @@ func TestBinary(t *testing.T) {
 		cc &= uint16(^F_ALWAYS_ON)
 		args = append(args, cc)
 		out := fmt.Sprintf(f, args...)
-		if _, ok := testout[out]; ! ok {
+		done, ok := testout[out]
+		if ! ok {
 			fail++
 			t.Fatalf("%s: can't find it in output", out)
 			continue
+		}
+		if done {
+			t.Fatalf("Duplicate result: %v", out)
 		}
 		testout[out] = true
 		succ++
