@@ -108,12 +108,12 @@ test_not:
 #undef CC_MASK
 #define CC_MASK (CC_C | CC_P | CC_Z | CC_S | CC_O)
 
-#if 0
 #define OP shl
 .global test_shl
 test_shl:
 #include "tests-i386-shift.h"
 
+#if 0
 #define OP shr
 .global test_shr
 test_shr:
