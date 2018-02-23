@@ -113,7 +113,6 @@ test_not:
 test_shl:
 #include "tests-i386-shift.h"
 
-#if 0
 #define OP shr
 .global test_shr
 test_shr:
@@ -146,6 +145,7 @@ test_rcl:
 #define OP_CC
 #include "tests-i386-shift.h"
 
+#if 0
 #define OP shld
 .global test_shld
 test_shld:
@@ -159,12 +159,12 @@ test_shrd:
 #define OP_SHIFTD
 #define OP_NOBYTE
 #include "tests-i386-shift.h"
+#endif
 
 /* XXX: should be more precise ? */
 #undef CC_MASK
 #define CC_MASK (CC_C)
 
-#endif
 #define OP bt
 .global test_bt
 test_bt:

@@ -68,11 +68,9 @@
 	.asciz "%s%s A=%08x B=%08x R=%08x CCIN=%04x CC=%04x" ;
 
 #endif
-#define exec_opl(o, s2, s0, s1, iflags) EXECSHIFT(o,l, x, 32, e, s0, s1, s2, iflags)
-#define exec_opw(o, s2, s0, s1, iflags) EXECSHIFT(o,w, x, 16,  , s0, s1, s2, iflags)
 
 #else
-#define EXECSHIFT(size, rsize, res, s1, s2, flags) \
+#define EXECSHIFT(o, size, rsize, bits, pre, res, s1, s2, flags) \
 	movw	$flags, %dx ;\
 	pushw %dx ;\
 	popf; \
@@ -98,6 +96,9 @@
 	.asciz "%s%s A=%08x B=%08x C=%08lx R=%08x CCIN=%04x CC=%04x" ;
 #endif
 
+#define exec_opl(o, s2, s0, s1, iflags) EXECSHIFT(o,l, x, 32, e, s0, s1, s2, iflags)
+#define exec_opw(o, s2, s0, s1, iflags) EXECSHIFT(o,w, x, 16,  , s0, s1, s2, iflags)
+#define exec_opb(o, s2, s0, s1, iflags) EXECSHIFT(o,b, x,  8,  , s0, s1, s2, iflags)
 #if 0
 void glue(test_, OP)(void)
 {
@@ -119,12 +120,12 @@ void glue(test_, OP)(void)
     exec_opw(op, s2, s0, s1, 0); \
 #endif \
 #ifndef OP_NOBYTE \
-    exec_opb(op, s0, s1, 0); \
+    exec_opb(op, s2, s0, s1, 0); \
 #endif \
 #ifdef OP_CC \
     exec_opl(op, s2, s0, s1, CC_C); \
     exec_opw(op, s2, s0, s1, CC_C); \
-    exec_opb(op, s0, s1, CC_C); \
+    exec_opb(op, s2, s0, s1, CC_C); \
 
 exec_op(OP, 0x21ad3d34, 0x12345678, 0);
 exec_op(OP, 0x21ad3d34, 0x12345678, 1);
