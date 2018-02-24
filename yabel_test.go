@@ -118,6 +118,7 @@ func TestBinary(t *testing.T) {
 		S(SS, StackSeg)
 		S(SP, StackPointer)
 		t.Logf("Start code at %#04x:%#04x", G16(CS), G16(IP))
+		res := &res{cs: G16(CS), ip:G16(IP)}
 		X86EMU_exec(t.Logf)
 		t.Logf("End code at %#04x:%#04x", G16(CS), G16(IP))
 		//fx86emu_dump_xregs(t.Logf)
@@ -186,17 +187,17 @@ func TestBinary(t *testing.T) {
 			t.Fatalf("%s: can't find it in output", out)
 			continue
 		}
-		if done {
-			t.Fatalf("Duplicate result: %v", out)
+		if done != nil {
+			t.Fatalf("Duplicate result: %v @ %04x:%04x", out, done.cs, done.ip)
 		}
-		testout[out] = true
+		testout[out] = res
 		succ++
 		t.Logf(f, args...)
 		// opx is at the null after the fmt string. Bump IP to start again.
 	}
 	var skipped int
 	for i, tt := range testout {
-		if ! tt {
+		if tt == nil {
 			t.Logf("Skipped test %v", i)
 			skipped++
 		}

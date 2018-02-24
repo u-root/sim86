@@ -88,6 +88,17 @@
 
 # fuck cpp.
 .code16
+#ifdef OP1
+    exec_op(0x12345678, 0x812FADA);
+    exec_op(0x12341, 0x12341);
+    exec_op(0xffffffff, 0);
+    exec_op(0x7fffffff, 0);
+    exec_op(0x80000000, -1);
+    exec_op(0x12347fff, 0);
+    exec_op(0x12348000, -1);
+    exec_op(0x12347f7f, 0);
+    exec_op(0x12348080, -1);
+#else
     exec_op(0x12345678, 0x812FADA);
     exec_op(0x12341, 0x12341);
     exec_op(0x12341, -0x12341);
@@ -113,6 +124,7 @@
     exec_op(0x12348080, -1);
     exec_op(0x12348080, 1);
     exec_op(0x12348080, -2);
+#endif
 
 #undef OP
 #undef OP_CC
