@@ -183,11 +183,13 @@ test_btr:
 #define OP_NOBYTE
 #include "tests-i386-shift.h"
 
+#if 0
 #define OP btc
 .global test_btc
 test_btc:
 #define OP_NOBYTE
 #include "tests-i386-shift.h"
+#endif
 	
 #if 0	
 #define TEST_BSX(op, size, op0)			\

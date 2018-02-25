@@ -26,11 +26,11 @@
 	PUSH(a,e) ;\
 	OPR(mov,l) $s1, REG(b, e, x) ;	\
 	PUSH(b,e) ;\
-#if o == "btc";			\
-	btc $res, REG(a, e, x);	\
-#else \
+#if o == btc;			\
+btc REG(b,pre,rsize), REG(a, e, x);		\
+#else; \
 	OPR(o,size) REG(b,pre, rsize), REG(a,pre, rsize) ;	\
-#endif \
+#endif; \
 	PUSH(a,e) ;					\
 	pushf ;\
 	movw	$flags, %dx ;\
@@ -102,7 +102,7 @@
 
 #define exec_opl(o, s2, s0, s1, iflags) EXECSHIFT(o,l, x, 32, e, s0, s1, s2, iflags)
 #define exec_opw(o, s2, s0, s1, iflags) EXECSHIFT(o,w, x, 16,  , s0, s1, s2, iflags)
-#define exec_opb(o, s2, s0, s1, iflags) EXECSHIFT(o,b, x,  8,  , s0, s1, s2, iflags)
+#define exec_opb(o, s2, s0, s1, iflags) EXECSHIFT(o,b, l,  8,  , s0, s1, s2, iflags)
 #if 0
 void glue(test_, OP)(void)
 {
