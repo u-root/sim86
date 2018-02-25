@@ -26,11 +26,7 @@
 	PUSH(a,e) ;\
 	OPR(mov,l) $s1, REG(b, e, x) ;	\
 	PUSH(b,e) ;\
-#if o == btc;			\
-btc REG(b,pre,rsize), REG(a, e, x);		\
-#else; \
 	OPR(o,size) REG(b,pre, rsize), REG(a,pre, rsize) ;	\
-#endif; \
 	PUSH(a,e) ;					\
 	pushf ;\
 	movw	$flags, %dx ;\
