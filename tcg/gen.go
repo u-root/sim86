@@ -1,7 +1,8 @@
 package main
 
 import (
-	"fmt"
+	"log"
+	"os"
 	"text/template"
 )
 
@@ -18,7 +19,7 @@ type test struct {
 
 var (
 	tests = []test {
-		{"add", },
+		{O: "add", },
 	}
 	execop2=`
 	movw	$,{{.F}}, %dx 
@@ -62,13 +63,39 @@ execop1=`
 	code = map[string]string {
 		"add": execop2,
 	}
+	ops = []*template.Template{
+		template.Must(template.New("op1").Parse(execop1)),
+		template.Must(template.New("op2").Parse(execop2)),
+
+	}
+	s = []string{"b", "w", "l"}
+	b = []int{8, 16, 32}
+	x = []string{"x", "x", "l"}
+	e = []string{"", "", "e"}
 )
 
 
 func gen(t test) {
-	c := code[t.O]
-	
+	for _, a := range ops {
+		for i := 0; i < 3; i++ {
+			var tt = test{
+				O:t.O,
+				S: s[i],
+				X: x[i],
+				A: "a",
+				B: "b",
+				F: t.F,
+				R: "a",
+				E: e[i],
+			}
+
+			if err := a.Execute(os.Stdout, tt); err != nil {
+				log.Print(err)
+			}
+		}
+	}
 }
+
 func main() {
 	for _, t := range tests {
 		gen(t)
