@@ -72,24 +72,34 @@ execop1=`
 	b = []int{8, 16, 32}
 	x = []string{"x", "x", "l"}
 	e = []string{"", "", "e"}
+	op1 = []string{
+		"0x12345678",
+		"0x12341",
+		"0xffffffff",
+		"0x7fffffff",
+		"0x80000000",
+		"0x12347fff",
+		"0x12348000",
+		"0x12347f7f",
+		"0x12348080",
+	}
 )
 
 
-func gen(t test) {
-	for _, a := range ops {
+func gen1(t test, operands []string) {
+	for _, o := range operands {
 		for i := 0; i < 3; i++ {
 			var tt = test{
 				O:t.O,
 				S: s[i],
 				X: x[i],
-				A: "a",
-				B: "b",
+				A: "a", 
 				F: t.F,
-				R: "a",
+				R: o,
 				E: e[i],
 			}
-
-			if err := a.Execute(os.Stdout, tt); err != nil {
+			
+			if err := ops[0].Execute(os.Stdout, tt); err != nil {
 				log.Print(err)
 			}
 		}
@@ -98,6 +108,6 @@ func gen(t test) {
 
 func main() {
 	for _, t := range tests {
-		gen(t)
+		gen1(t, op1)
 	}
 }
