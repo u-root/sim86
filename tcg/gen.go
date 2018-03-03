@@ -19,10 +19,10 @@ type test struct {
 
 var (
 	tests = []test {
-		{O: "add", },
+		{O: "add", F: "0",},
 	}
 	execop2=`
-	movw	$,{{.F}}, %dx 
+	movw	${{.F}}, %dx 
 	pushw %dx 
 	popf 
         mov{{.S}}  ${{.R}}, {{.E}}{{.A}}{{.X}}
@@ -43,15 +43,15 @@ var (
 `
 	
 execop1=`
-	movw	$flags, %dx 
+	movw	${{.F}}, %dx 
 	pushw %dx 
 	popf 
-	OPR(mov,l) $res, REG(a, e, x)	
-	PUSH(a,e) 
-	OPR(o,size) REG(a,pre, rsize) 	
-	PUSH(a,e) 					
+        mov{{.S}}  ${{.R}}, {{.E}}{{.A}}{{.X}}
+        pushl %e{{.A}}x
+        {{.O}}{{.S}}  {{.E}}{{.A}}{{.S}}
+        pushl %e{{.A}}x
 	pushf 
-	movw	$flags, %dx 
+	movw	${{.F}}, %dx 
 	pushw %dx 
 	hlt
 	.byte 2 /* number of following bytes of info */ 
