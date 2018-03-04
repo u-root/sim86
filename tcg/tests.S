@@ -40,6 +40,7 @@
 test_add:
 #include "tests-i386.h"
 
+#if 0
 #define OP sub
 .global test_sub
 test_sub:
@@ -144,6 +145,7 @@ test_rcr:
 test_rcl:
 #define OP_CC
 #include "tests-i386-shift.h"
+#endif
 
 #if 0
 #define OP shld

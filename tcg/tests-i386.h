@@ -100,6 +100,7 @@
     exec_op(0x12348080, -1);
 #else
     exec_op(0x12345678, 0x812FADA);
+#if 0
     exec_op(0x12341, 0x12341);
     exec_op(0x12341, -0x12341);
     exec_op(0xffffffff, 0);
@@ -124,6 +125,7 @@
     exec_op(0x12348080, -1);
     exec_op(0x12348080, 1);
     exec_op(0x12348080, -2);
+#endif
 #endif
 
 #undef OP
