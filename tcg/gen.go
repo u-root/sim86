@@ -33,6 +33,9 @@ var (
 	outName = flag.String("o", "testsout.S", "Output file for assembly")
 	tests   = []test{
 		{O: "add", F: "0"},
+		{O: "sub", F: "0"},
+		{O: "xor", F: "0"},
+		{O: "and", F: "0"},
 	}
 	execop2 = `
 	movw	${{.F}}, %dx 
