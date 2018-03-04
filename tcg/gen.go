@@ -24,8 +24,8 @@ type test struct {
 }
 
 type op2 struct {
-	A int64
-	B int64
+	A string
+	B string
 }
 
 var (
@@ -38,9 +38,9 @@ var (
 	movw	${{.F}}, %dx 
 	pushw %dx 
 	popf 
-        mov{{.S}}  ${{.Arg0}}, %{{.E}}{{.A}}{{.X}}
+        movl  ${{.Arg0}}, %e{{.A}}x
         push %e{{.A}}x
-        mov{{.S}}  ${{.Arg1}}, %{{.E}}{{.B}}{{.X}}
+        movl  ${{.Arg1}}, %e{{.B}}x
         push %e{{.B}}x
         {{.O}}{{.S}} %{{.E}}{{.B}}{{.X}}, %{{.E}}{{.A}}{{.X}}
         push %e{{.A}}x
@@ -59,7 +59,7 @@ var (
 	movw	${{.F}}, %dx 
 	pushw %dx 
 	popf 
-        mov{{.S}}  ${{.Arg0}}, %{{.E}}{{.A}}{{.X}}
+        movl  ${{.Arg0}}, e{{.A}}x
         push %e{{.A}}x
         {{.O}}{{.S}}  %{{.E}}{{.A}}{{.X}}
         push %e{{.A}}x
@@ -84,43 +84,43 @@ var (
 	b   = []int{8, 16, 32}
 	x   = []string{"x", "x", "l"}
 	e   = []string{"", "", "e"}
-	op1 = []uint32{
-		0x12345678,
-		0x12341,
-		0xffffffff,
-		0x7fffffff,
-		0x80000000,
-		0x12347fff,
-		0x12348000,
-		0x12347f7f,
-		0x12348080,
+	op1 = []string{
+		"0x12345678",
+		"0x12341",
+		"0xffffffff",
+		"0x7fffffff",
+		"0x80000000",
+		"0x12347fff",
+		"0x12348000",
+		"0x12347f7f",
+		"0x12348080",
 	}
 	ops2 = []op2{
-		{A: 0x12345678, B: 0x812FADA},
-		{A: 0x12341, B: 0x12341},
-		{A: 0x12341, B: -0x12341},
-		{A: 0xffffffff, B: 0},
-		{A: 0xffffffff, B: -1},
-		{A: 0xffffffff, B: 1},
-		{A: 0xffffffff, B: 2},
-		{A: 0x7fffffff, B: 0},
-		{A: 0x7fffffff, B: 1},
-		{A: 0x7fffffff, B: -1},
-		{A: 0x80000000, B: -1},
-		{A: 0x80000000, B: 1},
-		{A: 0x80000000, B: -2},
-		{A: 0x12347fff, B: 0},
-		{A: 0x12347fff, B: 1},
-		{A: 0x12347fff, B: -1},
-		{A: 0x12348000, B: -1},
-		{A: 0x12348000, B: 1},
-		{A: 0x12348000, B: -2},
-		{A: 0x12347f7f, B: 0},
-		{A: 0x12347f7f, B: 1},
-		{A: 0x12347f7f, B: -1},
-		{A: 0x12348080, B: -1},
-		{A: 0x12348080, B: 1},
-		{A: 0x12348080, B: -2},
+		{A: "0x12345678", B: "0x812FADA"},
+		{A: "0x12341", B: "0x12341"},
+		{A: "0x12341", B: "-0x12341"},
+		{A: "0xffffffff", B: "0"},
+		{A: "0xffffffff", B: "-1"},
+		{A: "0xffffffff", B: "1"},
+		{A: "0xffffffff", B: "2"},
+		{A: "0x7fffffff", B: "0"},
+		{A: "0x7fffffff", B: "1"},
+		{A: "0x7fffffff", B: "-1"},
+		{A: "0x80000000", B: "-1"},
+		{A: "0x80000000", B: "1"},
+		{A: "0x80000000", B: "-2"},
+		{A: "0x12347fff", B: "0"},
+		{A: "0x12347fff", B: "1"},
+		{A: "0x12347fff", B: "-1"},
+		{A: "0x12348000", B: "-1"},
+		{A: "0x12348000", B: "1"},
+		{A: "0x12348000", B: "-2"},
+		{A: "0x12347f7f", B: "0"},
+		{A: "0x12347f7f", B: "1"},
+		{A: "0x12347f7f", B: "-1"},
+		{A: "0x12348080", B: "-1"},
+		{A: "0x12348080", B: "1"},
+		{A: "0x12348080", B: "-2"},
 	}
 )
 
@@ -162,20 +162,14 @@ func gen2(t test, operands []op2) {
 	for _, o := range operands {
 		for i := 0; i < 3; i++ {
 			bits := "8"
-			arg0 := fmt.Sprintf("0x%02x", uint8(o.A))
-			arg1 := fmt.Sprintf("0x%02x", uint8(o.B))
 			lxx := "l"
 			switch i {
 			case 0:
 			case 1:
 				bits = "16"
-				arg0 = fmt.Sprintf("0x%04x", uint16(o.A))
-				arg1 = fmt.Sprintf("0x%04x", uint16(o.B))
 				lxx = "x"
 			case 2:
 				bits = "32"
-				arg0 = fmt.Sprintf("0x%08x", uint16(o.A))
-				arg1 = fmt.Sprintf("0x%08x", uint16(o.B))
 				lxx = "x"
 			default:
 				log.Panic("fix me")
@@ -187,8 +181,8 @@ func gen2(t test, operands []op2) {
 				A:    "a",
 				B:    "b",
 				F:    t.F,
-				Arg0: arg0,
-				Arg1: arg1,
+				Arg0: o.A,
+				Arg1: o.B,
 				E:    e[i],
 				Bits: bits,
 			}
