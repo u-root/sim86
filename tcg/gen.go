@@ -36,6 +36,8 @@ var (
 		{O: "sub", F: "0"},
 		{O: "xor", F: "0"},
 		{O: "and", F: "0"},
+		{O: "or", F: "0"},
+		{O: "cmp", F: "0"},
 	}
 	execop2 = `
 	movw	${{.F}}, %dx 
