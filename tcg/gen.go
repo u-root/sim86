@@ -45,7 +45,6 @@ var (
 	}
 	tests1 = []test{
 		{O: "inc", F: "0"}, {O: "inc", F: CC_C},
-		{O: "inc", F: "0"}, {O: "inc", F: CC_C},
 		{O: "dec", F: "0"}, {O: "dec", F: CC_C},
 		{O: "neg", F: "0"}, {O: "neg", F: CC_C},
 		{O: "not", F: "0"}, {O: "not", F: CC_C},
@@ -160,13 +159,15 @@ func gen1(t test, operands []string) {
 			}
 			var tt = test{
 				O:    t.O,
-				S:    s[i],
 				X:    lxx,
 				A:    "a",
 				F:    t.F,
 				Arg0: o,
 				E:    e[i],
 				Bits: bits,
+			}
+			if t.S == "" {
+				tt.S = s[i]
 			}
 
 			if err := ops[0].Execute(outFile, tt); err != nil {
