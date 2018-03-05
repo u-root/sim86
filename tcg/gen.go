@@ -48,6 +48,8 @@ var (
 		{O: "dec", F: "0"}, {O: "dec", F: CC_C},
 		{O: "neg", F: "0"}, {O: "neg", F: CC_C},
 		{O: "not", F: "0"}, {O: "not", F: CC_C},
+	}
+	shifts = []test {
 		{O: "rcr", F: "0"}, {O: "rcr", F: CC_C},
 		{O: "rcl", F: "0"}, {O: "rcl", F: CC_C},
 	}
