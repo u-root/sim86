@@ -9,6 +9,8 @@ import (
 	"text/template"
 )
 
+const CC_C = "1"
+
 type test struct {
 	O           string
 	S           string
@@ -31,13 +33,24 @@ type op2 struct {
 var (
 	outFile *os.File
 	outName = flag.String("o", "testsout.S", "Output file for assembly")
-	tests   = []test{
+	tests2  = []test{
+		{O: "adc", F: "0", S: " "}, {O: "adc", F: CC_C, S: " "},
+		{O: "sbb", F: "0"}, {O: "sbb", F: CC_C},
 		{O: "add", F: "0"},
 		{O: "sub", F: "0"},
 		{O: "xor", F: "0"},
 		{O: "and", F: "0"},
 		{O: "or", F: "0"},
 		{O: "cmp", F: "0"},
+	}
+	tests1 = []test{
+		{O: "inc", F: "0"}, {O: "inc", F: CC_C},
+		{O: "inc", F: "0"}, {O: "inc", F: CC_C},
+		{O: "dec", F: "0"}, {O: "dec", F: CC_C},
+		{O: "neg", F: "0"}, {O: "neg", F: CC_C},
+		{O: "not", F: "0"}, {O: "not", F: CC_C},
+		{O: "rcr", F: "0"}, {O: "rcr", F: CC_C},
+		{O: "rcl", F: "0"}, {O: "rcl", F: CC_C},
 	}
 	execop2 = `
 	movw	${{.F}}, %dx 
@@ -64,7 +77,7 @@ var (
 	movw	${{.F}}, %dx 
 	pushw %dx 
 	popf 
-        movl  ${{.Arg0}}, e{{.A}}x
+        movl  ${{.Arg0}}, %e{{.A}}x
         push %e{{.A}}x
         {{.O}}{{.S}}  %{{.E}}{{.A}}{{.X}}
         push %e{{.A}}x
@@ -85,11 +98,11 @@ var (
 		template.Must(template.New("op1").Parse(execop1)),
 		template.Must(template.New("op2").Parse(execop2)),
 	}
-	s   = []string{"b", "w", "l"}
-	b   = []int{8, 16, 32}
-	x   = []string{"x", "x", "l"}
-	e   = []string{"", "", "e"}
-	op1 = []string{
+	s    = []string{"b", "w", "l"}
+	b    = []int{8, 16, 32}
+	x    = []string{"x", "x", "l"}
+	e    = []string{"", "", "e"}
+	ops1 = []string{
 		"0x12345678",
 		"0x12341",
 		"0xffffffff",
@@ -129,29 +142,29 @@ var (
 	}
 )
 
-func gen1(t test, operands []uint32) {
+func gen1(t test, operands []string) {
 	for _, o := range operands {
 		for i := 0; i < 3; i++ {
 			bits := "8"
-			arg0 := fmt.Sprintf("0x%02x", uint8(o))
+			lxx := "l"
 			switch i {
 			case 0:
 			case 1:
 				bits = "16"
-				arg0 = fmt.Sprintf("0x%04x", uint16(o))
+				lxx = "x"
 			case 2:
 				bits = "32"
-				arg0 = fmt.Sprintf("0x%08x", o)
+				lxx = "x"
 			default:
 				log.Panic("fix me")
 			}
 			var tt = test{
 				O:    t.O,
 				S:    s[i],
-				X:    x[i],
+				X:    lxx,
 				A:    "a",
 				F:    t.F,
-				Arg0: arg0,
+				Arg0: o,
 				E:    e[i],
 				Bits: bits,
 			}
@@ -181,7 +194,6 @@ func gen2(t test, operands []op2) {
 			}
 			var tt = test{
 				O:    t.O,
-				S:    s[i],
 				X:    lxx,
 				A:    "a",
 				B:    "b",
@@ -190,6 +202,9 @@ func gen2(t test, operands []op2) {
 				Arg1: o.B,
 				E:    e[i],
 				Bits: bits,
+			}
+			if t.S == "" {
+				tt.S = s[i]
 			}
 
 			if err := ops[1].Execute(outFile, tt); err != nil {
@@ -207,7 +222,10 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Fprintf(outFile, ".code16\n")
-	for _, t := range tests {
+	for _, t := range tests1 {
+		gen1(t, ops1)
+	}
+	for _, t := range tests2 {
 		gen2(t, ops2)
 	}
 	c := exec.Command("as", []string{"-a", "testsout.S"}...)
