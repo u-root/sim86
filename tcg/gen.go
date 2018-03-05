@@ -49,11 +49,11 @@ var (
 		{O: "neg", F: "0"}, {O: "neg", F: CC_C},
 		{O: "not", F: "0"}, {O: "not", F: CC_C},
 	}
-	shifts = []test {
+	shifts2 = []test{
 		{O: "rcr", F: "0"}, {O: "rcr", F: CC_C},
 		{O: "rcl", F: "0"}, {O: "rcl", F: CC_C},
 	}
-	execop2 = `
+	execop2 = template.Must(template.New("op2").Parse(`
 	movw	${{.F}}, %dx 
 	pushw %dx 
 	popf 
@@ -72,9 +72,9 @@ var (
 	.byte {{.Bits}}, 3 
 	.asciz "{{.O}}"
 	.asciz "%s%s A=%08x B=%08x R=%08x CCIN=%04x CC=%04x" 
-`
+`))
 
-	execop1 = `
+	execop1 = template.Must(template.New("op1").Parse(`
 	movw	${{.F}}, %dx 
 	pushw %dx 
 	popf 
@@ -91,14 +91,54 @@ var (
 	.byte {{.Bits}}, 2 
 	.asciz "{{.O}}"
 	.asciz "%s%s A=%08x R=%08x CCIN=%04x CC=%04x" 
-`
-	code = map[string]string{
-		"add": execop2,
-	}
-	ops = []*template.Template{
-		template.Must(template.New("op1").Parse(execop1)),
-		template.Must(template.New("op2").Parse(execop2)),
-	}
+`))
+	shiftop2 = template.Must(template.New("shift2").Parse(`
+	movw	${{.F}}, %dx 
+	pushw %dx 
+	popf 
+        movl  ${{.Arg0}}, %e{{.A}}x
+        push %e{{.A}}x
+        movl  ${{.Arg1}}, %e{{.B}}x
+        push %e{{.B}}x
+        {{.O}}{{.S}} %{{.E}}{{.B}}{{.X}}, %{{.E}}{{.A}}{{.X}}
+        push %e{{.A}}x
+	pushf
+        movw ${{.F}}, %dx
+        cmpb $1, %al
+        je 1f
+        andw $0x800, %dx
+1: 
+	pushw %dx 
+	hlt 
+	.byte 2 /* number of following bytes of info */ 
+	/* currently # bits per stack item, and nargs */ 
+	.byte {{.Bits}}, 3 
+	.asciz "{{.O}}"
+	.asciz "%s%s A=%08x B=%08x R=%08x CCIN=%04x CC=%04x" 
+`))
+
+	shiftop1 = template.Must(template.New("shift1").Parse(`
+	movw	${{.F}}, %dx 
+	pushw %dx 
+	popf 
+        movl  ${{.Arg0}}, %e{{.A}}x
+        push %e{{.A}}x
+        {{.O}}{{.S}}  %{{.E}}{{.A}}{{.X}}
+        push %e{{.A}}x
+	pushf 
+        movw ${{.F}}, %dx
+        cmpb $1, %al
+        je 1f
+        andw $0x800, %dx
+1: 
+	pushw %dx 
+	hlt
+	.byte 2 /* number of following bytes of info */ 
+	/* currently # bits per stack item, and nargs */ 
+	.byte {{.Bits}}, 2 
+	.asciz "{{.O}}"
+	.asciz "%s%s A=%08x R=%08x CCIN=%04x CC=%04x" 
+`))
 	s    = []string{"b", "w", "l"}
 	b    = []int{8, 16, 32}
 	x    = []string{"x", "x", "l"}
@@ -143,7 +183,7 @@ var (
 	}
 )
 
-func gen1(t test, operands []string) {
+func gen1(t test, op *template.Template, operands []string) {
 	for _, o := range operands {
 		for i := 0; i < 3; i++ {
 			bits := "8"
@@ -172,14 +212,14 @@ func gen1(t test, operands []string) {
 				tt.S = s[i]
 			}
 
-			if err := ops[0].Execute(outFile, tt); err != nil {
+			if err := op.Execute(outFile, tt); err != nil {
 				log.Print(err)
 			}
 		}
 	}
 }
 
-func gen2(t test, operands []op2) {
+func gen2(t test, op *template.Template, operands []op2) {
 	for _, o := range operands {
 		for i := 0; i < 3; i++ {
 			bits := "8"
@@ -210,7 +250,7 @@ func gen2(t test, operands []op2) {
 				tt.S = s[i]
 			}
 
-			if err := ops[1].Execute(outFile, tt); err != nil {
+			if err := op.Execute(outFile, tt); err != nil {
 				log.Print(err)
 			}
 		}
@@ -226,10 +266,13 @@ func main() {
 	}
 	fmt.Fprintf(outFile, ".code16\n")
 	for _, t := range tests1 {
-		gen1(t, ops1)
+		gen1(t, execop1, ops1)
 	}
 	for _, t := range tests2 {
-		gen2(t, ops2)
+		gen2(t, execop2, ops2)
+	}
+	for _, t := range shifts2 {
+		gen2(t, shiftop2, ops2)
 	}
 	c := exec.Command("as", []string{"-a", "testsout.S"}...)
 	c.Stdout, err = os.OpenFile("testsout.asm", os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0666)
