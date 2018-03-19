@@ -50,8 +50,10 @@ var (
 		{O: "not", F: "0"}, {O: "not", F: CC_C},
 	}
 	shifts2 = []test{
-		{O: "rcr", A: "b", B: "c", F: "0", S: ""}, {O: "rcr", A: "b", B: "c", F: CC_C, S: ""},
-		{O: "rcl", A: "b", B: "c", F: "0", S: ""}, {O: "rcl", A: "b", B: "c", F: CC_C, S: ""},
+		{O: "rcr", A: "b", B: "c", F: "0", }, {O: "rcr", A: "b", B: "c", F: CC_C, },
+		{O: "rcl", A: "b", B: "c", F: "0", }, {O: "rcl", A: "b", B: "c", F: CC_C, },
+		{O: "shl", A: "b", B: "c", F: "0", },
+		{O: "shr", A: "b", B: "c", F: "0", },
 	}
 	execop2 = template.Must(template.New("op2").Parse(`
 	movw	${{.F}}, %dx 
