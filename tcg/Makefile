@@ -1,6 +1,8 @@
 include config-host.mak
 
 all:
+	go run gen.go
+old:
 	cc -E -I . test.c > t.c
 	cc -m32 -S -I . test.c > t.s
 	cc -m32 t.c

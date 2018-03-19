@@ -50,8 +50,8 @@ var (
 		{O: "not", F: "0"}, {O: "not", F: CC_C},
 	}
 	shifts2 = []test{
-		{O: "rcr", F: "0"}, {O: "rcr", F: CC_C},
-		{O: "rcl", F: "0"}, {O: "rcl", F: CC_C},
+		{O: "rcr", A: "b", B: "c", F: "0", S: ""}, {O: "rcr", A: "b", B: "c", F: CC_C, S: ""},
+		{O: "rcl", A: "b", B: "c", F: "0", S: ""}, {O: "rcl", A: "b", B: "c", F: CC_C, S: ""},
 	}
 	execop2 = template.Must(template.New("op2").Parse(`
 	movw	${{.F}}, %dx 
@@ -100,7 +100,7 @@ var (
         push %e{{.A}}x
         movl  ${{.Arg1}}, %e{{.B}}x
         push %e{{.B}}x
-        {{.O}}{{.S}} %{{.E}}{{.B}}{{.X}}, %{{.E}}{{.A}}{{.X}}
+        {{.O}}{{.S}} %{{.B}}l, %{{.E}}{{.A}}{{.X}}
         push %e{{.A}}x
 	pushf
         movw ${{.F}}, %dx
@@ -235,11 +235,17 @@ func gen2(t test, op *template.Template, operands []op2) {
 			default:
 				log.Panic("fix me")
 			}
+			if t.A == "" {
+				t.A = "a"
+			}
+			if t.B == "" {
+				t.B = "b"
+			}
 			var tt = test{
 				O:    t.O,
 				X:    lxx,
-				A:    "a",
-				B:    "b",
+				A:    t.A,
+				B:    t.B,
 				F:    t.F,
 				Arg0: o.A,
 				Arg1: o.B,
