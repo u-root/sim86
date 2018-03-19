@@ -278,10 +278,10 @@ func main() {
 		gen2(t, execop2, ops2)
 	}
 	for _, t := range shifts2 {
-		for o1 := range ops1 {
+		for _, o1 := range []string{"0x12345678", "0x82345679",} {
 			for i :=0 ; i < 32; i++ {
 				var o = []op2{
-					op2{A: fmt.Sprintf("0x%x", o1), B: fmt.Sprintf("0x%02x", i)},
+					op2{A: o1, B: fmt.Sprintf("0x%x", i)},
 				}
 				gen2(t, shiftop2, o)
 			}
