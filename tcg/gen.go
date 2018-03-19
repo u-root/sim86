@@ -103,12 +103,14 @@ var (
         {{.O}}{{.S}} %{{.B}}l, %{{.E}}{{.A}}{{.X}}
         push %e{{.A}}x
 	pushf
-        movw ${{.F}}, %dx
-        cmpb $1, %al
+	popw %ax
+        cmpb $1, %{{.B}}l
         je 1f
-        andw $0x800, %dx
+        andw $0xf7ff, %ax # ~ 0x800
 1: 
-	pushw %dx 
+	pushw %ax 
+        movw ${{.F}}, %dx
+	pushw %dx
 	hlt 
 	.byte 2 /* number of following bytes of info */ 
 	/* currently # bits per stack item, and nargs */ 
@@ -125,13 +127,15 @@ var (
         push %e{{.A}}x
         {{.O}}{{.S}}  %{{.E}}{{.A}}{{.X}}
         push %e{{.A}}x
-	pushf 
-        movw ${{.F}}, %dx
-        cmpb $1, %al
+	pushf
+	popw %ax
+        cmpb $1, %{{.B}}l
         je 1f
-        andw $0x800, %dx
+        andw $0xf7ff, %ax # ~ 0x800
 1: 
-	pushw %dx 
+	pushw %ax 
+        movw ${{.F}}, %dx
+	pushw %dx
 	hlt
 	.byte 2 /* number of following bytes of info */ 
 	/* currently # bits per stack item, and nargs */ 
