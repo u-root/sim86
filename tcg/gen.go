@@ -278,7 +278,14 @@ func main() {
 		gen2(t, execop2, ops2)
 	}
 	for _, t := range shifts2 {
-		gen2(t, shiftop2, ops2)
+		for o1 := range ops1 {
+			for i :=0 ; i < 32; i++ {
+				var o = []op2{
+					op2{A: fmt.Sprintf("0x%x", o1), B: fmt.Sprintf("0x%02x", i)},
+				}
+				gen2(t, shiftop2, o)
+			}
+		}
 	}
 	c := exec.Command("as", []string{"-a", "testsout.S"}...)
 	c.Stdout, err = os.OpenFile("testsout.asm", os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0666)
