@@ -1355,7 +1355,7 @@ func sar_byte(d uint8, s uint8) uint8 {
 	res = uint32(d)
 	sf = uint32(d) & 0x80
 	cnt = uint32(s) % 8
-	if cnt > 0 && cnt < 8 {
+	if s > 0 && s < 8 {
 		mask = (1 << (8 - cnt)) - 1
 		cf = uint32(d) & (1 << (cnt - 1))
 		res = (uint32(d) >> cnt) & mask
@@ -1364,7 +1364,7 @@ func sar_byte(d uint8, s uint8) uint8 {
 			res |= ^mask
 		}
 		set_szp_flags_8(uint8(res))
-	} else if cnt >= 8 {
+	} else if s >= 8 {
 		if sf != 0 {
 			res = 0xff
 			SET_FLAG(F_CF)
@@ -1378,6 +1378,10 @@ func sar_byte(d uint8, s uint8) uint8 {
 			CLEAR_FLAG(F_SF)
 			CLEAR_FLAG(F_PF)
 		}
+		// qemu tests indicate this should always be
+		// 1. I trust them more than I trust this code.
+		// We'll see.
+		SET_FLAG(F_PF)
 	}
 	return uint8(res)
 }
@@ -1392,7 +1396,7 @@ func sar_word(d uint16, s uint8) uint16 {
 	sf = uint32(d) & 0x8000
 	cnt = uint32(s) % 16
 	res = uint32(d)
-	if cnt > 0 && cnt < 16 {
+	if s > 0 && s < 16 {
 		mask = (1 << (16 - cnt)) - 1
 		cf = uint32(d) & (1 << (cnt - 1))
 		res = (uint32(d) >> cnt) & mask
@@ -1401,7 +1405,7 @@ func sar_word(d uint16, s uint8) uint16 {
 			res |= ^mask
 		}
 		set_szp_flags_16(uint16(res))
-	} else if cnt >= 16 {
+	} else if s >= 16 {
 		if sf != 0 {
 			res = 0xffff
 			SET_FLAG(F_CF)
@@ -1415,6 +1419,10 @@ func sar_word(d uint16, s uint8) uint16 {
 			CLEAR_FLAG(F_SF)
 			CLEAR_FLAG(F_PF)
 		}
+		// qemu tests indicate this should always be
+		// 1. I trust them more than I trust this code.
+		// We'll see.
+		SET_FLAG(F_PF)
 	}
 	return uint16(res)
 }
