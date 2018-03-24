@@ -99,6 +99,7 @@
 
 /*------------------------- Global Variables ------------------------------*/
 package main
+import "log"
 var x86emu_parity_tab = [8]uint32{
 	0x96696996,
 	0x69969669,
@@ -111,7 +112,11 @@ var x86emu_parity_tab = [8]uint32{
 }
 
 func PARITY(x uint32) bool {
-	return ((x86emu_parity_tab[x/32]>>(x%32))&1 == 0)
+	l := x86emu_parity_tab[x/32]
+	l >>= (x % 32)
+	b := (l & 1) == 0
+	log.Printf("Parity of %08x is %v", x, b)
+	return b
 }
 
 func XOR2(x uint32) uint32 {
@@ -1299,6 +1304,10 @@ func shr_word(d uint16, s uint8) uint16 {
 		SET_FLAG(F_ZF)
 		CLEAR_FLAG(F_SF)
 		CLEAR_FLAG(F_PF)
+		// Well, qemu tests say this ought to be set.
+		// The manuals are kind of unclear on this score
+		SET_FLAG(F_PF)
+		// but not this, eh? No idea. set_parity_flag(uint32(d))
 	}
 	return uint16(res)
 }
