@@ -56,6 +56,7 @@ var (
 		{O: "shr", A: "b", B: "c", F: "0", },
 		{O: "sar", A: "b", B: "c", F: "0", },
 		{O: "rol", A: "b", B: "c", F: "0", },
+		{O: "ror", A: "b", B: "c", F: "0", },
 	}
 	execop2 = template.Must(template.New("op2").Parse(`
 	movw	${{.F}}, %dx 
