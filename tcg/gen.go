@@ -23,6 +23,8 @@ type test struct {
 	Bits        string
 	RegOpSuffix string
 	E           string
+	// Starting index for tests -- use this to skip the byte test
+	SX          int
 }
 
 type op2 struct {
@@ -48,6 +50,9 @@ var (
 		{O: "dec", F: "0"}, {O: "dec", F: CC_C},
 		{O: "neg", F: "0"}, {O: "neg", F: CC_C},
 		{O: "not", F: "0"}, {O: "not", F: CC_C},
+	}
+	bts = []test{
+		{O: "bts", F: "0", SX: 1,},
 	}
 	shifts2 = []test{
 		{O: "rcr", A: "b", B: "c", F: "0", }, {O: "rcr", A: "b", B: "c", F: CC_C, },
@@ -230,7 +235,7 @@ func gen1(t test, op *template.Template, operands []string) {
 
 func gen2(t test, op *template.Template, operands []op2) {
 	for _, o := range operands {
-		for i := 0; i < 3; i++ {
+		for i := t.SX; i < 3; i++ {
 			bits := "8"
 			lxx := "l"
 			switch i {
@@ -293,6 +298,16 @@ func main() {
 					op2{A: o1, B: fmt.Sprintf("0x%x", i)},
 				}
 				gen2(t, shiftop2, o)
+			}
+		}
+	}
+	for _, t := range bts {
+		for _, o1 := range []string{"0x12345678",} {
+			for i :=0 ; i < 32; i++ {
+				var o = []op2{
+					op2{A: o1, B: fmt.Sprintf("0x%x", i)},
+				}
+				gen2(t, execop2, o)
 			}
 		}
 	}
