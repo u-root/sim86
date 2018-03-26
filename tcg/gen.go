@@ -53,6 +53,8 @@ var (
 	}
 	bts = []test{
 		{O: "bts", F: "0", SX: 1,},
+		{O: "btr", F: "0", SX: 1,},
+		{O: "btc", F: "0", SX: 1,},
 	}
 	shifts2 = []test{
 		{O: "rcr", A: "b", B: "c", F: "0", }, {O: "rcr", A: "b", B: "c", F: CC_C, },
@@ -302,7 +304,7 @@ func main() {
 		}
 	}
 	for _, t := range bts {
-		for _, o1 := range []string{"0x12345678",} {
+		for _, o1 := range []string{"0x12345678", "0x82345679"} {
 			for i :=0 ; i < 32; i++ {
 				var o = []op2{
 					op2{A: o1, B: fmt.Sprintf("0x%x", i)},
