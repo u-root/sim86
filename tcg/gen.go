@@ -17,9 +17,11 @@ type test struct {
 	X           string
 	A           string
 	B           string
+	C           string
 	F           string
 	Arg0        string
 	Arg1        string
+	Arg2       string
 	Bits        string
 	RegOpSuffix string
 	E           string
@@ -30,6 +32,7 @@ type test struct {
 type op2 struct {
 	A string
 	B string
+	C string
 }
 
 var (
@@ -52,6 +55,7 @@ var (
 		{O: "not", F: "0"}, {O: "not", F: CC_C},
 	}
 	bts = []test{
+		{O: "bt", F: "0", SX: 1,},
 		{O: "bts", F: "0", SX: 1,},
 		{O: "btr", F: "0", SX: 1,},
 		{O: "btc", F: "0", SX: 1,},
@@ -65,6 +69,31 @@ var (
 		{O: "rol", A: "b", B: "c", F: "0", },
 		{O: "ror", A: "b", B: "c", F: "0", },
 	}
+	shifts3  = []test{
+		{O: "shrd", F: "0", SX: 1,},
+	}
+	execop3 = template.Must(template.New("op3").Parse(`
+	movw	${{.F}}, %dx 
+	pushw %dx 
+	popf 
+        movl  ${{.Arg0}}, %e{{.A}}x
+        push %e{{.A}}x
+        movl  ${{.Arg1}}, %e{{.B}}x
+        push %e{{.B}}x
+        movl  ${{.Arg2}}, %e{{.C}}x
+        push %e{{.C}}x
+        {{.O}}{{.S}} %{{.E}}{{.B}}{{.X}}, %{{.E}}{{.A}}{{.X}}
+        push %e{{.A}}x
+	pushf 
+	movw	${{.F}}, %dx 
+	pushw %dx 
+	hlt 
+	.byte 3 /* number of following bytes of info */ 
+	/* currently # bits per stack item, and nargs */ 
+	.byte {{.Bits}}, 4 
+	.asciz "{{.O}}"
+	.asciz "%s%s A=%08x B=%08x C=%08x R=%08x CCIN=%04x CC=%04x" 
+`))
 	execop2 = template.Must(template.New("op2").Parse(`
 	movw	${{.F}}, %dx 
 	pushw %dx 
@@ -197,6 +226,9 @@ var (
 		{A: "0x12348080", B: "1"},
 		{A: "0x12348080", B: "-2"},
 	}
+	ops3 = []op2{
+		{A: "0x12345678", B: "0x21ad3d34"},
+	}
 )
 
 func gen1(t test, op *template.Template, operands []string) {
@@ -257,14 +289,19 @@ func gen2(t test, op *template.Template, operands []op2) {
 			if t.B == "" {
 				t.B = "b"
 			}
+			if t.C == "" {
+				t.C = "c"
+			}
 			var tt = test{
 				O:    t.O,
 				X:    lxx,
 				A:    t.A,
 				B:    t.B,
+				C:    t.C,
 				F:    t.F,
 				Arg0: o.A,
 				Arg1: o.B,
+				Arg2: o.C,
 				E:    e[i],
 				Bits: bits,
 			}
@@ -287,6 +324,16 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Fprintf(outFile, ".code16\n")
+	for _, t := range shifts3 {
+		for _, o1 := range ops3 {
+			for i :=0 ; i < 32; i++ {
+				var o = []op2{
+					op2{A: o1.A, B: o1.B, C: fmt.Sprintf("0x%x", i)},
+				}
+				gen2(t, execop3, o)
+			}
+		}
+	}
 	for _, t := range tests1 {
 		gen1(t, execop1, ops1)
 	}
