@@ -21,12 +21,12 @@ type test struct {
 	F           string
 	Arg0        string
 	Arg1        string
-	Arg2       string
+	Arg2        string
 	Bits        string
 	RegOpSuffix string
 	E           string
 	// Starting index for tests -- use this to skip the byte test
-	SX          int
+	SX int
 }
 
 type op2 struct {
@@ -55,22 +55,22 @@ var (
 		{O: "not", F: "0"}, {O: "not", F: CC_C},
 	}
 	bts = []test{
-		{O: "bt", F: "0", SX: 1,},
-		{O: "bts", F: "0", SX: 1,},
-		{O: "btr", F: "0", SX: 1,},
-		{O: "btc", F: "0", SX: 1,},
+		{O: "bt", F: "0", SX: 1},
+		{O: "bts", F: "0", SX: 1},
+		{O: "btr", F: "0", SX: 1},
+		{O: "btc", F: "0", SX: 1},
 	}
 	shifts2 = []test{
-		{O: "rcr", A: "b", B: "c", F: "0", }, {O: "rcr", A: "b", B: "c", F: CC_C, },
-		{O: "rcl", A: "b", B: "c", F: "0", }, {O: "rcl", A: "b", B: "c", F: CC_C, },
-		{O: "shl", A: "b", B: "c", F: "0", },
-		{O: "shr", A: "b", B: "c", F: "0", },
-		{O: "sar", A: "b", B: "c", F: "0", },
-		{O: "rol", A: "b", B: "c", F: "0", },
-		{O: "ror", A: "b", B: "c", F: "0", },
+		{O: "rcr", A: "b", B: "c", F: "0"}, {O: "rcr", A: "b", B: "c", F: CC_C},
+		{O: "rcl", A: "b", B: "c", F: "0"}, {O: "rcl", A: "b", B: "c", F: CC_C},
+		{O: "shl", A: "b", B: "c", F: "0"},
+		{O: "shr", A: "b", B: "c", F: "0"},
+		{O: "sar", A: "b", B: "c", F: "0"},
+		{O: "rol", A: "b", B: "c", F: "0"},
+		{O: "ror", A: "b", B: "c", F: "0"},
 	}
-	shifts3  = []test{
-		{O: "shrd", F: "0", SX: 1,},
+	shifts3 = []test{
+		{O: "shrd", F: "0", SX: 1},
 	}
 	execop3 = template.Must(template.New("op3").Parse(`
 	movw	${{.F}}, %dx 
@@ -88,7 +88,7 @@ var (
 	movw	${{.F}}, %dx 
 	pushw %dx 
 	hlt 
-	.byte 3 /* number of following bytes of info */ 
+	.byte 2 /* number of following bytes of info */ 
 	/* currently # bits per stack item, and nargs */ 
 	.byte {{.Bits}}, 4 
 	.asciz "{{.O}}"
@@ -326,7 +326,7 @@ func main() {
 	fmt.Fprintf(outFile, ".code16\n")
 	for _, t := range shifts3 {
 		for _, o1 := range ops3 {
-			for i :=0 ; i < 32; i++ {
+			for i := 0; i < 32; i++ {
 				var o = []op2{
 					op2{A: o1.A, B: o1.B, C: fmt.Sprintf("0x%x", i)},
 				}
@@ -341,8 +341,8 @@ func main() {
 		gen2(t, execop2, ops2)
 	}
 	for _, t := range shifts2 {
-		for _, o1 := range []string{"0x12345678", "0x82345679",} {
-			for i :=0 ; i < 32; i++ {
+		for _, o1 := range []string{"0x12345678", "0x82345679"} {
+			for i := 0; i < 32; i++ {
 				var o = []op2{
 					op2{A: o1, B: fmt.Sprintf("0x%x", i)},
 				}
@@ -352,7 +352,7 @@ func main() {
 	}
 	for _, t := range bts {
 		for _, o1 := range []string{"0x12345678", "0x82345679"} {
-			for i :=0 ; i < 32; i++ {
+			for i := 0; i < 32; i++ {
 				var o = []op2{
 					op2{A: o1, B: fmt.Sprintf("0x%x", i)},
 				}
