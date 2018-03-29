@@ -3,7 +3,8 @@ package mem
 import (
 	"testing"
 )
-func TestLong(t*testing.T) {
+
+func TestLong(t *testing.T) {
 	memory = make([]byte, 262144)
 	r := NewLongMemReader(0)
 	t.Logf("r.Read is %v", r.Read)
@@ -49,5 +50,3 @@ func TestLong(t*testing.T) {
 	}
 
 }
-
-

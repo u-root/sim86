@@ -3,7 +3,7 @@ package mem
 type (
 	u32address uint32
 	u16address uint32
-	u8address uint32
+	u8address  uint32
 )
 
 type LongWriter interface {
@@ -43,4 +43,3 @@ type ByteRW interface {
 	Read() uint8
 	Write(uint8)
 }
-
