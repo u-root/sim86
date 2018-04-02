@@ -184,11 +184,11 @@ func TestBinary(t *testing.T) {
 		done, ok := testout[out]
 		if ! ok {
 			fail++
-			t.Fatalf("%s: can't find it in output", out)
+			t.Errorf("%s: can't find it in output", out)
 			continue
 		}
 		if done != nil {
-			t.Fatalf("Duplicate result: %v @ %04x:%04x", out, done.cs, done.ip)
+			t.Errorf("Duplicate result: %v @ %04x:%04x", out, done.cs, done.ip)
 		}
 		testout[out] = res
 		succ++
