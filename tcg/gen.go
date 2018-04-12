@@ -71,6 +71,7 @@ var (
 	}
 	shifts3 = []test{
 		{O: "shrd", F: "0", SX: 1},
+		{O: "shld", F: "0", SX: 1},
 	}
 	execop3 = template.Must(template.New("op3").Parse(`
 	movw	${{.F}}, %dx 
