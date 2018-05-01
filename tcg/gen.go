@@ -54,6 +54,12 @@ var (
 		{O: "neg", F: "0"}, {O: "neg", F: CC_C},
 		{O: "not", F: "0"}, {O: "not", F: CC_C},
 	}
+	testsloop = []test {
+		{O: "jcxz",},
+		{O: "loopw",},
+		{O: "loopzw",},
+		{O: "loopnzw",},
+	}
 	bts = []test{
 		{O: "bt", F: "0", SX: 1},
 		{O: "bts", F: "0", SX: 1},
@@ -185,10 +191,36 @@ var (
 	.asciz "{{.O}}"
 	.asciz "%s%s A=%08x R=%08x CCIN=%04x CC=%04x" 
 `))
+	execloop = template.Must(template.New("loop").Parse(`movl ${{.Arg0}}, %ebx
+        pushl %ebx
+        movl  ${{.Arg1}}, %ecx
+        pushl %ecx
+        test %ebx, %ebx
+        movl $1, %eax
+        {{.O}} 1f
+        movl $0, %eax
+1:
+        pushl %eax
+	hlt
+	.byte 2 /* number of following bytes of info */ 
+	/* currently # bits per stack item, and nargs */ 
+	.byte {{.Bits}}, 2
+	.asciz "{{.O}}"
+	.asciz "%s%s ECX=%08x R=%08x ZF=%d R=%d"
+`))
 	s    = []string{"b", "w", "l"}
 	b    = []int{8, 16, 32}
 	x    = []string{"x", "x", "l"}
 	e    = []string{"", "", "e"}
+	opsloop = []string {
+		"0",
+		"1",
+		"0x10000",
+		"0x10001",
+		//"0x100000000L",
+		//"0x100000001L",
+	}
+
 	ops1 = []string{
 		"0x12345678",
 		"0x12341",
@@ -232,6 +264,26 @@ var (
 		{B: "0x813f3421", A: "0x82345679"},
 	}
 )
+
+func genloop(t test, op *template.Template, operands []string) {
+	for _, o := range operands {
+		// Test two possible values, 0 and 1
+		for _, zf := range []string{"0", "1"} {
+			bits := "32"
+			var tt = test{
+				O:    t.O,
+				A:    "a",
+				S: "",
+				Arg0: o,
+				Arg1: zf,
+				Bits: bits,
+			}
+			if err := op.Execute(outFile, tt); err != nil {
+				log.Print(err)
+			}
+		}
+	}
+}
 
 func gen1(t test, op *template.Template, operands []string) {
 	for _, o := range operands {
@@ -326,6 +378,10 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Fprintf(outFile, ".code16\n")
+	for _, t := range testsloop {
+		genloop(t, execloop, opsloop)
+	}
+
 	for _, t := range shifts3 {
 		for _, o1 := range ops3 {
 			for i := 0; i < 32; i++ {
